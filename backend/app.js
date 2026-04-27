@@ -17,7 +17,6 @@ app.use(passport.initialize());
 
 app.use("/auth", googlelogin);
 
-// test python
 app.get("/test-python", async (req, res) => {
   try {
     const response = await fetch(`${PYTHON_API}/test`);

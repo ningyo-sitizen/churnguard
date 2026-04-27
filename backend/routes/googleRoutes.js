@@ -3,14 +3,17 @@ const passport = require("passport");
 const router = express.Router();
 const authController = require("../controller/passportController");
 
-router.get("/google",
+router.get("/googleLogin",
   passport.authenticate("google", {
     scope: ["email", "profile"]
   })
 );
 
 router.get("/google/callback",
-  passport.authenticate("google", { session: false }),
+  passport.authenticate("google", {
+    session: false,
+    failureRedirect: "http://localhost:5173/login-register?error=cancelled"
+  }),
   authController.googleCallback
 );
 

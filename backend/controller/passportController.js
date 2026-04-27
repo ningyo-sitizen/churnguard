@@ -1,17 +1,32 @@
 const jwt = require("jsonwebtoken");
 
 exports.googleCallback = (req, res) => {
+  console.log("USER:", req.user);
+
+  if (!req.user) {
+    return res.status(500).send("User tidak ditemukan dari Google");
+  }
+
   const profile = req.user;
 
   const user = {
     email: profile.email,
     name: profile.displayName,
-    googleId: profile.id
+    googleId: profile.id,
+    userphotos: profile.photos
   };
 
-  const token = jwt.sign(user, "SECRET_KEY", {
+  const token = require("jsonwebtoken").sign(user, "SECRET_KEY", {
     expiresIn: "1d"
   });
 
-  res.redirect(`http://localhost:5173/login-success?token=${token}`);
+  res.send(`
+  <script>
+    window.opener.postMessage(
+      { token: "${token}" },
+      "http://localhost:5173"
+    );
+    window.close();
+  </script>
+`);
 };
