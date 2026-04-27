@@ -1,7 +1,11 @@
 const express = require("express");
+const cors = require("cors");
+
 
 const app = express();
 const PYTHON_API = "http://localhost:8000";
+
+app.use(cors());
 
 app.get("/test-python", async (req, res) => {
   try {
@@ -12,7 +16,7 @@ app.get("/test-python", async (req, res) => {
       fromNode: "Node OK ✅",
       fromPython: data
     });
-    
+
   } catch (error) {
     res.status(500).json({
       error: "Gagal connect ke Python",
