@@ -8,8 +8,8 @@ const PYTHON_API = "http://localhost:8000";
 
 const googlelogin = require("./routes/googleRoutes.js");
 
-// 🔥 load strategy dulu
-require("./config/config.js");
+
+require("../backend/config.js");
 
 app.use(cors());
 
@@ -34,6 +34,8 @@ app.get("/test-python", async (req, res) => {
     });
   }
 });
+
+
 
 app.listen(5000, () => {
   console.log("Server jalan di port 5000, http://localhost:5000/");

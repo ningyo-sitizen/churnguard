@@ -1,24 +1,25 @@
+const passport = require("passport");
+const GoogleStrategy = require("passport-google-oauth2").Strategy;
 
 const mysql = require('mysql2/promise');
 const path = require('path');
-require('dotenv').config({ path: __dirname + '/../.env' });
 
-const opac = mysql.createPool({
-  host: process.env.DB_HOST_OPAC,
-  user: process.env.DB_USER_OPAC,
-  password: process.env.DB_PASS_OPAC,
-  database: process.env.DB_DATABASE_OPAC,
+const churnguard_con = mysql.createPool({
+  host: process.env.DB_HOST_CHURNGUARD,
+  user: process.env.DB_USER_CHURNGUARD,
+  password: process.env.DB_PASS_CHURNGUARD,
+  database: process.env.DB_DATABASE_CHURNGUARD,
   waitForConnections: true,
   connectionLimit: 10,
 });
 
-const bebaspustaka = mysql.createPool({
-  host: process.env.DB_HOST_BEBAS,
-  user: process.env.DB_USER_BEBAS,
-  password: process.env.DB_PASS_BEBAS,
-  database: process.env.DB_DATABASE_BEBAS,
-  waitForConnections: true,
-  connectionLimit: 10,
-})
+passport.use(new GoogleStrategy({
+  clientID: process.env.GOOGLE_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  callbackURL: "http://localhost:5000/auth/google/callback"
+},
+(accessToken, refreshToken, profile, done) => {
+  return done(null, profile);
+}));
 
-module.exports = {opac,bebaspustaka};
+module.exports = {passport,churnguard_con};

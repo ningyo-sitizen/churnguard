@@ -3,9 +3,17 @@ const passport = require("passport");
 const router = express.Router();
 const authController = require("../controller/passportController");
 
-router.get("/googleLogin",
+router.get("/google/login",
   passport.authenticate("google", {
-    scope: ["email", "profile"]
+    scope: ["email", "profile"],
+    state: "login"
+  })
+);
+
+router.get("/google/register",
+  passport.authenticate("google", {
+    scope: ["email", "profile"],
+    state: "register"
   })
 );
 

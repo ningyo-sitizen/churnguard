@@ -38,7 +38,7 @@ export default function LoginRegister() {
         const top = window.screenY + (window.innerHeight - height) / 2;
 
         window.open(
-            "http://localhost:5000/auth/googleLogin",
+            "http://localhost:5000/auth/google/login",
             "Google Login",
             `width=${width},height=${height},top=${top},left=${left}`
         );
@@ -52,7 +52,7 @@ export default function LoginRegister() {
         const top = window.screenY + (window.innerHeight - height) / 2;
 
         window.open(
-            "http://localhost:5000/auth/google",
+            "http://localhost:5000/auth/google/register",
             "Google Login",
             `width=${width},height=${height},top=${top},left=${left}`
         );
@@ -63,7 +63,7 @@ export default function LoginRegister() {
         <button onClick={handleLogin}>
             Login with Google
         </button>
-        <button onClick={handleLogin}>
+        <button onClick={handleRegister}>
             Register with Google
         </button>
     </div>
