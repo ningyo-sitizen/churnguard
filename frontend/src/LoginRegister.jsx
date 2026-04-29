@@ -1,62 +1,98 @@
-import { useEffect } from "react";
+import { useState } from "react";
 
 export default function LoginRegister() {
+    const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
 
-    useEffect(() => {
-        const params = new URLSearchParams(window.location.search);
-        const error = params.get("error");
+    // 🔥 REGISTER
+    const handleRegister = async () => {
+        try {
+            const res = await fetch("http://localhost:5000/auth/register", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    name,
+                    email,
+                    password,
+                }),
+            });
 
-        if (error === "cancelled") {
-            console.log("User cancel login");
-            window.close();
+            const data = await res.json();
+
+            if (!res.ok) {
+                console.log("Register error:", data.message);
+                return;
+            }
+
+            localStorage.setItem("token", data.token);
+            console.log("Register success:", data);
+            window.location.href = "/dashboard";
+
+        } catch (err) {
+            console.log("Register failed:", err);
         }
-        const handleMessage = (event) => {
-            if (!event.origin.includes("localhost")) return;
+    };
 
-            const { token } = event.data;
+    // 🔥 LOGIN
+    const handleLogin = async () => {
+        try {
+            const res = await fetch("http://localhost:5000/auth/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    email,
+                    password,
+                }),
+            });
 
-            if (token) {
-                localStorage.setItem("token", token);
-                console.log("Token:", token);
+            const data = await res.json();
 
-                window.location.href = "/auth-check";
+            if (!res.ok) {
+                console.log("Login error:", data.message);
+                return;
             }
 
-            if (event.data.error) {
-                console.log("Error:", event.data.error);
-            }
-        };
+            localStorage.setItem("token", data.token);
+            console.log("Login success:", data);
+            window.location.href = "/dashboard";
 
-        window.addEventListener("message", handleMessage);
-
-        return () => {
-            window.removeEventListener("message", handleMessage);
-        };
-    }, []);
-
-    const openPopup = (url) => {
-        const width = 500;
-        const height = 600;
-
-        const left = window.screenX + (window.innerWidth - width) / 2;
-        const top = window.screenY + (window.innerHeight - height) / 2;
-
-        window.open(
-            url,
-            "Google Login",
-            `width=${width},height=${height},top=${top},left=${left}`
-        );
+        } catch (err) {
+            console.log("Login failed:", err);
+        }
     };
 
     return (
         <div>
-            <button onClick={() => openPopup("http://localhost:5000/auth/google/login")}>
-                Login with Google
-            </button>
+            <h2>Auth</h2>
 
-            <button onClick={() => openPopup("http://localhost:5000/auth/google/register")}>
-                Register with Google
-            </button>
+            <input
+                placeholder="Name (register only)"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+            />
+
+            <input
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+            />
+
+            <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+            />
+
+            <div>
+                <button onClick={handleLogin}>Login</button>
+                <button onClick={handleRegister}>Register</button>
+            </div>
         </div>
     );
 }

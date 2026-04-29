@@ -3,6 +3,15 @@ const GoogleStrategy = require("passport-google-oauth2").Strategy;
 
 const mysql = require('mysql2/promise');
 const path = require('path');
+const nodemailer = require("nodemailer");
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
 
 const churnguard_con = mysql.createPool({
   host: process.env.DB_HOST_CHURNGUARD,
@@ -22,4 +31,4 @@ passport.use(new GoogleStrategy({
   return done(null, profile);
 }));
 
-module.exports = {passport,churnguard_con};
+module.exports = {passport,churnguard_con,transporter};
