@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const passport = require("passport");
 require("dotenv").config();
+const user_middle = require("./middleware/checktokenuser.js")
 
 const app = express();
 const PYTHON_API = "http://localhost:8000";
@@ -17,24 +18,7 @@ app.use(passport.initialize());
 
 app.use("/auth", googlelogin);
 
-app.get("/test-python", async (req, res) => {
-  try {
-    const response = await fetch(`${PYTHON_API}/test`);
-    const data = await response.json();
-
-    return res.json({
-      fromNode: "Node OKEH bisa dibaca",
-      fromPython: data
-    });
-
-  } catch (error) {
-    return res.status(500).json({
-      error: "Gagal connect ke Python",
-      detail: error.message
-    });
-  }
-});
-
+app.use("/test",user_middle,require("./routes/testRoutes.js"))
 
 
 app.listen(5000, () => {

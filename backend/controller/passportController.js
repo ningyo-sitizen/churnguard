@@ -14,8 +14,6 @@ exports.googleCallback = async (req, res) => {
   let sessionVersion = 1;
 
   if (mode === "login") {
-    console.log("user memilih login");
-
     const [existing] = await churnguard_con.query(
       "SELECT * FROM users WHERE email = ?",
       [profile.email]
@@ -32,7 +30,6 @@ exports.googleCallback = async (req, res) => {
         </script>
       `);
     }
-
     sessionVersion = existing[0].session_version + 1;
 
     await churnguard_con.query(
@@ -41,7 +38,7 @@ exports.googleCallback = async (req, res) => {
     );
 
   } else if (mode === "register") {
-    
+
     const [existing] = await churnguard_con.query(
       "SELECT * FROM users WHERE email = ?",
       [profile.email]
@@ -66,13 +63,18 @@ exports.googleCallback = async (req, res) => {
       [profile.email, profile.displayName, profile.id, avatar, sessionVersion]
     );
   }
+    const [rows] = await churnguard_con.query(
+      "SELECT role FROM users WHERE email = ?",
+      [profile.email]
+    );
 
   const user = {
     email: profile.email,
     name: profile.displayName,
     googleId: profile.id,
     avatar: avatar,
-    sessionVersion: sessionVersion
+    sessionVersion: sessionVersion,
+    role: rows[0]?.role
   };
 
   const token = jwt.sign(user, process.env.JWT_SECRET, {
