@@ -1,10 +1,27 @@
 const jwt = require("jsonwebtoken");
 const { churnguard_con } = require("../config");
-const bcrypt = require('bcryptjs');
-
-const jwt = require("jsonwebtoken");
-const { churnguard_con } = require("../config");
 const bcrypt = require("bcryptjs");
+
+
+exports.ChurnGuardEmailCheck = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const [existing] = await churnguard_con.query(
+      "SELECT email FROM users WHERE email = ?",
+      [email]
+    );
+
+    if (existing.length > 0) {
+      return res.status(409).json({ message: "Email already exists" });
+    }
+
+    return res.status(200).json({ message: "Email available" });
+
+  } catch (err) {
+    return res.status(500).json({ message: "Server error" });
+  }
+};
 
 exports.ChurnGuardRegister = async (req, res) => {
   const { name, email, password } = req.body;

@@ -55,7 +55,7 @@ exports.googleCallback = async (req, res) => {
         </script>
       `);
     }
-
+    
     sessionVersion = 1;
 
     await churnguard_con.query(

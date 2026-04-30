@@ -1,7 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const { testOtp } = require("../controller/otpCon")
+const { get_otp,check_otp } = require("../controller/otpCon")
 
-router.post("/test-otp", testOtp);
+router.post("/get-otp", get_otp);
+router.post("/check-otp", check_otp)
 
 module.exports = router;

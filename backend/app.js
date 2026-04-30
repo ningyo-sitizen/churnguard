@@ -3,6 +3,7 @@ const cors = require("cors");
 const passport = require("passport");
 require("dotenv").config();
 const user_middle = require("./middleware/checktokenuser.js")
+const auth_normal = require("../backend/routes/authRoutes.js")
 
 const app = express();
 app.use(express.json());
@@ -19,6 +20,7 @@ app.use(cors());
 app.use(passport.initialize());
 
 app.use("/auth", googlelogin);
+app.use("/auth", auth_normal)
 
 app.use("/otp", require("./routes/otpRoutes"));
 

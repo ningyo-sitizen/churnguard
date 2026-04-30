@@ -1,53 +1,82 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function LoginRegister() {
     const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
+    const [emailREG, setEmailREG] = useState("");
+    const [emailLogin, setEmaiLogin] = useState("");
     const [password, setPassword] = useState("");
+    const [otp, setOtp] = useState("");
+    const [showOtp, setShowOtp] = useState(false);
 
-    // 🔥 REGISTER
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const error = params.get("error");
+
+        if (error === "cancelled") {
+            console.log("User cancel login");
+            window.close();
+        }
+
+        const handleMessage = (event) => {
+            if (!event.origin.includes("localhost")) return;
+
+            const { token } = event.data;
+
+            if (token) {
+                localStorage.setItem("token", token);
+                console.log("Google Token:", token);
+
+                window.location.href = "/auth-check";
+            }
+
+            if (event.data?.error) {
+                console.log("Error:", event.data.error);
+            }
+        };
+
+        window.addEventListener("message", handleMessage);
+
+        return () => {
+            window.removeEventListener("message", handleMessage);
+        };
+    }, []);
+    const handleOtpGet = async () => {
+        try {
+            const res = await fetch(
+                `http://localhost:5000/auth/register/get-otp?email=${emailREG}`
+            );
+        } catch (err) {
+            console.log("Register failed:", err);
+        }
+    }
+
     const handleRegister = async () => {
         try {
-            const res = await fetch("http://localhost:5000/auth/register", {
+            const res = await fetch("http://localhost:5000/auth/register/check", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    name,
-                    email,
-                    password,
-                }),
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ emailREG }),
             });
-
             const data = await res.json();
 
             if (!res.ok) {
                 console.log("Register error:", data.message);
                 return;
             }
-
-            localStorage.setItem("token", data.token);
-            console.log("Register success:", data);
-            window.location.href = "/dashboard";
-
+            setShowOtp(true);
+            console.log("Email available, show OTP");
+            handleOtpGet()
         } catch (err) {
             console.log("Register failed:", err);
         }
     };
 
-    // 🔥 LOGIN
     const handleLogin = async () => {
         try {
             const res = await fetch("http://localhost:5000/auth/login", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    email,
-                    password,
-                }),
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password }),
             });
 
             const data = await res.json();
@@ -57,13 +86,22 @@ export default function LoginRegister() {
                 return;
             }
 
-            localStorage.setItem("token", data.token);
-            console.log("Login success:", data);
-            window.location.href = "/dashboard";
-
         } catch (err) {
             console.log("Login failed:", err);
         }
+    };
+    const openPopup = (url) => {
+        const width = 500;
+        const height = 600;
+
+        const left = window.screenX + (window.innerWidth - width) / 2;
+        const top = window.screenY + (window.innerHeight - height) / 2;
+
+        window.open(
+            url,
+            "Google OAuth",
+            `width=${width},height=${height},top=${top},left=${left}`
+        );
     };
 
     return (
@@ -71,15 +109,9 @@ export default function LoginRegister() {
             <h2>Auth</h2>
 
             <input
-                placeholder="Name (register only)"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-            />
-
-            <input
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                placeholder="email"
+                value={emailLogin}
+                onChange={(e) => setEmailLogin(e.target.value)}
             />
 
             <input
@@ -91,7 +123,42 @@ export default function LoginRegister() {
 
             <div>
                 <button onClick={handleLogin}>Login</button>
+            </div>
+
+            <hr />
+            <input
+                placeholder="Email"
+                value={emailREG}
+                onChange={(e) => setEmailREG(e.target.value)}
+            />
+            <div>
                 <button onClick={handleRegister}>Register</button>
+            </div>
+
+            <hr />
+            {showOtp && (
+                <div>
+                    <input
+                        placeholder="Enter OTP"
+                        value={otp}
+                        onChange={(e) => setOtp(e.target.value)}
+                    />
+                    <button onClick={() => console.log("OTP:", otp)}>
+                        Verify OTP
+                    </button>
+                </div>
+            )}
+            <hr />
+
+
+            <div>
+                <button onClick={() => openPopup("http://localhost:5000/auth/google/login")}>
+                    Login with Google
+                </button>
+
+                <button onClick={() => openPopup("http://localhost:5000/auth/google/register")}>
+                    Register with Google
+                </button>
             </div>
         </div>
     );
