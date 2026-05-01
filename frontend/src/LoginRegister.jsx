@@ -1,12 +1,16 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function LoginRegister() {
-    const [name, setName] = useState("");
+    const [email, setName] = useState("");
     const [emailREG, setEmailREG] = useState("");
-    const [emailLogin, setEmaiLogin] = useState("");
+    const [emailLogin, setEmailLogin] = useState("");
     const [password, setPassword] = useState("");
     const [otp, setOtp] = useState("");
     const [showOtp, setShowOtp] = useState(false);
+    const [showRegis,setshowRegis] = useState(false)
+    const [nameREG,setnameREG] = useState("")
+    const [passREG,setpassREG] = useState("")
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
@@ -52,10 +56,10 @@ export default function LoginRegister() {
 
     const handleRegister = async () => {
         try {
-            const res = await fetch("http://localhost:5000/auth/register/check", {
+            const res = await fetch("http://localhost:5000/auth/register/check-email", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ emailREG }),
+                body: JSON.stringify({email: emailREG }),
             });
             const data = await res.json();
 
@@ -71,12 +75,32 @@ export default function LoginRegister() {
         }
     };
 
+    const handleOtpCheck = async () =>{
+        try{
+            const res  = await fetch("http://localhost:5000/auth/register/check-otp",{
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({email : emailREG,otp : otp}),
+            })
+            const data = await res.json()
+
+            if (!res.ok){
+                console.log("otp salah")
+                return
+            }
+            console.log("otp benar")
+            setshowRegis(true)
+        }catch(err){
+            console.log("Register failed:", err);
+        }
+    }
+    const navigate = useNavigate();
     const handleLogin = async () => {
         try {
             const res = await fetch("http://localhost:5000/auth/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password }),
+                body: JSON.stringify({email: emailLogin, pass: password }),
             });
 
             const data = await res.json();
@@ -85,6 +109,8 @@ export default function LoginRegister() {
                 console.log("Login error:", data.message);
                 return;
             }
+            localStorage.setItem("token", data.token);
+            navigate('/login-success')
 
         } catch (err) {
             console.log("Login failed:", err);
@@ -103,6 +129,19 @@ export default function LoginRegister() {
             `width=${width},height=${height},top=${top},left=${left}`
         );
     };
+
+    const makeNewAcc = async () => {
+        const res = await fetch("http://localhost:5000/auth/register/newAcc",{
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({name : nameREG, email: emailREG ,password: passREG}),
+        })
+
+        const data = await res.json()
+
+        localStorage.setItem("token", data.token);
+        Navigate('/login-success')
+    }
 
     return (
         <div>
@@ -143,14 +182,30 @@ export default function LoginRegister() {
                         value={otp}
                         onChange={(e) => setOtp(e.target.value)}
                     />
-                    <button onClick={() => console.log("OTP:", otp)}>
+                    <button onClick={handleOtpCheck}>
                         Verify OTP
                     </button>
                 </div>
             )}
             <hr />
-
-
+            {showRegis && (
+                <div>
+                    <input
+                        placeholder="Enter nama mu"
+                        value={nameREG}
+                        onChange={(e) => setnameREG(e.target.value)}
+                    />
+                    <input
+                        placeholder="Enter pass mu"
+                        value={passREG}
+                        onChange={(e) => setpassREG(e.target.value)}
+                    />
+                    <button onClick={makeNewAcc}>
+                        Verify OTP
+                    </button>
+                </div>
+            )}
+            <hr />
             <div>
                 <button onClick={() => openPopup("http://localhost:5000/auth/google/login")}>
                     Login with Google

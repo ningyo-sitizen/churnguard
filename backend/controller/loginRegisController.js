@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const { churnguard_con } = require("../config");
+const churnguard_con = require("../config/db");
 const bcrypt = require("bcryptjs");
 
 
@@ -42,7 +42,7 @@ exports.ChurnGuardRegister = async (req, res) => {
 
     const hashed = await bcrypt.hash(password, 10);
 
-    const sessionVersion = 0;
+    const sessionVersion = 1;
     const role = "user";
     const avatar_url = "";
 
@@ -75,5 +75,56 @@ exports.ChurnGuardRegister = async (req, res) => {
   }
 };
 exports.ChurnGuardLogin = async (req, res) => {
+  const { email, pass } = req.body;
 
+  if (!email || !pass) {
+  return res.status(400).json({ message: "Email & password required" });
 }
+
+  try {
+    const [existing] = await churnguard_con.query(
+      `SELECT * FROM users WHERE email = ?`,
+      [email]
+    );
+
+    if (!existing || existing.length === 0) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    const userLogin = existing[0];
+
+    const valid = await bcrypt.compare(pass, userLogin.password);
+
+    if (!valid) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    const sessionVersion = userLogin.session_version + 1;
+
+    await churnguard_con.query(
+      "UPDATE users SET session_version = ? WHERE email = ?",
+      [sessionVersion, email]
+    );
+
+    const user = {
+      email: userLogin.email,
+      name: userLogin.name,
+      avatar: userLogin.avatar_url,
+      sessionVersion,
+      role: userLogin.role
+    };
+
+    const token = jwt.sign(user, process.env.JWT_SECRET, {
+      expiresIn: "1d"
+    });
+
+    return res.status(200).json({
+      message: "Login success",
+      token
+    });
+
+  } catch (error) {
+    console.error("Login error:", error);
+    return res.status(500).json({ message: "Database error" });
+  }
+};

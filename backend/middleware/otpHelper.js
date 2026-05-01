@@ -1,4 +1,4 @@
-const {transporter} = require("../config");
+const transporter = require("../config/malier");
 
 const sendOtp = async (email, otp) => {
   await transporter.sendMail({
@@ -10,7 +10,7 @@ const sendOtp = async (email, otp) => {
         <h2>OTP Verification</h2>
         <p>Your OTP code is:</p>
         <h1 style="letter-spacing: 5px;">${otp}</h1>
-        <p>This code will expire in 5 minutes.</p>
+        <p>This code will expire in 10 minutes.</p>
       </div>
     `,
   });

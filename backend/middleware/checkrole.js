@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const { churnguard_con } = require("../config");
+const churnguard_con = require("../config/db");
 
 const checkrole = (role) => {
   return (req, res, next) => {

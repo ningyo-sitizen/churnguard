@@ -1,68 +1,40 @@
-import { useEffect, useState } from "react";
-import { jwtDecode } from "jwt-decode";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useAuth } from "../utils/auth";
 
 export default function LoginSuccess() {
-  const [user, setUser] = useState(null);
-  const navigate = useNavigate();
+  const user = useAuth();
+  const [avatarSrc, setAvatarSrc] = useState(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      navigate("/login-register");
-      return;
+    if (user) {
+      setAvatarSrc(
+        user.avatar || "https://via.placeholder.com/100"
+      );
     }
+  }, [user]);
 
-    try {
-      const decoded = jwtDecode(token);
-      setUser(decoded);
-    } catch {
-      localStorage.removeItem("token");
-      navigate("/login-register");
-      return;
-    }
-
-    const fetchtest = async () => {
-      try {
-        await axios.get("http://localhost:5000/test/ping", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-      } catch (error) {
-        const status = error.response?.status;
-        if (status === 401 || status === 403) {
-          localStorage.removeItem("token");
-          navigate("/login-register");
-        } else {
-          console.log("error ping:", error.message);
-        }
-      }
-    };
-    fetchtest();
-  }, [navigate]);
+  if (!user) return <p>Loading...</p>;
 
   return (
     <div style={{ padding: "20px" }}>
       <h2>Login Success</h2>
 
-      {user ? (
-        <div>
-          <p>Email: {user.email}</p>
-          <p>Name: {user.name}</p>
-          <p>Google ID: {user.googleId}</p>
+      <p>Email: {user.email}</p>
+      <p>Name: {user.name}</p>
 
-          <img
-            src={user?.avatar || "https://via.placeholder.com/100"}
-            alt="profile"
-            width={100}
-          />
-        </div>
-      ) : (
-        <p>Loading...</p>
-      )}
+      {user.googleId && <p>Google ID: {user.googleId}</p>}
+
+      <img
+        src={avatarSrc}
+        alt="profile"
+        width={100}
+        onError={() => {
+          setAvatarSrc("https://via.placeholder.com/100");
+        }}
+      />
+      <div>
+      <a href="/prediction">prediction</a>
+      </div>
     </div>
   );
 }

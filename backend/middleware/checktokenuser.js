@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const { churnguard_con } = require("../config");
+const churnguard_con = require("../config/db");
 
 const verifyToken = async (req, res, next) => {
     console.log("STEP 1 - masuk middleware");

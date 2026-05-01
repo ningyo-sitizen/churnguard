@@ -1,31 +1,26 @@
+require("dotenv").config();
+
 const express = require("express");
 const cors = require("cors");
-const passport = require("passport");
-require("dotenv").config();
-const user_middle = require("./middleware/checktokenuser.js")
-const auth_normal = require("../backend/routes/authRoutes.js")
 
-const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-const PYTHON_API = "http://localhost:8000";
+const passport = require("./config/passport.js");
 
 const googlelogin = require("./routes/googleRoutes.js");
+const auth_normal = require("./routes/authRoutes.js");
 
-
-require("../backend/config.js");
+const app = express();
 
 app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.use(passport.initialize());
 
+// routes
 app.use("/auth", googlelogin);
-app.use("/auth", auth_normal)
+app.use("/auth", auth_normal);
 
-app.use("/otp", require("./routes/otpRoutes"));
-
-app.use("/test",require("./routes/testRoutes.js"))
-
+app.use("/test", require("./routes/testRoutes.js"));
 
 app.listen(5000, () => {
   console.log("Server jalan di port 5000, http://localhost:5000/");
