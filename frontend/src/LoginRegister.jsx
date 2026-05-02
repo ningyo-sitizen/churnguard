@@ -97,6 +97,9 @@ export default function LoginRegister() {
     const navigate = useNavigate();
     const handleLogin = async () => {
         try {
+
+            const token = localStorage.getItem("token");
+            
             const res = await fetch("http://localhost:5000/auth/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },

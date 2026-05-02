@@ -16,7 +16,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(passport.initialize());
 
-// routes
+app.use("/csv", require("./routes/csvRoutes"));
 app.use("/auth", googlelogin);
 app.use("/auth", auth_normal);
 

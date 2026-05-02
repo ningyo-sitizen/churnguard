@@ -1,6 +1,6 @@
 const csv = require("csv-parser");
 const fs = require("fs");
-
+let rowNumber = 0
 const expected = [
   "AccountAge",
   "MonthlyCharges",
@@ -27,8 +27,9 @@ const expected = [
 fs.createReadStream("test(2).csv")
   .pipe(csv())
   .on("headers", (headers) => {
-    const match =
-    JSON.stringify(headers) === JSON.stringify(expected);
+    const clean = headers.map(h => h.trim());
+    const missing = expected.filter(col => !clean.includes(col))
+    const match = JSON.stringify(headers) === JSON.stringify(expected);
 
   if (!headers) {
     console.log("❌ headers tidak ditemukan");
@@ -41,7 +42,12 @@ fs.createReadStream("test(2).csv")
     console.log("❌ headers bukan array");
     return;
   }
-  
+
+  }
+  if(missing.length > 0){
+    console.log("❌ Missing columns:", missing);
+  }else{
+    console.log("✅ Semua header lengkap");
   }
   if (!match) {
     console.log("❌ header mismatch");
@@ -51,8 +57,13 @@ fs.createReadStream("test(2).csv")
     console.log("✅ header valid");
   }
   })
-  .on("data", () => {
-
+  .on("data", (row) => {
+    rowNumber++;
+     for (const key in row) {
+      if (row[key] === '' || row[key] === null || row[key] === undefined) {
+        console.warn(`Missing data in column: ${key} in row:`, rowNumber);
+      }
+    }
   })
   .on("end", () => {
     console.log("file selesai dibaca");

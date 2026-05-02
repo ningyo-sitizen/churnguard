@@ -3,6 +3,7 @@ import axios from "axios";
 
 export default function TestAPI() {
   const [data, setData] = useState(null);
+  const user = useAuth();
 
   const handleTest = async () => {
     try {
