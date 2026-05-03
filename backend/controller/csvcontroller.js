@@ -1,5 +1,7 @@
 const csv = require("csv-parser");
 const fs = require("fs");
+const FormData = require("form-data");
+const axios = require("axios");
 
 exports.validateCSV = (req, res) => {
   const filePath = req.file.path;
@@ -136,4 +138,34 @@ exports.validateCSV = (req, res) => {
         error: err.message
       });
     });
+};
+
+
+exports.sendToPython = async (req, res) => {
+  try {
+    const filePath = req.file.path;
+
+    const form = new FormData();
+    form.append("file", fs.createReadStream(filePath));
+
+    const pyRes = await axios.post(
+      "http://localhost:8000/test-upload",
+      form,
+      {
+        headers: form.getHeaders()
+      }
+    );
+
+    return res.json({
+      message: "Kirim ke Python berhasil",
+      python: pyRes.data
+    });
+
+  } catch (err) {
+    console.error("Python error:", err.message);
+
+    return res.status(500).json({
+      message: "Gagal kirim ke Python"
+    });
+  }
 };

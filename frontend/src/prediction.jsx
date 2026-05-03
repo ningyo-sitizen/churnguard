@@ -77,6 +77,38 @@ export default function Prediction() {
         }
     };
 
+    const handleUploadpy = async () => {
+        if (!file) return alert("Pilih file dulu");
+
+        try {
+            setLoading(true);
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            const token = localStorage.getItem("token");
+
+            const res = await axios.post(
+                "http://localhost:5000/csv/upload-csv-py",
+                formData,
+                {
+                }
+            );
+
+            setHeaderError(res.data.headerError);
+            setMissingData(res.data.missingData || []);
+            setTotalError(res.data.totalError || 0);
+            setColumnSummary(res.data.columnSummary || []);
+            setHasChecked(true);
+
+
+
+        } catch (err) {
+            console.log("Upload error:", err);
+        } finally {
+            setLoading(false);
+        }
+    };
     const isValid =
         hasChecked && !headerError && missingData.length === 0;
 
@@ -106,7 +138,7 @@ export default function Prediction() {
             <div>
                 {showNext && (
                 <div>
-                    <button onClick={"hello"}>
+                    <button onClick={handleUploadpy}>
                         next
                     </button>
                 </div>
