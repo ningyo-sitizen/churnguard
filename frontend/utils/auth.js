@@ -17,7 +17,7 @@ export const useAuth = (options = {}) => {
     const token = localStorage.getItem("token");
 
     if (!token) {
-      if (redirect) navigate("/login-register");
+      if (redirect) navigate("/signup");
       return;
     }
 
@@ -30,7 +30,7 @@ export const useAuth = (options = {}) => {
       }
 
       if (requireRole && decoded.role !== requireRole) {
-        navigate("/login-register");
+        navigate("/signup");
         return;
       }
 
@@ -46,14 +46,14 @@ export const useAuth = (options = {}) => {
 
           if (status === 401 || status === 403) {
             localStorage.removeItem("token");
-            navigate("/login-register");
+            navigate("/signup");
           }
         });
       }
 
     } catch {
       localStorage.removeItem("token");
-      if (redirect) navigate("/login-register");
+      if (redirect) navigate("/signup");
     }
   }, [navigate, redirect, requireRole, validateServer]);
 

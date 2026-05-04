@@ -48,7 +48,6 @@ function SignUp() {
                 const user_action = "user malakukan login"
                 const action_status = "berhasil"
 
-                //token if login
                 const now = new Date();
                 const pad = (n) => n.toString().padStart(2, "0");
                 const token = localStorage.getItem('token');
@@ -104,6 +103,19 @@ function SignUp() {
             setFailedLogin("*Maaf, Username/Password yang anda masukan salah, silahkan coba lagi!");
         }
     };
+    const openPopup = (url) => {
+        const width = 500;
+        const height = 600;
+
+        const left = window.screenX + (window.innerWidth - width) / 2;
+        const top = window.screenY + (window.innerHeight - height) / 2;
+
+        window.open(
+            url,
+            "Google OAuth",
+            `width=${width},height=${height},top=${top},left=${left}`
+        );
+    };
     useEffect(() => {
         const savedName = localStorage.getItem("remember_name");
         const savedPw = localStorage.getItem("remember_password");
@@ -113,6 +125,36 @@ function SignUp() {
             setPassword(savedPw);
             setRememberMe(true);
         }
+        const params = new URLSearchParams(window.location.search);
+        const error = params.get("error");
+
+        if (error === "cancelled") {
+            console.log("User cancel login");
+            window.close();
+        }
+
+        const handleMessage = (event) => {
+            if (!event.origin.includes("localhost")) return;
+
+            const { token } = event.data;
+
+            if (token) {
+                localStorage.setItem("token", token);
+                console.log("Google Token:", token);
+
+                window.location.href = "/auth-check";
+            }
+
+            if (event.data?.error) {
+                console.log("Error:", event.data.error);
+            }
+        };
+
+        window.addEventListener("message", handleMessage);
+
+        return () => {
+            window.removeEventListener("message", handleMessage);
+        };
     }, []);
 
 
@@ -248,11 +290,11 @@ function SignUp() {
                                         viewBox="0 0 24 24"
                                         fill="none"
                                         stroke="currentColor"
-                                        stroke-width="1.25"
+                                        strokeWidth="1.25"
                                         className="text-[#B3B3B3] mr-2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        class="icon icon-tabler icons-tabler-outline icon-tabler-mail">
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        className="icon icon-tabler icons-tabler-outline icon-tabler-mail">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                                         <path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10" />
                                         <path d="M3 7l9 6l9 -6" />
@@ -294,7 +336,7 @@ function SignUp() {
 
                                 <div className="flex-1 border-t border-[#BFC0C0]"></div>
                             </div>
-                            <button
+                            <button onClick={() => openPopup("http://localhost:5000/auth/google/register")}
                                 type="button"
                                 className="flex items-center justify-center gap-3 w-full border border-gray-300 rounded-lg p-3 text-[#616161] hover:bg-gray-50 transition"
                             >

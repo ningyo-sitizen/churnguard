@@ -10,7 +10,7 @@ export default function LoginSuccess() {
       setAvatarSrc(
         user.avatar || "https://via.placeholder.com/100"
       );
-    }
+          }
   }, [user]);
 
   if (!user) return <p>Loading...</p>;
