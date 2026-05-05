@@ -146,6 +146,7 @@ exports.sendToPython = async (req, res) => {
 
   try {
     filePath = req.file.path;
+        
 
     const form = new FormData();
     const fileStream = fs.createReadStream(filePath);
