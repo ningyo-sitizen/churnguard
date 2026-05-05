@@ -39,7 +39,7 @@ async def test_upload(file: UploadFile = File(...)):
             "CustomerID","Gender","ParentalControl","SubtitlesEnabled",
             "PaperlessBilling","GenrePreference","ContentType",
             "DeviceRegistered","PaymentMethod","SubscriptionType",
-            "MultiDeviceAccess"
+            "MultiDeviceAccess","email"
         ]
 
         df.drop(columns=drop_cols, inplace=True)
@@ -91,6 +91,10 @@ async def test_upload(file: UploadFile = File(...)):
         result_df["Segment"] = result_df["Cluster"].map(cluster_map)
         
         print(result_df.head(2))
+        print("====kolom=====")
+        print(result_df.columns)
+        print("====info type=====")
+        print(result_df.info())
 
         return {
             "status": "success",

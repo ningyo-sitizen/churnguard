@@ -7,7 +7,7 @@ exports.validateCSV = (req, res) => {
   const filePath = req.file.path;
 
   const expected = [
-    "AccountAge", "MonthlyCharges", "TotalCharges", "SubscriptionType",
+    "AccountAge", "email", "MonthlyCharges", "TotalCharges", "SubscriptionType",
     "PaymentMethod", "PaperlessBilling", "ContentType", "MultiDeviceAccess",
     "DeviceRegistered", "ViewingHoursPerWeek", "AverageViewingDuration",
     "ContentDownloadsPerMonth", "GenrePreference", "UserRating",
@@ -102,16 +102,12 @@ exports.validateCSV = (req, res) => {
 
         if (missingColumns.includes(col)) {
           status = "❌ column missing";
-        }
-
-        else if (
+        } else if (
           orderMismatch &&
           actualHeaders.indexOf(col) !== expected.indexOf(col)
         ) {
           status = "⚠ order mismatch";
-        }
-
-        else if (errors.some(e => e.column === col)) {
+        } else if (errors.some(e => e.column === col)) {
           status = "❌ missing value";
         }
 
@@ -122,6 +118,10 @@ exports.validateCSV = (req, res) => {
           sample: data.values,
           status
         };
+      });
+
+      fs.unlink(filePath, (err) => {
+        if (err) console.error("Gagal hapus file validate:", err);
       });
 
       return res.json({
@@ -142,22 +142,26 @@ exports.validateCSV = (req, res) => {
 
 
 exports.sendToPython = async (req, res) => {
+  let filePath;
+
   try {
-    const filePath = req.file.path;
+    filePath = req.file.path;
 
     const form = new FormData();
-    form.append("file", fs.createReadStream(filePath));
+    const fileStream = fs.createReadStream(filePath);
+
+    form.append("file", fileStream);
 
     const pyRes = await axios.post(
       "http://localhost:8000/test-upload",
       form,
-      {
-        headers: form.getHeaders()
-      }
+      { headers: form.getHeaders() }
     );
 
+    await new Promise((resolve) => setTimeout(resolve, 200));
+
     fs.unlink(filePath, (err) => {
-      if (err) console.error("Gagal hapus file:", err);
+      if (err) console.error("Delete error:", err);
     });
 
     return res.json({
@@ -166,10 +170,9 @@ exports.sendToPython = async (req, res) => {
     });
 
   } catch (err) {
-    fs.unlink(filePath, (err) => {
-      if (err) console.error("Gagal hapus file:", err);
-    });
-    console.error("Python error:", err.message);
+    if (filePath && fs.existsSync(filePath)) {
+      fs.unlink(filePath, () => { });
+    }
 
     return res.status(500).json({
       message: "Gagal kirim ke Python"

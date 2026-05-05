@@ -20,6 +20,20 @@ export default function Prediction() {
         status: false
     });
 
+    const resetAll = () => {
+    setFile(null);
+    setHeaderError(null);
+    setMissingData([]);
+    setTotalError(0);
+    setColumnSummary([]);
+    setHasChecked(false);
+    setshowNext(false);
+    setOpenDetail({
+        header: false,
+        missing: false,
+        status: false
+    });
+};
     if (!user) return <p>Loading...</p>;
 
     const toggle = (key) => {
@@ -101,7 +115,7 @@ export default function Prediction() {
             setColumnSummary(res.data.columnSummary || []);
             setHasChecked(true);
 
-
+            resetAll();
 
         } catch (err) {
             console.log("Upload error:", err);
