@@ -28,6 +28,7 @@ async def test_upload(file: UploadFile = File(...)):
         content = await file.read()
         df = pd.read_csv(BytesIO(content))
         df = df.round(2)
+        df_full = df.copy()
 
         df['user_engagement'] = (
             df['ViewingHoursPerWeek'] * 0.4 +
@@ -81,7 +82,7 @@ async def test_upload(file: UploadFile = File(...)):
             cluster_order[2]: "Experienced user"
         }
 
-        result_df = df.copy()
+        result_df = df_full.copy()
 
         result_df["Probability"] = proba
         result_df["Score"] = score
@@ -90,12 +91,6 @@ async def test_upload(file: UploadFile = File(...)):
         result_df["Cluster"] = cluster
         result_df["Segment"] = result_df["Cluster"].map(cluster_map)
         
-        print(result_df.head(2))
-        print("====kolom=====")
-        print(result_df.columns)
-        print("====info type=====")
-        print(result_df.info())
-
         return {
             "status": "success",
             "rows": len(result_df),

@@ -109,11 +109,6 @@ export default function Prediction() {
                 }
             );
 
-            setHeaderError(res.data.headerError);
-            setMissingData(res.data.missingData || []);
-            setTotalError(res.data.totalError || 0);
-            setColumnSummary(res.data.columnSummary || []);
-            setHasChecked(true);
 
             resetAll();
 
