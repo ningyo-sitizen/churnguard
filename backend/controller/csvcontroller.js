@@ -7,12 +7,12 @@ exports.validateCSV = (req, res) => {
   const filePath = req.file.path;
 
   const expected = [
-    "AccountAge","MonthlyCharges","TotalCharges","SubscriptionType",
-    "PaymentMethod","PaperlessBilling","ContentType","MultiDeviceAccess",
-    "DeviceRegistered","ViewingHoursPerWeek","AverageViewingDuration",
-    "ContentDownloadsPerMonth","GenrePreference","UserRating",
-    "SupportTicketsPerMonth","Gender","WatchlistSize",
-    "ParentalControl","SubtitlesEnabled","CustomerID"
+    "AccountAge", "MonthlyCharges", "TotalCharges", "SubscriptionType",
+    "PaymentMethod", "PaperlessBilling", "ContentType", "MultiDeviceAccess",
+    "DeviceRegistered", "ViewingHoursPerWeek", "AverageViewingDuration",
+    "ContentDownloadsPerMonth", "GenrePreference", "UserRating",
+    "SupportTicketsPerMonth", "Gender", "WatchlistSize",
+    "ParentalControl", "SubtitlesEnabled", "CustomerID"
   ];
 
   let rowNumber = 0;
@@ -156,12 +156,19 @@ exports.sendToPython = async (req, res) => {
       }
     );
 
+    fs.unlink(filePath, (err) => {
+      if (err) console.error("Gagal hapus file:", err);
+    });
+
     return res.json({
       message: "Kirim ke Python berhasil",
       python: pyRes.data
     });
 
   } catch (err) {
+    fs.unlink(filePath, (err) => {
+      if (err) console.error("Gagal hapus file:", err);
+    });
     console.error("Python error:", err.message);
 
     return res.status(500).json({
