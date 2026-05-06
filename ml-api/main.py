@@ -1,9 +1,12 @@
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File,Form
 import pandas as pd
 import numpy as np
 import pickle
 import os
 from io import BytesIO
+from config import DB_CONFIG
+import mysql.connector
+from fastapi import HTTPException
 
 app = FastAPI()
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -22,14 +25,38 @@ def test():
     return {"status": "success"}
 
 @app.post("/test-upload")
-async def test_upload(file: UploadFile = File(...)):
-
+async def test_upload(file: UploadFile = File(...),email: str = Form(...),filename: str = Form(...)):
+    conn = mysql.connector.connect(**DB_CONFIG)
     try:
         content = await file.read()
         df = pd.read_csv(BytesIO(content))
         df = df.round(2)
         df_full = df.copy()
-
+        
+        cursor = conn.cursor(dictionary=True)
+        
+        cursor.execute(
+            "SELECT id from users where email = %s ",(email,)
+        )
+        data = cursor.fetchone()
+        if not data:
+         raise HTTPException(
+            status_code=404,
+            detail="User tidak ditemukan"
+        )
+        id =  data["id"]
+        
+        cursor.execute(
+            """
+            INSERT INTO prediction_list(filename,user_id,user_email,status)
+            values (%s, %s, %s, %s)
+            """,(filename,id,email,"active")
+        )
+        predic_id = cursor.lastrowid
+        
+        conn.commit()
+        print(predic_id)
+                
         df['user_engagement'] = (
             df['ViewingHoursPerWeek'] * 0.4 +
             df['ContentDownloadsPerMonth'] * 0.3 +
@@ -90,6 +117,62 @@ async def test_upload(file: UploadFile = File(...)):
         result_df["Prediction"] = pred
         result_df["Cluster"] = cluster
         result_df["Segment"] = result_df["Cluster"].map(cluster_map)
+        
+        data_to_insert = []
+        for _,row in result_df.iterrows():
+            data_to_insert.append((
+                predic_id,
+                int(row["AccountAge"]),
+                row.get("email"),
+                float(row["MonthlyCharges"]),
+                float(row["TotalCharges"]),
+                float(row["ViewingHoursPerWeek"]),
+                 float(row["AverageViewingDuration"]),
+                int(row["ContentDownloadsPerMonth"]),
+                float(row["UserRating"]),
+                int(row["SupportTicketsPerMonth"]),
+                int(row["WatchlistSize"]),
+                float(row["Probability"]),
+                int(row["Score"]),
+                str(row["Risk"]),
+                int(row["Prediction"]),
+                int(row["Cluster"]),
+                str(row["Segment"]),
+                None,
+                None
+            ))
+            
+            insert_query = """
+                INSERT INTO prediction_detail (
+                prediction_id,
+                AccountAge,
+                email,
+                MonthlyCharges,
+                TotalCharges,
+                ViewingHoursPerWeek,
+                AverageViewingDuration,
+                ContentDownloadsPerMonth,
+                UserRating,
+                SupportTicketsPerMonth,
+                WatchlistSize,
+                Probability,
+                Score,
+                Risk,
+                Prediction,
+                Cluster,
+                Segment,
+                email_sent,
+                email_sent_at
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """
+            
+            chunk_size = 1000
+
+        for i in range(0, len(data_to_insert), chunk_size):
+            chunk = data_to_insert[i:i+chunk_size]
+            cursor.executemany(insert_query, chunk)
+            conn.commit()
         
         return {
             "status": "success",

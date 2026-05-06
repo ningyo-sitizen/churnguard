@@ -2,8 +2,10 @@ const csv = require("csv-parser");
 const fs = require("fs");
 const FormData = require("form-data");
 const axios = require("axios");
+const jwt = require("jsonwebtoken");
+const churnguard_con = require("../config/db");
 
-exports.validateCSV = (req, res) => {
+exports.validateCSV = async(req, res) => {
   const filePath = req.file.path;
 
   const expected = [
@@ -23,7 +25,30 @@ exports.validateCSV = (req, res) => {
   let actualHeaders = [];
   let missingColumns = [];
   let orderMismatch = false;
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).json({ message: "No token" });
+  }
 
+
+  const token = authHeader.split(" ")[1];
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  const email = decoded.email;
+
+  try {
+
+    const [rows] = await churnguard_con.query("SELECT * FROM prediction_list where user_email = ? AND status = ?", [email, "active"])
+
+    if (rows.length > 0) {
+        fs.unlink(filePath, (err) => {
+        if (err) console.error("Gagal hapus file validate:", err);
+      });
+      return res.status(409).json({ message: "anda masih memiliki prediction mohon save atau tidak untuk membuat prediction baru" })
+
+    }
+  } catch (err) {
+    console.error("ERROR:", err.message);
+  }
   fs.createReadStream(filePath)
     .pipe(csv())
 
@@ -145,25 +170,42 @@ exports.sendToPython = async (req, res) => {
   let filePath;
 
   try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).json({ message: "No token" });
+    }
+
+
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const email = decoded.email;
+
+    const [rows] = await churnguard_con.query("SELECT * FROM prediction_list where user_email = ? AND status = ?", [email, "active"])
+
+    if (rows.length > 0) {
+      return res.status(409).json({ message: "anda masih memiliki prediction mohon save atau tidak untuk membuat prediction baru" })
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+
     filePath = req.file.path;
-        
+    const originalName = req.file.originalname;
 
     const form = new FormData();
-    const fileStream = fs.createReadStream(filePath);
+    form.append("file", fs.createReadStream(filePath));
+    form.append("email", email);
+    form.append("filename", originalName);
 
-    form.append("file", fileStream);
-
+    // 🚀 SEND TO PYTHON
     const pyRes = await axios.post(
       "http://localhost:8000/test-upload",
       form,
       { headers: form.getHeaders() }
     );
 
-    await new Promise((resolve) => setTimeout(resolve, 200));
-
-    fs.unlink(filePath, (err) => {
-      if (err) console.error("Delete error:", err);
-    });
+    fs.unlink(filePath, () => { });
 
     return res.json({
       message: "Kirim ke Python berhasil",
@@ -171,12 +213,15 @@ exports.sendToPython = async (req, res) => {
     });
 
   } catch (err) {
+    console.error("ERROR:", err.message);
+
     if (filePath && fs.existsSync(filePath)) {
       fs.unlink(filePath, () => { });
     }
 
     return res.status(500).json({
-      message: "Gagal kirim ke Python"
+      message: "Gagal kirim ke Python",
+      error: err.message
     });
   }
 };

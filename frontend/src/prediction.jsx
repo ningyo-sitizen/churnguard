@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useAuth } from "../utils/auth";
 import { useState } from "react";
+import { jwtDecode } from "jwt-decode";
 
 export default function Prediction() {
     const user = useAuth();
@@ -101,11 +102,16 @@ export default function Prediction() {
             formData.append("file", file);
 
             const token = localStorage.getItem("token");
+            const decode = jwtDecode(token)
+
 
             const res = await axios.post(
                 "http://localhost:5000/csv/upload-csv-py",
                 formData,
                 {
+                    headers:{
+                        Authorization: `Bearer ${token}`
+                    }
                 }
             );
 
