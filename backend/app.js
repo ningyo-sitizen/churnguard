@@ -19,6 +19,7 @@ app.use(passport.initialize());
 app.use("/csv", require("./routes/csvRoutes"));
 app.use("/auth", googlelogin);
 app.use("/auth", auth_normal);
+app.use("/prediction", require("./routes/predictRoutes.js"))
 
 app.use("/test", require("./routes/testRoutes.js"));
 

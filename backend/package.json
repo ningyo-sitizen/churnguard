@@ -21,6 +21,7 @@
     "express": "^5.2.1",
     "form-data": "^4.0.5",
     "fs": "^0.0.1-security",
+    "iconv-lite": "^0.7.2",
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.1.1",
     "mysql": "^2.18.1",

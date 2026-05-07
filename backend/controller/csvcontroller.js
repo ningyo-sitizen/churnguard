@@ -4,17 +4,34 @@ const FormData = require("form-data");
 const axios = require("axios");
 const jwt = require("jsonwebtoken");
 const churnguard_con = require("../config/db");
+const iconv = require("iconv-lite");
 
-exports.validateCSV = async(req, res) => {
+exports.validateCSV = async (req, res) => {
+
   const filePath = req.file.path;
 
   const expected = [
-    "AccountAge", "email", "MonthlyCharges", "TotalCharges", "SubscriptionType",
-    "PaymentMethod", "PaperlessBilling", "ContentType", "MultiDeviceAccess",
-    "DeviceRegistered", "ViewingHoursPerWeek", "AverageViewingDuration",
-    "ContentDownloadsPerMonth", "GenrePreference", "UserRating",
-    "SupportTicketsPerMonth", "Gender", "WatchlistSize",
-    "ParentalControl", "SubtitlesEnabled", "CustomerID"
+    "AccountAge",
+    "email",
+    "MonthlyCharges",
+    "TotalCharges",
+    "SubscriptionType",
+    "PaymentMethod",
+    "PaperlessBilling",
+    "ContentType",
+    "MultiDeviceAccess",
+    "DeviceRegistered",
+    "ViewingHoursPerWeek",
+    "AverageViewingDuration",
+    "ContentDownloadsPerMonth",
+    "GenrePreference",
+    "UserRating",
+    "SupportTicketsPerMonth",
+    "Gender",
+    "WatchlistSize",
+    "ParentalControl",
+    "SubtitlesEnabled",
+    "CustomerID"
   ];
 
   let rowNumber = 0;
@@ -25,144 +42,313 @@ exports.validateCSV = async(req, res) => {
   let actualHeaders = [];
   let missingColumns = [];
   let orderMismatch = false;
+
   const authHeader = req.headers.authorization;
+
   if (!authHeader) {
-    return res.status(401).json({ message: "No token" });
+    return res.status(401).json({
+      message: "No token"
+    });
   }
 
-
   const token = authHeader.split(" ")[1];
-  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+  const decoded = jwt.verify(
+    token,
+    process.env.JWT_SECRET
+  );
+
   const email = decoded.email;
 
   try {
 
-    const [rows] = await churnguard_con.query("SELECT * FROM prediction_list where user_email = ? AND status = ?", [email, "active"])
+    const [rows] =
+      await churnguard_con.query(
+        `
+        SELECT *
+        FROM prediction_list
+        WHERE user_email = ?
+        AND status = ?
+        `,
+        [email, "active"]
+      );
 
     if (rows.length > 0) {
-        fs.unlink(filePath, (err) => {
-        if (err) console.error("Gagal hapus file validate:", err);
+
+      fs.unlink(filePath, () => { });
+
+      return res.status(409).json({
+        message:
+          "anda masih memiliki prediction aktif"
       });
-      return res.status(409).json({ message: "anda masih memiliki prediction mohon save atau tidak untuk membuat prediction baru" })
 
     }
-  } catch (err) {
-    console.error("ERROR:", err.message);
-  }
-  fs.createReadStream(filePath)
-    .pipe(csv())
 
-    .on("headers", (headers) => {
-      const clean = headers.map(h => h.trim());
+    const raw =
+      fs.readFileSync(filePath);
 
-      actualHeaders = clean;
+    let text;
+    if (
+      raw[0] === 0xFF &&
+      raw[1] === 0xFE
+    ) {
 
-      missingColumns = expected.filter(col => !clean.includes(col));
-      orderMismatch = JSON.stringify(clean) !== JSON.stringify(expected);
+      text = iconv.decode(
+        raw,
+        "utf16le"
+      );
 
-      if (missingColumns.length > 0) {
-        headerError = {
-          type: "missing_columns",
-          missing: missingColumns
-        };
-      }
+    }
 
-      if (orderMismatch) {
-        headerError = {
-          type: "order_mismatch",
-          expected,
-          got: clean
-        };
-      }
+    else {
 
-      clean.forEach(col => {
-        columnStats[col] = {
-          values: [],
-          unique: new Set(),
-          type: "unknown"
-        };
+      text = raw.toString("utf8");
+
+    }
+
+    const lines = text
+      .split(/\r?\n/)
+      .filter(line => line.trim());
+
+    if (lines.length === 0) {
+
+      fs.unlink(filePath, () => { });
+
+      return res.status(400).json({
+        message: "CSV kosong"
       });
-    })
 
-    .on("data", (row) => {
+    }
+
+    actualHeaders = lines[0]
+      .split(",")
+      .map(h =>
+        h.trim()
+          .replace(/^\uFEFF/, "")
+      );
+
+    missingColumns =
+      expected.filter(
+        col =>
+          !actualHeaders.includes(col)
+      );
+
+    orderMismatch =
+      JSON.stringify(actualHeaders)
+      !== JSON.stringify(expected);
+
+    if (missingColumns.length > 0) {
+
+      headerError = {
+        type: "missing_columns",
+        missing: missingColumns
+      };
+
+    }
+    if (orderMismatch) {
+
+      headerError = {
+        type: "order_mismatch",
+        expected,
+        got: actualHeaders
+      };
+
+    }
+    actualHeaders.forEach(col => {
+
+      columnStats[col] = {
+        values: [],
+        unique: new Set(),
+        type: "unknown"
+      };
+
+    });
+    for (
+      let i = 1;
+      i < lines.length;
+      i++
+    ) {
+
+      const line = lines[i];
+
+      if (!line.trim()) continue;
+
       rowNumber++;
 
-      for (const key in row) {
-        const value = row[key]?.trim();
+      if (rowNumber > 10000) {
 
-        if (!value) {
-          errors.push({
-            row: rowNumber + 1,
-            column: key
-          });
-        }
+        fs.unlink(filePath, () => { });
 
-        if (columnStats[key]) {
-          if (columnStats[key].values.length < 3) {
-            columnStats[key].values.push(value);
-          }
+        return res.status(400).json({
+          message:
+            "Maksimal 10.000 rows"
+        });
 
-          columnStats[key].unique.add(value);
-
-          if (!isNaN(value) && value !== "") {
-            columnStats[key].type = "number";
-          } else if (value === "true" || value === "false") {
-            columnStats[key].type = "boolean";
-          } else {
-            columnStats[key].type = "string";
-          }
-        }
       }
-    })
 
-    .on("end", () => {
-      const columnSummary = expected.map((col) => {
-        const data = columnStats[col] || {
-          values: [],
-          unique: new Set(),
-          type: "-"
-        };
+      const values = line.split(",");
 
-        let status = "✅ data valid";
+      actualHeaders.forEach(
+        (key, index) => {
 
-        if (missingColumns.includes(col)) {
-          status = "❌ column missing";
-        } else if (
-          orderMismatch &&
-          actualHeaders.indexOf(col) !== expected.indexOf(col)
+          const value =
+            values[index]?.trim();
+          if (
+            value === undefined ||
+            value === null ||
+            value === ""
+          ) {
+
+            errors.push({
+              row: i + 1,
+              column: key,
+              message: `${key} kosong`
+            });
+
+          }
+
+          if (columnStats[key]) {
+
+            if (
+              columnStats[key]
+                .values.length < 3
+            ) {
+
+              columnStats[key]
+                .values.push(value);
+
+            }
+
+            columnStats[key]
+              .unique.add(value);
+
+            if (
+              !isNaN(value) &&
+              value !== ""
+            ) {
+
+              columnStats[key]
+                .type = "number";
+
+            } else if (
+              value === "true" ||
+              value === "false"
+            ) {
+
+              columnStats[key]
+                .type = "boolean";
+
+            } else {
+
+              columnStats[key]
+                .type = "string";
+
+            }
+          }
+
+        }
+      );
+
+    }
+
+    // =========================
+    // SUMMARY
+    // =========================
+
+    const columnSummary =
+      expected.map((col) => {
+
+        const data =
+          columnStats[col] || {
+            values: [],
+            unique: new Set(),
+            type: "-"
+          };
+
+        let status =
+          "✅ data valid";
+
+        if (
+          missingColumns.includes(col)
         ) {
-          status = "⚠ order mismatch";
-        } else if (errors.some(e => e.column === col)) {
-          status = "❌ missing value";
+
+          status =
+            "❌ column missing";
+
+        }
+
+        else if (
+          orderMismatch &&
+          actualHeaders.indexOf(col)
+          !== expected.indexOf(col)
+        ) {
+
+          status =
+            "⚠ order mismatch";
+
+        }
+
+        else if (
+          errors.some(
+            e => e.column === col
+          )
+        ) {
+
+          status =
+            "❌ missing value";
+
         }
 
         return {
           column: col,
           type: data.type,
-          uniqueCount: data.unique.size,
+          uniqueCount:
+            data.unique.size,
           sample: data.values,
           status
         };
+
       });
 
-      fs.unlink(filePath, (err) => {
-        if (err) console.error("Gagal hapus file validate:", err);
-      });
+    fs.unlink(filePath, () => { });
 
-      return res.json({
-        headerError,
-        missingData: errors,
-        totalError: errors.length,
-        columnSummary
-      });
-    })
-
-    .on("error", (err) => {
-      return res.status(500).json({
-        message: "Error parsing CSV",
-        error: err.message
-      });
+    return res.json({
+      status: "success",
+      totalRows: rowNumber,
+      totalError: errors.length,
+      headerError,
+      missingData: errors,
+      columnSummary
     });
+
+  }
+
+  catch (err) {
+
+    console.error(
+      "ERROR:",
+      err.message
+    );
+
+    if (
+      filePath &&
+      fs.existsSync(filePath)
+    ) {
+
+      fs.unlink(
+        filePath,
+        () => { }
+      );
+
+    }
+
+    return res.status(500).json({
+      status: "error",
+      message: err.message
+    });
+
+  }
+
 };
 
 
@@ -198,7 +384,6 @@ exports.sendToPython = async (req, res) => {
     form.append("email", email);
     form.append("filename", originalName);
 
-    // 🚀 SEND TO PYTHON
     const pyRes = await axios.post(
       "http://localhost:8000/test-upload",
       form,

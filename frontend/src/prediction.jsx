@@ -1,358 +1,155 @@
 import axios from "axios";
 import { useAuth } from "../utils/auth";
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
 
 export default function Prediction() {
-    const user = useAuth();
 
-    const [file, setFile] = useState(null);
-    const [headerError, setHeaderError] = useState(null);
-    const [missingData, setMissingData] = useState([]);
-    const [totalError, setTotalError] = useState(0);
-    const [columnSummary, setColumnSummary] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [hasChecked, setHasChecked] = useState(false);
-    const [showNext, setshowNext] = useState(false);
+  const user = useAuth();
 
-    const [openDetail, setOpenDetail] = useState({
-        header: false,
-        missing: false,
-        status: false
-    });
+  const [avatarSrc, setAvatarSrc] = useState(null);
 
-    const resetAll = () => {
-    setFile(null);
-    setHeaderError(null);
-    setMissingData([]);
-    setTotalError(0);
-    setColumnSummary([]);
-    setHasChecked(false);
-    setshowNext(false);
-    setOpenDetail({
-        header: false,
-        missing: false,
-        status: false
-    });
-};
-    if (!user) return <p>Loading...</p>;
+  const [predictionData, setPredictionData] = useState([]);
 
-    const toggle = (key) => {
-        setOpenDetail({
-            header: false,
-            missing: false,
-            status: false,
-            [key]: !openDetail[key]
-        });
-    };
+  useEffect(() => {
 
-    const handleUpload = async () => {
-        if (!file) return alert("Pilih file dulu");
+    if (user) {
 
-        try {
-            setLoading(true);
+      setAvatarSrc(
+        user.avatar || "https://via.placeholder.com/100"
+      );
 
-            const formData = new FormData();
-            formData.append("file", file);
+      fetchPredictionData();
+    }
 
-            const token = localStorage.getItem("token");
+  }, [user]);
 
-            const res = await axios.post(
-                "http://localhost:5000/csv/upload-csv",
-                formData,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                }
-            );
+  const fetchPredictionData = async () => {
 
-            setHeaderError(res.data.headerError);
-            setMissingData(res.data.missingData || []);
-            setTotalError(res.data.totalError || 0);
-            setColumnSummary(res.data.columnSummary || []);
-            setHasChecked(true);
+    try {
 
-            if (res.data.headerError === null && res.data.missingData.length === 0) {
-                console.log("benar");
-                setshowNext(true)
-                console.log(file)
-            }
-            if (res.data.headerError) {
-                console.log("salah karena header")
-            }
-            if (res.data.missingData?.length > 0) {
-                console.log("salah karena missing data")
-            }
+      const token = localStorage.getItem("token");
 
-        } catch (err) {
-            console.log("Upload error:", err);
-        } finally {
-            setLoading(false);
+      if (!token) {
+        console.warn("⚠️ No token found in localStorage!");
+        return;
+      }
+
+      const response = await fetch(
+        "http://localhost:5000/prediction/prediction-data",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          }
         }
-    };
+      );
 
-    const handleUploadpy = async () => {
-        if (!file) return alert("Pilih file dulu");
+      const data = await response.json();
 
-        try {
-            setLoading(true);
+      console.log(data);
 
-            const formData = new FormData();
-            formData.append("file", file);
+      if (data.status === "success") {
+        setPredictionData(data.data);
+      }
 
-            const token = localStorage.getItem("token");
-            const decode = jwtDecode(token)
+    } catch (error) {
 
+      console.error(
+        "❌ Error fetching prediction data:",
+        error
+      );
 
-            const res = await axios.post(
-                "http://localhost:5000/csv/upload-csv-py",
-                formData,
-                {
-                    headers:{
-                        Authorization: `Bearer ${token}`
-                    }
-                }
-            );
+    }
 
+  };
 
-            resetAll();
+  if (!user) return <p>Loading...</p>;
 
-        } catch (err) {
-            console.log("Upload error:", err);
-        } finally {
-            setLoading(false);
-        }
-    };
-    const isValid =
-        hasChecked && !headerError && missingData.length === 0;
+  return (
+    <div style={{ padding: "20px" }}>
 
-    const grouped = missingData.reduce((acc, curr) => {
-        if (!acc[curr.row]) acc[curr.row] = [];
-        acc[curr.row].push(curr.column);
-        return acc;
-    }, {});
+      <h2>Login Success</h2>
 
-    return (
-        <div style={container}>
-            <h2>Upload CSV</h2>
+      <p>Email: {user.email}</p>
+      <p>Name: {user.name}</p>
 
-            {!hasChecked && (
-                <div style={uploadBox}>
-                    <input
-                        type="file"
-                        accept=".csv"
-                        onChange={(e) => setFile(e.target.files[0])}
-                    />
+      {user.googleId && (
+        <p>Google ID: {user.googleId}</p>
+      )}
 
-                    <button onClick={handleUpload} disabled={loading}>
-                        {loading ? "Processing..." : "Upload & Validate"}
-                    </button>
-                </div>
-            )}
-            <div>
-                {showNext && (
-                <div>
-                    <button onClick={handleUploadpy}>
-                        next
-                    </button>
-                </div>
-            )}
-            </div>
+      <img
+        src={avatarSrc}
+        alt="profile"
+        width={100}
+        onError={() => {
+          setAvatarSrc(
+            "https://via.placeholder.com/100"
+          );
+        }}
+      />
 
-            {hasChecked && (
-                <>
-                    <div style={cardGrid}>
+      <div>
+        <a href="/prediction">prediction</a>
+      </div>
 
-                        <div style={cardError}>
-                            <h3>Header</h3>
+      <hr />
 
-                            {!headerError ? (
-                                <p>✅ Valid</p>
-                            ) : (
-                                <p>❌ Error ditemukan</p>
-                            )}
+      <h2>Prediction Table</h2>
 
-                            <button onClick={() => toggle("header")}>
-                                {openDetail.header ? "Tutup" : "Lihat Detail"}
-                            </button>
+      <div style={{ overflowX: "auto" }}>
 
-                            {openDetail.header && headerError && (
-                                <pre style={detailBox}>
-                                    {JSON.stringify(headerError, null, 2)}
-                                </pre>
-                            )}
-                        </div>
+        <table
+          border="1"
+          cellPadding="10"
+          style={{
+            borderCollapse: "collapse",
+            width: "100%"
+          }}
+        >
 
-                        <div style={cardWarning}>
-                            <h3>Missing Data</h3>
+          <thead>
 
-                            {missingData.length === 0 ? (
-                                <p>✅ Tidak ada missing</p>
-                            ) : (
-                                <p>{totalError} error ditemukan</p>
-                            )}
+            <tr>
+              <th>detail_id</th>
+              <th>prediction_id</th>
+              <th>AccountAge</th>
+              <th>email</th>
+              <th>TotalCharges</th>
+              <th>Score</th>
+              <th>Risk</th>
+              <th>Prediction</th>
+              <th>Segment</th>
+              <th>detail</th>
+            </tr>
 
-                            <button onClick={() => toggle("missing")}>
-                                {openDetail.missing ? "Tutup" : "Lihat Detail"}
-                            </button>
+          </thead>
 
-                            {openDetail.missing && missingData.length > 0 && (
-                                <div style={detailBox}>
-                                    {Object.entries(grouped).map(([row, cols]) => (
-                                        <div key={row}>
-                                            <strong>Row {row}</strong>
-                                            <ul>
-                                                {cols.map((c, i) => (
-                                                    <li key={i}>{c}</li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                        <div style={isValid ? cardSuccess : cardNeutral}>
-                            <h3>Status</h3>
+          <tbody>
 
-                            {isValid ? (
-                                <p>✅ Data siap diproses</p>
-                            ) : (
-                                <p>⚠ Perlu diperbaiki</p>
-                            )}
+            {predictionData.map((item, index) => (
 
-                            <button onClick={() => toggle("status")}>
-                                {openDetail.status ? "Tutup" : "Lihat Detail"}
-                            </button>
+              <tr key={index}>
+                <td>{item.detail_id}</td>
+                <td>{item.prediction_id}</td>
+                <td>{item.AccountAge}</td>
+                <td>{item.MonthlyCharges}</td>
+                <td>{item.TotalCharges}</td>
+                <td>{item.Score}</td>
+                <td>{item.Risk}</td>
+                <td>{item.Prediction}</td>
+                <td>{item.Segment}</td>
+              </tr>
 
-                            {openDetail.status && (
-                                <div style={detailBox}>
-                                    {isValid
-                                        ? "Semua validasi lolos"
-                                        : "Masih ada error pada header atau data"}
-                                </div>
-                            )}
-                        </div>
-                    </div>
+            ))}
 
-                    {columnSummary.length > 0 && (
-                        <div style={tableWrapper}>
-                            <h3>Column Summary</h3>
+          </tbody>
 
-                            <table style={table}>
-                                <thead>
-                                    <tr>
-                                        <th>Column</th>
-                                        <th>Type</th>
-                                        <th>Unique</th>
-                                        <th>Sample</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
+        </table>
 
-                                <tbody>
-                                    {columnSummary.map((col, i) => (
-                                        <tr key={i}>
-                                            <td>{col.column}</td>
-                                            <td>{col.type}</td>
-                                            <td>{col.uniqueCount}</td>
-                                            <td>{col.sample.join(", ")}</td>
-                                            <td>{col.status}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
+      </div>
 
-                    <button
-                        style={{ marginTop: 20 }}
-                        onClick={() => {
-                            setHasChecked(false);
-                            setFile(null);
-                            setHeaderError(null);
-                            setMissingData([]);
-                            setTotalError(0);
-                            setColumnSummary([]);
-                            setOpenDetail({
-                                header: false,
-                                missing: false,
-                                status: false
-                            });
-                        }}
-                    >
-                        Upload File Baru
-                    </button>
-                </>
-            )}
-        </div>
-    );
+    </div>
+  );
 }
-
-
-const container = {
-    padding: 24,
-    fontFamily: "Inter, sans-serif"
-};
-
-const uploadBox = {
-    padding: 20,
-    border: "1px dashed #aaa",
-    borderRadius: 10,
-    marginBottom: 20
-};
-
-const cardGrid = {
-    display: "grid",
-    gridTemplateColumns: "repeat(3, 1fr)",
-    gap: 16,
-    marginBottom: 20
-};
-
-const baseCard = {
-    padding: 16,
-    borderRadius: 10,
-    minHeight: 140
-};
-
-const cardError = {
-    ...baseCard,
-    background: "#ffe5e5",
-    border: "1px solid #ff4d4d"
-};
-
-const cardWarning = {
-    ...baseCard,
-    background: "#fff8e1",
-    border: "1px solid #ffc107"
-};
-
-const cardSuccess = {
-    ...baseCard,
-    background: "#e6ffed",
-    border: "1px solid #28a745"
-};
-
-const cardNeutral = {
-    ...baseCard,
-    background: "#f1f1f1",
-    border: "1px solid #ccc"
-};
-
-const detailBox = {
-    marginTop: 10,
-    padding: 10,
-    background: "#fff",
-    borderRadius: 6,
-    fontSize: 13
-};
-
-const tableWrapper = {
-    marginTop: 20,
-    overflowX: "auto"
-};
-
-const table = {
-    width: "100%",
-    borderCollapse: "collapse"
-};

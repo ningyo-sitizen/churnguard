@@ -118,6 +118,8 @@ async def test_upload(file: UploadFile = File(...),email: str = Form(...),filena
         result_df["Cluster"] = cluster
         result_df["Segment"] = result_df["Cluster"].map(cluster_map)
         
+        result_df.info()
+        
         data_to_insert = []
         for _,row in result_df.iterrows():
             data_to_insert.append((
@@ -127,11 +129,15 @@ async def test_upload(file: UploadFile = File(...),email: str = Form(...),filena
                 float(row["MonthlyCharges"]),
                 float(row["TotalCharges"]),
                 float(row["ViewingHoursPerWeek"]),
-                 float(row["AverageViewingDuration"]),
+                float(row["AverageViewingDuration"]),
                 int(row["ContentDownloadsPerMonth"]),
                 float(row["UserRating"]),
                 int(row["SupportTicketsPerMonth"]),
                 int(row["WatchlistSize"]),
+                str(row["CustomerID"]),
+                str(row["ContentType"]),
+                str(row["GenrePreference"]),
+                str(row["Gender"]),
                 float(row["Probability"]),
                 int(row["Score"]),
                 str(row["Risk"]),
@@ -155,6 +161,10 @@ async def test_upload(file: UploadFile = File(...),email: str = Form(...),filena
                 UserRating,
                 SupportTicketsPerMonth,
                 WatchlistSize,
+                CustomerID,
+                ContentType,
+                GenrePreference,
+                Gender,
                 Probability,
                 Score,
                 Risk,
@@ -164,7 +174,7 @@ async def test_upload(file: UploadFile = File(...),email: str = Form(...),filena
                 email_sent,
                 email_sent_at
             )
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
             
             chunk_size = 1000

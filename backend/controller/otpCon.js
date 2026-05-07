@@ -12,6 +12,7 @@ exports.get_otp = async (req, res) => {
       return res.status(400).json({ message: "Email required" });
     }
     const [rows] = await churnguard_con.query(
+      
       "SELECT * FROM otp_codes WHERE email = ?",
       [email]
     );

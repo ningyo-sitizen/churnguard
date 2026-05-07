@@ -26,11 +26,13 @@ import Keterangan from "./Keterangan.jsx";
 import KeteranganSA from "./KeteranganSA.jsx";
 import HistoryApprovalDetail from "./HistoryApprovalDetail.jsx";
 import { NotificationProvider } from "./NotificationContext.jsx";
+import Validation from "./validation.jsx";
 
 export default function App() {
   return (
     <NotificationProvider>
       <Routes>
+        <Route path="/validation" element={<Validation />} />
         <Route path="/test" element={<TestAPI />} />
         <Route path="/login-success" element={<LoginSuccess />} />
         <Route path="/login-register" element={<LoginRegister />} />

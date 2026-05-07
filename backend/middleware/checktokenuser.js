@@ -2,7 +2,6 @@ const jwt = require("jsonwebtoken");
 const churnguard_con = require("../config/db");
 
 const verifyToken = async (req, res, next) => {
-    console.log("STEP 1 - masuk middleware");
   try {
     const token = req.headers.authorization?.split(" ")[1];
 
@@ -12,13 +11,11 @@ const verifyToken = async (req, res, next) => {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    console.log("STEP 2 - JWT OK");
 
     const [rows] = await churnguard_con.query(
       "SELECT * FROM users WHERE email = ?",
       [decoded.email]
     );
-    console.log("STEP 3 - query OK");
     const user = rows[0];
 
     if (!user) {
