@@ -2,9 +2,11 @@ import axios from "axios";
 import { useAuth } from "../utils/auth";
 import { useState,useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
+import { useNavigate } from "react-router-dom";
+
 
 export default function Prediction() {
-
+  const goto = useNavigate();
   const user = useAuth();
 
   const [avatarSrc, setAvatarSrc] = useState(null);
@@ -114,6 +116,7 @@ export default function Prediction() {
             <tr>
               <th>detail_id</th>
               <th>prediction_id</th>
+              <th>customer_id</th>
               <th>AccountAge</th>
               <th>email</th>
               <th>TotalCharges</th>
@@ -133,6 +136,7 @@ export default function Prediction() {
               <tr key={index}>
                 <td>{item.detail_id}</td>
                 <td>{item.prediction_id}</td>
+                <td>{item.CustomerID}</td>
                 <td>{item.AccountAge}</td>
                 <td>{item.MonthlyCharges}</td>
                 <td>{item.TotalCharges}</td>
@@ -140,6 +144,13 @@ export default function Prediction() {
                 <td>{item.Risk}</td>
                 <td>{item.Prediction}</td>
                 <td>{item.Segment}</td>
+                <td>
+                  <div>
+                    <button onClick={() => goto(`/costumerDetail?prediction_id=${item.prediction_id}&CustomerID=${item.CustomerID}`)}>
+                    detail
+                    </button>
+                  </div>
+                </td>
               </tr>
 
             ))}

@@ -55,7 +55,7 @@ async def test_upload(file: UploadFile = File(...),email: str = Form(...),filena
         predic_id = cursor.lastrowid
         
         conn.commit()
-        print(predic_id)
+
                 
         df['user_engagement'] = (
             df['ViewingHoursPerWeek'] * 0.4 +
@@ -117,9 +117,7 @@ async def test_upload(file: UploadFile = File(...),email: str = Form(...),filena
         result_df["Prediction"] = pred
         result_df["Cluster"] = cluster
         result_df["Segment"] = result_df["Cluster"].map(cluster_map)
-        
-        result_df.info()
-        
+                
         data_to_insert = []
         for _,row in result_df.iterrows():
             data_to_insert.append((
