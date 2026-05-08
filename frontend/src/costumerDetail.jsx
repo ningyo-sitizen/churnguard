@@ -17,7 +17,7 @@ export default function CostumerDetail() {
         try{
             const response = await axios.get(`http://localhost:5000`)
         }catch(error){
-
+            
         }
     }
   }, []);
