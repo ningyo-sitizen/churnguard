@@ -69,6 +69,7 @@ export default function CostumerDetail() {
       );
 
       setEmailMessage(response.data.html);
+      setChatMessage(response.data.html)
 
       setShowPopup(false);
 
@@ -114,9 +115,31 @@ export default function CostumerDetail() {
 
   }, []);
 
-  const handleSendChat = () => {
-    alert("Chat berhasil dikirim!");
-    console.log(chatMessage);
+  const handleSendChat = async () => {
+    const token = localStorage.getItem("token");
+
+    try {
+
+      const response = await axios.post(
+        `http://localhost:5000/email/send`,
+        {
+          html : chatMessage,
+          email: detail.email
+        }
+      );
+      setChatMessage("")
+      setEmailMessage("")
+
+
+    } catch (error) {
+
+      console.log(error);
+
+    } finally {
+
+      setLoading(false);
+
+    }
   };
 
 

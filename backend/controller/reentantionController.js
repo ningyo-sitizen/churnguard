@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const churnguard_con = require("../config/db");
+const transporter = require("../config/malier");
 const axios = require("axios");
 const genremap = require("../config/genremap");
 
@@ -7,7 +8,7 @@ async function getMovies() {
 
     try {
 
-        const [data1, data2] = await Promise.all([
+        const [data1, data2, data3, data4, data5] = await Promise.all([
 
             axios.get(
                 "https://api.themoviedb.org/3/movie/popular",
@@ -19,6 +20,34 @@ async function getMovies() {
                 }
             ),
 
+            axios.get(
+                "https://api.themoviedb.org/3/movie/popular",
+                {
+                    params: {
+                        api_key: process.env.TMDB_API_KEY,
+                        page: 2
+                    }
+                }
+            ),
+            axios.get(
+                "https://api.themoviedb.org/3/movie/popular",
+                {
+                    params: {
+                        api_key: process.env.TMDB_API_KEY,
+                        page: 1
+                    }
+                }
+            ),
+
+            axios.get(
+                "https://api.themoviedb.org/3/movie/popular",
+                {
+                    params: {
+                        api_key: process.env.TMDB_API_KEY,
+                        page: 2
+                    }
+                }
+            ),
             axios.get(
                 "https://api.themoviedb.org/3/movie/popular",
                 {
@@ -51,6 +80,8 @@ async function getMovies() {
 
 function getRecommendedMovies(movies, genreId) {
 
+    console.log(movies)
+
     let filtered = movies;
 
     if (genreId) {
@@ -65,6 +96,8 @@ function getRecommendedMovies(movies, genreId) {
     if (filtered.length === 0) {
         filtered = movies;
     }
+    console.log("filterd")
+    console.log(filtered)
 
     return filtered
         .sort((a, b) => {
@@ -156,7 +189,7 @@ function generateHTML({
                 </h1>
 
                 <p style="margin-top:10px;">
-                    Personalized retention campaign for you
+                    Special recommendations picked just for you
                 </p>
 
             </div>
@@ -165,7 +198,7 @@ function generateHTML({
             <div style="padding:30px;">
 
                 <h2>
-                    Hi ${email || "Customer"} 👋
+                    Hi Movie Lover 👋
                 </h2>
 
                 <p style="
@@ -232,9 +265,8 @@ function generateHTML({
                                 "
                             >
 
-                                ${
-                                    m.poster_path
-                                    ? `
+                                ${m.poster_path
+            ? `
                                         <img
                                             src="https://image.tmdb.org/t/p/w300${m.poster_path}"
                                             style="
@@ -243,14 +275,14 @@ function generateHTML({
                                             "
                                         />
                                     `
-                                    : `
+            : `
                                         <div style="
                                             height:220px;
                                             background:#cbd5e1;
                                             border-radius:10px;
                                         "></div>
                                     `
-                                }
+        }
 
                                 <h3 style="
                                     font-size:14px;
@@ -355,7 +387,7 @@ exports.getGeneratedEmail = async (req, res) => {
 
         const genreId =
             genremap[
-                genre?.toLowerCase()?.replace(/\s/g, "_")
+            genre?.toLowerCase()?.replace(/\s/g, "_")
             ];
 
         const movies = await getMovies();
@@ -399,3 +431,24 @@ exports.getGeneratedEmail = async (req, res) => {
         });
     }
 };
+
+exports.sendEmail = async (req, res) => {
+    const { email, html } = req.body
+
+    try {
+        const info = await transporter.sendMail({
+            from: '"Your App"',
+            to: email,
+            subject: "🎬 Rekomendasi Spesial Untuk Kamu!",
+            html: html
+        });
+
+        res.status(200).json({
+            message: "Berhasil  dikirm customer"
+        });
+
+        console.log("Email terkirim:", info.messageId);
+    } catch (error) {
+        console.error("Gagal kirim email:", error);
+    }
+}
