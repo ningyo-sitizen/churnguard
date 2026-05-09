@@ -1,6 +1,36 @@
 const jwt = require("jsonwebtoken");
 const churnguard_con = require("../config/db");
 
+exports.getUserDetail = async (req, res) => {
+  try {
+    const customer_id = req.query.customerid;
+    const prediction_id = req.query.predictionid;
+
+    const [rows] = await churnguard_con.query(
+      'SELECT * FROM prediction_detail WHERE prediction_id = ? AND CustomerID = ?',
+      [prediction_id, customer_id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        message: "Data tidak ditemukan"
+      });
+    }
+
+    res.status(200).json({
+      message: "Berhasil mengambil detail customer",
+      data: rows[0]
+    });
+
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Terjadi kesalahan server"
+    });
+  }
+};
+
 exports.getPrediction = async (req, res) => {
     const authHeader = req.headers.authorization;
     const token = authHeader.split(" ")[1];
