@@ -28,11 +28,30 @@ import HistoryApprovalDetail from "./HistoryApprovalDetail.jsx";
 import { NotificationProvider } from "./NotificationContext.jsx";
 import CostumerDetail from "./costumerDetail.jsx";
 import Validation from "./validation.jsx";
+import DashboardUser from "./dashboardUser.jsx";
+import UploadData from "./UploadData.jsx"
+import ValidasiProses from "./validasiProses.jsx";
+import DashboardDetail from "./DashboardDetail.jsx";
+import Member from "./member.jsx";
+import MemberPayment from "./memberPayment.jsx";
+import Feedback from "./Feedback.jsx";
+import RiwayatPrediksi from "./RiwayatPrediksi.jsx";
+import LandingPage from "./LandingPage.jsx";
+
 
 export default function App() {
   return (
     <NotificationProvider>
       <Routes>
+        <Route path="/landingpage" element={<LandingPage />} />
+        <Route path="/dashboardUser" element={<DashboardUser />} />
+        <Route path="/uploadData" element={<UploadData />} />
+        <Route path="/validasiproses" element={<ValidasiProses />} />
+        <Route path="/dashboardDetail" element={<DashboardDetail />} />
+        <Route path="/member" element={<Member />} />
+        <Route path="/memberPayment" element={<MemberPayment />} />
+        <Route path="/feedback" element={<Feedback />} />
+        <Route path="/riwayatPrediksi" element={<RiwayatPrediksi />} />
         <Route path="/costumerdetail" element={<CostumerDetail />} />
         <Route path="/validation" element={<Validation />} />
         <Route path="/test" element={<TestAPI />} />

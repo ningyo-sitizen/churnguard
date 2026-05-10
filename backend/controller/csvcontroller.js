@@ -8,6 +8,13 @@ const iconv = require("iconv-lite");
 
 exports.validateCSV = async (req, res) => {
 
+  if (!req.file) {
+    return res.status(400).json({
+      status: "error",
+      message: "File tidak ditemukan"
+    });
+  }
+
   const filePath = req.file.path;
 
   const expected = [
