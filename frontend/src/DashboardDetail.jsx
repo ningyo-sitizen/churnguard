@@ -352,12 +352,43 @@ export default function CostumerDetail() {
                         {/* TOP BOX */}
                         <div className="bg-white p-10 rounded-[4px] border border-gray-100 shadow-sm flex flex-col md:flex-row gap-12 items-center relative overflow-hidden">
 
+                            {/* left accent line */}
                             <div className="absolute top-0 left-0 w-1.5 h-full bg-[#D82F5A]"></div>
 
-                            <div className="relative flex items-center justify-center w-48 h-48 border-[14px] border-[#D82F5A] border-t-gray-50 rounded-full">
+                            {/* CIRCULAR PROGRESS */}
+                            <div className="relative w-48 h-48 flex items-center justify-center">
 
-                                <div className="text-center">
+                                <svg className="w-48 h-48 transform -rotate-90">
 
+                                    {/* background circle */}
+                                    <circle
+                                        cx="96"
+                                        cy="96"
+                                        r="80"
+                                        stroke="#e5e7eb"
+                                        strokeWidth="14"
+                                        fill="none"
+                                    />
+
+                                    {/* progress circle */}
+                                    <circle
+                                        cx="96"
+                                        cy="96"
+                                        r="80"
+                                        stroke="#D82F5A"
+                                        strokeWidth="14"
+                                        fill="none"
+                                        strokeLinecap="round"
+                                        strokeDasharray={2 * Math.PI * 80}
+                                        strokeDashoffset={
+                                            2 * Math.PI * 80 * (1 - detail.Score / 100)
+                                        }
+                                        className="transition-all duration-500"
+                                    />
+                                </svg>
+
+                                {/* center text */}
+                                <div className="absolute text-center">
                                     <p className="text-sm text-gray-400 mb-2">
                                         Probabilitas
                                     </p>
@@ -365,11 +396,11 @@ export default function CostumerDetail() {
                                     <p className="text-4xl font-semibold text-gray-900">
                                         {detail.Score}%
                                     </p>
-
                                 </div>
 
                             </div>
 
+                            {/* RIGHT SIDE INFO */}
                             <div className="grid grid-cols-2 gap-x-16 gap-y-8 flex-grow">
 
                                 <div>

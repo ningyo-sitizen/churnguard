@@ -80,8 +80,6 @@ async function getMovies() {
 
 function getRecommendedMovies(movies, genreId) {
 
-    console.log(movies)
-
     let filtered = movies;
 
     if (genreId) {
@@ -96,8 +94,6 @@ function getRecommendedMovies(movies, genreId) {
     if (filtered.length === 0) {
         filtered = movies;
     }
-    console.log("filterd")
-    console.log(filtered)
 
     return filtered
         .sort((a, b) => {
@@ -466,9 +462,9 @@ async function sendRetentionEmail({
 
         const genreId =
             genremap[
-                customer.GenrePreference
-                    ?.toLowerCase()
-                    ?.replace(/\s/g, "_")
+            customer.GenrePreference
+                ?.toLowerCase()
+                ?.replace(/\s/g, "_")
             ];
 
         const movies = await getMovies();
@@ -504,15 +500,16 @@ async function sendRetentionEmail({
             html
         });
 
-        // ✅ FIXED SQL (removed comma bug + safety query)
+
         await churnguard_con.query(
             `UPDATE prediction_detail
-             SET email_sent = 1,
+             SET email_sent = ?,
                  email_sent_at = NOW()
              WHERE email = ?
              AND prediction_id = ?
              AND CustomerID = ?`,
             [
+                html,
                 customer.email,
                 prediction_id,
                 customer.CustomerID
@@ -525,8 +522,24 @@ async function sendRetentionEmail({
 }
 
 exports.bulkSend = async (req, res) => {
-    try {
+    const {
+        promo_ALL_R_H_S,
+        promo_ALL_R_H_S_value,
+        promo_ALL_R_H_S_expired,
 
+        promo_H_M_R_L_S,
+        promo_H_M_R_L_S_value,
+        promo_H_M_R_L_S_expired,
+
+        promo_M_H_R_M_S,
+        promo_M_H_R_M_S_value,
+        promo_M_H_R_M_S_expired,
+
+        promo_L_R_M_L_S,
+        promo_L_R_M_L_S_value,
+        promo_L_R_M_L_S_expired
+    } = req.body;
+    try {
         const authHeader = req.headers.authorization;
 
         if (!authHeader) {
@@ -537,20 +550,40 @@ exports.bulkSend = async (req, res) => {
 
         const token = authHeader.split(" ")[1];
 
-        const decoded = jwt.verify(
-            token,
-            process.env.JWT_SECRET
-        );
-
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const email = decoded.email;
 
-        const {
-            promo_ALL_R_H_S,
-            promo_ALL_R_H_S_value,
-            promo_ALL_R_H_S_expired
-        } = req.body;
+        const promoList = [
+            {
+                name: promo_ALL_R_H_S,
+                value: promo_ALL_R_H_S_value,
+                expired: promo_ALL_R_H_S_expired,
+                risk: "High-Medium-Low",
+                segment: "Basic Frustrated user"
+            },
+            {
+                name: promo_H_M_R_L_S,
+                value: promo_H_M_R_L_S_value,
+                expired: promo_H_M_R_L_S_expired,
+                risk: "High-Medium",
+                segment: "Experienced User"
+            },
+            {
+                name: promo_M_H_R_M_S,
+                value: promo_M_H_R_M_S_value,
+                expired: promo_M_H_R_M_S_expired,
+                risk: "Medium-High",
+                segment: "Basic User"
+            },
+            {
+                name: promo_L_R_M_L_S,
+                value: promo_L_R_M_L_S_value,
+                expired: promo_L_R_M_L_S_expired,
+                risk: "Low",
+                segment: "Basic User-Experienced User"
+            }
+        ];
 
-        // 🔥 FIX: prediction query safety
         const [rows] = await churnguard_con.query(
             `SELECT prediction_id 
              FROM prediction_list 
@@ -566,39 +599,52 @@ exports.bulkSend = async (req, res) => {
 
         const prediction_id = rows[0].prediction_id;
 
-        // 🔥 FIX: proper query (removed unsafe syntax)
-        const [customers] = await churnguard_con.query(
-            `SELECT email, GenrePreference, CustomerID
-             FROM prediction_detail
-             WHERE Risk IN ("Low", "Medium", "High")
-             AND Segment = "Basic Frustrated user"
-             AND email_sent IS NULL
-             AND email_sent_at IS NULL
-             AND prediction_id = ?`,
-            [prediction_id]
-        );
+        for (const promo of promoList) {
 
-        if (!customers || customers.length === 0) {
-            return res.status(200).json({
-                message: "No customers to send email"
-            });
-        }
+            if (!promo.name) continue;
 
-        // 🔥 safer loop (no crash stop)
-        for (const customer of customers) {
-            await sendRetentionEmail({
-                customer,
-                promo_name: promo_ALL_R_H_S,
-                promo_discount: promo_ALL_R_H_S_value,
-                expired_date: promo_ALL_R_H_S_expired,
-                risk: "High",
-                segment: "Basic Frustrated User",
-                prediction_id
-            });
+            console.log("Processing promo:", promo.name);
+
+            const [customerRows] = await churnguard_con.query(
+                `SELECT email, GenrePreference, CustomerID
+                 FROM prediction_detail
+                 WHERE Risk IN ("Low", "Medium", "High")
+                 AND Segment = ?
+                 AND email_sent IS NULL
+                 AND email_sent_at IS NULL
+                 AND prediction_id = ?`,
+                [
+                    promo.segment,
+                    prediction_id
+                ]
+            );
+            console.log(`Found customers for ${promo.name}:`, customerRows.length);
+
+            if (!customerRows || customerRows.length === 0) {
+                continue;
+            }
+            for (const customer of customerRows) {
+                try {
+                    console.log("Sending email to:", customer.email);
+
+                    await sendRetentionEmail({
+                        customer,
+                        promo_name: promo.name,
+                        promo_discount: promo.value,
+                        expired_date: promo.expired,
+                        risk: promo.risk,
+                        segment: promo.segment,
+                        prediction_id
+                    });
+
+                } catch (emailErr) {
+                    console.error("Email failed for:", customer.email, emailErr.message);
+                }
+            }
         }
 
         return res.status(200).json({
-            message: "Berhasil dikirim ke customer"
+            message: "Bulk email trigger finished"
         });
 
     } catch (err) {
@@ -609,3 +655,7 @@ exports.bulkSend = async (req, res) => {
         });
     }
 };
+
+exports.getEmailSent = async (req,res) => {
+    
+}

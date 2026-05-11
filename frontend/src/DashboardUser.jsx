@@ -136,6 +136,8 @@ const DashboardUser = () => {
                     }
                 }
             )
+            showNotif('error',response.data.message)
+            setShowBulkPopup(false)
         } catch (err) {
             console.log(err)
         }
