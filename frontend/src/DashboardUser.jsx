@@ -21,6 +21,8 @@ const DashboardUser = () => {
 
     const [isOpen, setIsOpen] = useState(false);
 
+
+
     const [predictionData, setPredictionData] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -30,6 +32,23 @@ const DashboardUser = () => {
 
     const [showBulkPopup, setShowBulkPopup] = useState(false);
     const [showPredictionPopup, setShowPredictionPopup] = useState(false);
+
+    const [promo_ALL_R_H_S, setpromo_ALL_R_H_S] = useState("")
+    const [promo_ALL_R_H_S_value, setpromo_ALL_R_H_S_value] = useState("")
+    const [promo_ALL_R_H_S_expired, setpromo_ALL_R_H_S_expired] = useState("")
+
+    const [promo_H_M_R_L_S, setpromo_H_M_R_L_S] = useState("")
+    const [promo_H_M_R_L_S_value, setpromo_H_M_R_L_S_value] = useState("")
+    const [promo_H_M_R_L_S_expired, setpromo_H_M_R_L_S_expired] = useState("")
+
+
+    const [promo_M_H_R_M_S, setpromo_M_H_R_M_S] = useState("")
+    const [promo_M_H_R_M_S_value, setpromo_M_H_R_M_S_value] = useState("")
+    const [promo_M_H_R_M_S_expired, setpromo_M_H_R_M_S_expired] = useState("")
+
+    const [promo_L_R_M_L_S, setpromo_L_R_M_L_S] = useState("")
+    const [promo_L_R_M_L_S_value, setpromo_L_R_M_L_S_value] = useState("")
+    const [promo_L_R_M_L_S_expired, setpromo_L_R_M_L_S_expired] = useState("")
 
     const limit = 10;
 
@@ -87,6 +106,40 @@ const DashboardUser = () => {
         }
 
     };
+    const handleBulkEmail = async () => {
+        console.log("1")
+        try {
+            const token = localStorage.getItem("token")
+            console.log(promo_ALL_R_H_S)
+            const response = await axios.post(
+                "http://localhost:5000/email/bulk-send",
+                {
+                    promo_ALL_R_H_S: promo_ALL_R_H_S,
+                    promo_ALL_R_H_S_value: promo_ALL_R_H_S_value,
+                    promo_ALL_R_H_S_expired: promo_ALL_R_H_S_expired,
+
+                    promo_H_M_R_L_S: promo_H_M_R_L_S,
+                    promo_H_M_R_L_S_value: promo_H_M_R_L_S_value,
+                    promo_H_M_R_L_S_expired: promo_H_M_R_L_S_expired,
+
+                    promo_M_H_R_M_S: promo_M_H_R_M_S,
+                    promo_M_H_R_M_S_value: promo_M_H_R_M_S_value,
+                    promo_M_H_R_M_S_expired: promo_M_H_R_M_S_expired,
+
+                    promo_L_R_M_L_S: promo_L_R_M_L_S,
+                    promo_L_R_M_L_S_value: promo_L_R_M_L_S_value,
+                    promo_L_R_M_L_S_expired: promo_L_R_M_L_S_expired
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            )
+        } catch (err) {
+            console.log(err)
+        }
+    }
 
     const handleNOsave = async () => {
 
@@ -657,7 +710,7 @@ const DashboardUser = () => {
 
                             <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
 
-                                <div className="bg-white rounded-2xl p-8 w-[1000px] shadow-2xl">
+                                <div className="bg-white rounded-2xl p-8 w-[1500px] shadow-2xl">
 
 
 
@@ -699,6 +752,9 @@ const DashboardUser = () => {
                                                             Discount %
                                                         </th>
 
+                                                        <th className="p-3 border">
+                                                            ekspired
+                                                        </th>
                                                     </tr>
 
                                                 </thead>
@@ -708,7 +764,7 @@ const DashboardUser = () => {
                                                     <tr className="hover:bg-gray-50">
 
                                                         <td className="p-3 border font-semibold text-red-500">
-                                                            High, Medium
+                                                            High, Medium, Low
                                                         </td>
 
                                                         <td className="p-3 border">
@@ -727,6 +783,8 @@ const DashboardUser = () => {
 
                                                             <input
                                                                 type="text"
+                                                                value={promo_ALL_R_H_S}
+                                                                onChange={(e) => { setpromo_ALL_R_H_S(e.target.value) }}
                                                                 placeholder="Ex: Comeback Premium"
                                                                 className="w-full border rounded-lg p-2"
                                                             />
@@ -737,7 +795,21 @@ const DashboardUser = () => {
 
                                                             <input
                                                                 type="number"
+                                                                value={promo_ALL_R_H_S_value}
+                                                                onChange={(e) => { setpromo_ALL_R_H_S_value(e.target.value) }}
                                                                 placeholder="40"
+                                                                className="w-full border rounded-lg p-2"
+                                                            />
+
+                                                        </td>
+
+                                                        <td className="p-3 border">
+
+                                                            <input
+                                                                type="date"
+                                                                value={promo_ALL_R_H_S_expired}
+                                                                onChange={(e) => { setpromo_ALL_R_H_S_expired(e.target.value) }}
+                                                                placeholder="2 weeks"
                                                                 className="w-full border rounded-lg p-2"
                                                             />
 
@@ -767,6 +839,8 @@ const DashboardUser = () => {
 
                                                             <input
                                                                 type="text"
+                                                                value={promo_H_M_R_L_S}
+                                                                onChange={(e) => { setpromo_H_M_R_L_S(e.target.value) }}
                                                                 placeholder="Ex: Loyalty Reward"
                                                                 className="w-full border rounded-lg p-2"
                                                             />
@@ -777,7 +851,21 @@ const DashboardUser = () => {
 
                                                             <input
                                                                 type="number"
+                                                                value={promo_H_M_R_L_S_value}
+                                                                onChange={(e) => { setpromo_H_M_R_L_S_value(e.target.value) }}
                                                                 placeholder="20"
+                                                                className="w-full border rounded-lg p-2"
+                                                            />
+
+                                                        </td>
+
+                                                        <td className="p-3 border">
+
+                                                            <input
+                                                                type="date"
+                                                                value={promo_H_M_R_L_S_expired}
+                                                                placeholder="20"
+                                                                onChange={(e) => { setpromo_H_M_R_L_S_expired(e.target.value) }}
                                                                 className="w-full border rounded-lg p-2"
                                                             />
 
@@ -807,6 +895,8 @@ const DashboardUser = () => {
 
                                                             <input
                                                                 type="text"
+                                                                value={promo_M_H_R_M_S}
+                                                                onChange={(e) => { setpromo_M_H_R_M_S(e.target.value) }}
                                                                 placeholder="Ex: Weekend Promo"
                                                                 className="w-full border rounded-lg p-2"
                                                             />
@@ -817,11 +907,25 @@ const DashboardUser = () => {
 
                                                             <input
                                                                 type="number"
+                                                                value={promo_M_H_R_M_S_value}
+                                                                onChange={(e) => { setpromo_M_H_R_M_S_value(e.target.value) }}
                                                                 placeholder="15"
                                                                 className="w-full border rounded-lg p-2"
                                                             />
 
                                                         </td>
+                                                        <td className="p-3 border">
+
+                                                            <input
+                                                                type="date"
+                                                                value={promo_M_H_R_M_S_expired}
+                                                                onChange={(e) => { setpromo_M_H_R_M_S_expired(e.target.value) }}
+                                                                placeholder="15"
+                                                                className="w-full border rounded-lg p-2"
+                                                            />
+
+                                                        </td>
+
 
                                                     </tr>
 
@@ -847,6 +951,8 @@ const DashboardUser = () => {
 
                                                             <input
                                                                 type="text"
+                                                                value={promo_L_R_M_L_S}
+                                                                onChange={(e) => { setpromo_L_R_M_L_S(e.target.value) }}
                                                                 placeholder="Ex: Member Special"
                                                                 className="w-full border rounded-lg p-2"
                                                             />
@@ -857,6 +963,20 @@ const DashboardUser = () => {
 
                                                             <input
                                                                 type="number"
+                                                                value={promo_L_R_M_L_S_value}
+                                                                onChange={(e) => { setpromo_L_R_M_L_S_value(e.target.value) }}
+                                                                placeholder="10"
+                                                                className="w-full border rounded-lg p-2"
+                                                            />
+
+                                                        </td>
+
+                                                        <td className="p-3 border">
+
+                                                            <input
+                                                                type="date"
+                                                                value={promo_L_R_M_L_S_expired}
+                                                                onChange={(e) => { setpromo_L_R_M_L_S_expired(e.target.value) }}
                                                                 placeholder="10"
                                                                 className="w-full border rounded-lg p-2"
                                                             />
@@ -884,6 +1004,7 @@ const DashboardUser = () => {
                                         </button>
 
                                         <button
+                                        onClick={handleBulkEmail}
                                             className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-xl font-semibold"
                                         >
                                             Send Bulk Email

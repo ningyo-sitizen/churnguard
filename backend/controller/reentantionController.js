@@ -452,3 +452,160 @@ exports.sendEmail = async (req, res) => {
         console.error("Gagal kirim email:", error);
     }
 }
+
+async function sendRetentionEmail({
+    customer,
+    promo_name,
+    promo_discount,
+    expired_date,
+    risk,
+    segment,
+    prediction_id
+}) {
+    try {
+
+        const genreId =
+            genremap[
+                customer.GenrePreference
+                    ?.toLowerCase()
+                    ?.replace(/\s/g, "_")
+            ];
+
+        const movies = await getMovies();
+
+        const recommendedMovies =
+            getRecommendedMovies(
+                movies,
+                genreId
+            );
+
+        const recommendation =
+            getRetentionRecommendation(
+                risk,
+                segment
+            );
+
+        const html = generateHTML({
+            email: customer.email,
+            movies: recommendedMovies,
+            promo_name,
+            promo_discount,
+            expired_date,
+            recommendation,
+            genre: customer.GenrePreference,
+            risk,
+            segment
+        });
+
+        await transporter.sendMail({
+            from: '"ChurnGuard"',
+            to: customer.email,
+            subject: "🎬 Rekomendasi Spesial Untuk Kamu!",
+            html
+        });
+
+        // ✅ FIXED SQL (removed comma bug + safety query)
+        await churnguard_con.query(
+            `UPDATE prediction_detail
+             SET email_sent = 1,
+                 email_sent_at = NOW()
+             WHERE email = ?
+             AND prediction_id = ?
+             AND CustomerID = ?`,
+            [
+                customer.email,
+                prediction_id,
+                customer.CustomerID
+            ]
+        );
+
+    } catch (err) {
+        console.error("sendRetentionEmail error:", err.message);
+    }
+}
+
+exports.bulkSend = async (req, res) => {
+    try {
+
+        const authHeader = req.headers.authorization;
+
+        if (!authHeader) {
+            return res.status(401).json({
+                message: "No token provided"
+            });
+        }
+
+        const token = authHeader.split(" ")[1];
+
+        const decoded = jwt.verify(
+            token,
+            process.env.JWT_SECRET
+        );
+
+        const email = decoded.email;
+
+        const {
+            promo_ALL_R_H_S,
+            promo_ALL_R_H_S_value,
+            promo_ALL_R_H_S_expired
+        } = req.body;
+
+        // 🔥 FIX: prediction query safety
+        const [rows] = await churnguard_con.query(
+            `SELECT prediction_id 
+             FROM prediction_list 
+             WHERE user_email = ?`,
+            [email]
+        );
+
+        if (!rows || rows.length === 0) {
+            return res.status(404).json({
+                message: "Prediction ID not found"
+            });
+        }
+
+        const prediction_id = rows[0].prediction_id;
+
+        // 🔥 FIX: proper query (removed unsafe syntax)
+        const [customers] = await churnguard_con.query(
+            `SELECT email, GenrePreference, CustomerID
+             FROM prediction_detail
+             WHERE Risk IN ("Low", "Medium", "High")
+             AND Segment = "Basic Frustrated user"
+             AND email_sent IS NULL
+             AND email_sent_at IS NULL
+             AND prediction_id = ?`,
+            [prediction_id]
+        );
+
+        if (!customers || customers.length === 0) {
+            return res.status(200).json({
+                message: "No customers to send email"
+            });
+        }
+
+        // 🔥 safer loop (no crash stop)
+        for (const customer of customers) {
+            await sendRetentionEmail({
+                customer,
+                promo_name: promo_ALL_R_H_S,
+                promo_discount: promo_ALL_R_H_S_value,
+                expired_date: promo_ALL_R_H_S_expired,
+                risk: "High",
+                segment: "Basic Frustrated User",
+                prediction_id
+            });
+        }
+
+        return res.status(200).json({
+            message: "Berhasil dikirim ke customer"
+        });
+
+    } catch (err) {
+        console.error("bulkSend error:", err);
+
+        return res.status(500).json({
+            message: "Internal server error"
+        });
+    }
+};

@@ -45,7 +45,7 @@ function SignUp() {
         const data = await res.json()
 
         localStorage.setItem("token", data.token);
-        navigate('/login-success')
+        navigate('/dashboardUser')
     }
     const handleLogin = async () => {
         try {
@@ -65,8 +65,7 @@ function SignUp() {
                 return;
             }
             localStorage.setItem("token", data.token);
-            navigate('/login-success')
-
+            navigate('/dashboardUser')
         } catch (err) {
             console.log("Login failed:", err);
         }
@@ -224,7 +223,7 @@ function SignUp() {
 
                 console.log("Google Token:", token);
 
-                navigate("/login-success");
+                navigate("/dashboardUser");
             }
 
             if (event.data?.error) {

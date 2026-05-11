@@ -78,7 +78,7 @@ function Login() {
 
       showNotif("success", "Login berhasil!");
 
-      navigate("/login-success");
+      navigate("/dashboardUser");
     } catch (err) {
       console.log("Login failed:", err);
 
@@ -119,7 +119,7 @@ function Login() {
 
         console.log("Google Token:", token);
 
-        navigate("/login-success");
+        navigate("/dashboardUser");
       }
 
       if (event.data?.error) {

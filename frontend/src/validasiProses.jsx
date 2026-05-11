@@ -8,12 +8,14 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from "../utils/auth";
 import { jwtDecode } from "jwt-decode";
+import { useNotif } from "./NotificationContext";
 import axios from 'axios';
 
 const ValidasiProses = () => {
-
     const [isOpen, setIsOpen] = useState(false);
     const navigate = useNavigate();
+
+    const {showNotif} = useNotif()
 
     const user = useAuth()
 
@@ -27,10 +29,9 @@ const ValidasiProses = () => {
     const file = location.state?.file;
 
     useEffect(() => {
-        console.log(file)
         if (!validation) {
-            console.log(file)
             navigate("/uploadData", { replace: true });
+            showNotif("error", "mohon isi ulang file");
         }
 
     }, [validation, navigate]);
