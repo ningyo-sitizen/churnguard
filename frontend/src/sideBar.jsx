@@ -1,66 +1,72 @@
-import React from "react";
-import {
-  IconHome,
-  IconChartBar,
-  IconBell,
-} from "@tabler/icons-react";
+import React from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import logochurn from './assets/logo churn.png';
 
 const Sidebar = () => {
-  
-  // Fungsi untuk menentukan kelas item sidebar
-  const getSidebarItemClass = () => {
-    const baseClasses = "flex items-center gap-3 p-3 rounded-md font-medium transition-colors text-sm";
-    return `${baseClasses} text-[#667790] hover:bg-gray-100`;
-  };
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  // Kelas khusus untuk item "Dashboard" yang sedang aktif (sesuai contoh di screenshot)
-  const getDashboardClass = () => {
-    const activeClasses = "flex items-center gap-3 p-3 rounded-md font-medium transition-colors text-sm bg-gray-200 text-[#023048]";
-    return activeClasses;
+  // Fungsi pembantu untuk menentukan styling
+  const getMenuStyles = (path) => {
+    const isActive = location.pathname === path;
+    
+    return isActive
+      ? "bg-[#FEF5F6] text-[#D82F5A] flex items-center gap-4 px-5 py-3 rounded-[4px] cursor-pointer transition-all"
+      : "text-[#E2A7B8] flex items-center gap-4 px-6 py-4 rounded-[4px] hover:bg-gray-50 cursor-pointer transition-all";
   };
 
   return (
-    // SIDEBAR
-    <aside className="w-64 bg-white border-r">
-      <div className="flex flex-col h-full">
+    <aside className="w-[280px] bg-white border-r border-gray-100 flex flex-col h-screen sticky top-0 z-20 font-['Plus_Jakarta_Sans',sans-serif]">
+      
+      {/* Logo Section - Padding dikurangi agar lebih compact */}
+      <div className="pt-6 pb-2 flex flex-col items-center">
+        <div className="flex flex-col items-center mb-2">
+          <img src={logochurn} alt="logochurn" className="w-28 h-auto" />
+        </div>
+        <div className="w-[85%] border-b border-gray-100"></div>
+      </div>
 
-        {/* Logo Bebas Pustaka */}
-        <div className="p-6">
-          <div className="flex items-center gap-4 mb-6">
-            <div 
-              className="bg-[url('https://cdn.designfast.io/image/2025-10-28/d0d941b0-cc17-46b2-bf61-d133f237b449.png')] w-[29px] h-[29px] bg-cover bg-center"> 
-            </div>
-            <h1 className="text-lg font-medium text-[#023048]">Bebas Pustaka</h1>
-          </div>
-          <div className="w-full border-b border-gray-200"></div>
+      {/* Navigation Menu */}
+      <nav className="flex-1 px-4 space-y-2 mt-4">
+        
+        {/* Dashboard */}
+        <div 
+          onClick={() => navigate('/dashboarduser')} 
+          className={getMenuStyles('/dashboarduser')}
+        >
+          {/* WebkitTextStroke DIHAPUS agar ikon tidak putus-putus */}
+          <i className="ti ti-home text-xl"></i>
+          <span className="text-sm font-medium">Dashboard</span>
         </div>
 
-        {/* Menu */}
-        <nav className="flex-1 px-6 space-y-4 pb-6">
-          <a
-            href="/dashboard"
-            // Asumsi Dashboard adalah halaman aktif dari contoh screenshot
-            className={getDashboardClass()}
-          >
-            <IconHome size={20} />
-            Dashboard
-          </a>
-          <a
-            href="/analytic"
-            className={getSidebarItemClass()}
-          >
-            <IconChartBar size={20} />
-            Data Analitik
-          </a>
-          <a
-            href="/konfirmasi"
-            className={getSidebarItemClass()}
-          >
-            <IconBell size={20} />
-            Konfirmasi Data
-          </a>
-        </nav>
-      </div>
+        {/* Analisis Ulasan */}
+        <div 
+          onClick={() => navigate('/analisisUlasan')} 
+          className={getMenuStyles('/analisisUlasan')}
+        >
+          <i className="ti ti-chart-bar text-xl"></i>
+          <span className="text-sm font-medium">Analisis Ulasan</span>
+        </div>
+
+        {/* Riwayat Prediksi */}
+        <div
+          onClick={() => navigate('/riwayatPrediksi')}
+          className={getMenuStyles('/riwayatPrediksi')}
+        >
+          <i className="ti ti-history text-xl"></i>
+          <span className="text-sm font-medium">Riwayat Prediksi</span>
+        </div>
+
+        {/* User Feedback */}
+        <div
+          onClick={() => navigate('/feedback')}
+          className={getMenuStyles('/feedback')}
+        >
+          <i className="ti ti-message text-xl"></i>
+          <span className="text-sm font-medium">User Feedback</span>
+        </div>
+
+      </nav>
     </aside>
   );
 };

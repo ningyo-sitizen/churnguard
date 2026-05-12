@@ -5,6 +5,8 @@ import unggahdata from './assets/unggahdata.png';
 import Header from "./Header";
 import Sidebar from './SideBar';
 import Footer from './Footer';
+import { useSearchParams } from "react-router-dom";
+
 
 
 import {
@@ -17,7 +19,12 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from "../utils/auth";
 import { useNotif } from "./NotificationContext";
 
-const DashboardUser = () => {
+const DashboarHistory = () => {
+
+    const [disableButton, setDisableButton] = useState(true);
+    const [searchParams] = useSearchParams();
+
+    const prediction_id = searchParams.get("prediction_id");
 
     const navigate = useNavigate();
     const { showNotif } = useNotif();
@@ -73,7 +80,7 @@ const DashboardUser = () => {
             const token = localStorage.getItem("token");
 
             const response = await fetch(
-                `http://localhost:5000/prediction/prediction-data?page=${currentPage}&limit=${limit}`,
+                `http://localhost:5000/prediction/prediction-history?page=${currentPage}&limit=${limit}&prediction_id=${prediction_id}`,
                 {
                     method: "GET",
                     headers: {
@@ -360,19 +367,32 @@ const DashboardUser = () => {
                                 predictionData.length > 0 && (
 
                                     <div className="flex gap-3">
-
                                         <button
                                             onClick={() => setShowBulkPopup(true)}
-                                            className="bg-green-500 hover:bg-green-600 text-white px-5 py-3 rounded-[4px]"
+                                            disabled={disableButton}
+                                            className={`
+                                            px-5 py-3 rounded-[4px] text-white transition-all
+                                            ${disableButton
+                                                    ? "bg-gray-400 cursor-not-allowed"
+                                                    : "bg-green-500 hover:bg-green-600"
+                                                }
+    `}
                                         >
                                             Bulk Email
                                         </button>
 
                                         <button
-                                            onClick={() => setShowPredictionPopup(true)}
-                                            className="bg-blue-500 hover:bg-blue-600 text-white px-5 py-3 rounded-[4px]"
+                                            onClick={() => setShowBulkPopup(true)}
+                                            disabled={disableButton}
+                                            className={`
+                                            px-5 py-3 rounded-[4px] text-white transition-all
+                                            ${disableButton
+                                                    ? "bg-gray-400 cursor-not-allowed"
+                                                    : "bg-green-500 hover:bg-green-600"
+                                                }
+    `}
                                         >
-                                            Prediksi Baru
+                                            Bulk Email
                                         </button>
 
                                     </div>
@@ -959,4 +979,4 @@ const DashboardUser = () => {
 
 };
 
-export default DashboardUser;
+export default DashboarHistory;

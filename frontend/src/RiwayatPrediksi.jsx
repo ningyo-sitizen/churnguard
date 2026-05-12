@@ -1,11 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-
+import axios from "axios";
+import { useAuth } from "../utils/auth";
 // ASSETS
 import CSVicon from './assets/csv.png';
 import unggahdata from './assets/unggahdata.png';
 import logochurn from './assets/logo churn.png';
+import Header from './Header';
+import Sidebar from './SideBar';
+import Footer from './Footer';
 
 // ICONS - TABLER (Dikelompokkan jadi satu biar rapi)
 import {
@@ -31,13 +35,12 @@ import {
 
 const RiwayatPrediksi = () => {
     const navigate = useNavigate();
+    const user = useAuth()
     const [isOpen, setIsOpen] = useState(false);
 
     // State Data
     const [dataHistory, setDataHistory] = useState([
-        { id: 1, title: 'Netflix Review.CSV', size: '190 KB', date: 'Kamis, 26 April 2026', churn: 35, total: 1205, risk: '20%', revenue: 'Rp.1.902.102,00' },
-        { id: 2, title: 'Playstore Review.CSV', size: '2 GB', date: 'Kamis, 26 April 2026', churn: 35, total: 1205, risk: '20%', revenue: 'Rp.1.902.102,00' },
-        { id: 3, title: 'Playstore Review.CSV', size: '2 GB', date: 'Kamis, 26 April 2026', churn: 35, total: 1205, risk: '20%', revenue: 'Rp.1.902.102,00' },
+
     ]);
 
     // State Modal
@@ -52,6 +55,35 @@ const RiwayatPrediksi = () => {
     const handleDelete = () => {
         setDataHistory(dataHistory.filter(item => item.id !== selectedId));
         setIsModalOpen(false);
+    };
+
+    useEffect(() => {
+
+        getHistory();
+
+    }, []);
+
+    const getHistory = async () => {
+
+        try {
+
+            const token = localStorage.getItem("token");
+
+            const res = await axios.get(
+                "http://localhost:5000/prediction/history",
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            setDataHistory(res.data.data);
+
+        } catch (err) {
+
+            console.log(err);
+        }
     };
 
     return (
@@ -120,127 +152,14 @@ const RiwayatPrediksi = () => {
 
             <div className="flex flex-1">
                 {/* SIDEBAR */}
-                <aside className="w-[280px] bg-white border-r border-gray-100 flex flex-col h-screen sticky top-0 z-20 font-['Plus_Jakarta_Sans',sans-serif]">
-                    {/* Logo Section */}
-                    <div className="pt-10 pb-4 flex flex-col items-center">
-                        <div className="flex flex-col items-center mb-4">
-                            <img
-                                src={logochurn}
-                                alt="logochurn"
-                                className="w-28 h-auto" // Logo ukuran sedang (pas)
-                            />
-                        </div>
-                        <div className="w-[85%] border-b border-gray-100"></div>
-                    </div>
-
-                    {/* Navigation Menu */}
-                    <nav className="flex-1 px-4 space-y-2 mt-4">
-
-                        {/* Dashboard - ACTIVE (Pakai ti-home) */}
-                        <div
-                            onClick={() => navigate('/dashboarduser')} // Arahkan ke path dashboard
-                            className="text-[#E2A7B8] flex items-center gap-4 px-6 py-4 rounded-[4px] hover:bg-gray-50 cursor-pointer transition-all"
-                        >
-                            <i className="ti ti-home text-xl" style={{ WebkitTextStroke: '0.5px white', paintOrder: 'stroke fill' }}></i>
-                            <span className="text-sm">Dashboard</span>
-                        </div>
-                        {/* Analisis Ulasan - INACTIVE */}
-                        <div className="text-[#E2A7B8] flex items-center gap-4 px-6 py-4 rounded-[4px] hover:bg-gray-50 cursor-pointer transition-all">
-                            <i className="ti ti-chart-bar text-xl" style={{ WebkitTextStroke: '0.5px white', paintOrder: 'stroke fill' }}></i>
-                            <span className="text-sm">Analisis Ulasan</span>
-                        </div>
-
-                        {/* Riwayat Prediksi - INACTIVE */}
-                        <div className="bg-[#FEF5F6] text-[#D82F5A] flex items-center gap-4 px-5 py-3 rounded-[4px] cursor-pointer transition-all">
-                            <i className="ti ti-history text-xl" style={{ WebkitTextStroke: '0.5px white', paintOrder: 'stroke fill' }}></i>
-                            <span className="text-sm">Riwayat Prediksi</span>
-                        </div>
-
-
-                        <div
-                            onClick={() => navigate('/feedback')}
-                            className="text-[#E2A7B8] flex items-center gap-4 px-6 py-4 rounded-[4px] hover:bg-gray-50 cursor-pointer transition-all">
-                            <i className="ti ti-message text-xl" style={{ WebkitTextStroke: '0.5px white', paintOrder: 'stroke fill' }}></i>
-                            <span className="text-sm">User Feedback</span>
-                        </div>
-                    </nav>
-                </aside>
+                <Sidebar></Sidebar>
 
                 {/* MAIN CONTENT */}
                 <main className="flex-1 flex flex-col min-w-0 bg-[#F9FAFB]">
-                    <header className="h-20 bg-white border-b border-gray-100 flex items-center justify-end px-10 gap-6 sticky top-0 z-50]">
-
-                        {/* Notification Bell */}
-                        <div className="w-10 h-10 border border-[#FEF5F6] rounded-xl flex items-center justify-center text-gray-500 cursor-pointer hover:bg-gray-50 transition-all group">
-                            <i className="ti ti-bell text-xl group-hover:shake"></i>
-                        </div>
-
-                        {/* User Profile Section dengan Dropdown */}
-                        <div className="relative">
-                            {/* Trigger Area */}
-                            <div
-                                className="flex items-center gap-3 pl-6 border-l border-gray-100 h-10 cursor-pointer group"
-                                onClick={() => setIsOpen(!isOpen)}
-                            >
-                                <img
-                                    src="https://ui-avatars.com/api/?name=Zahrah+Purnama&background=D82F5A&color=fff&bold=true"
-                                    className="w-10 h-10 rounded-xl object-cover shadow-sm"
-                                    alt="avatar"
-                                />
-                                <div className="flex flex-col text-left leading-tight">
-                                    <p className="text-sm font-semibold text-[#111827]">Hai, Zahrah Purnama</p>
-                                    <p className="text-xs text-[#D82F5A] ">zahrah.purnama@gmail.com</p>
-                                </div>
-                                <i className={`ti ti-chevron-down text-gray-400 text-sm ml-1 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}></i>
-                            </div>
-
-                            {/* Dropdown Menu (Sesuai Gambar) */}
-                            {isOpen && (
-                                <>
-                                    {/* Overlay untuk menutup dropdown saat klik di luar */}
-                                    <div className="fixed inset-0 z-[-1]" onClick={() => setIsOpen(false)}></div>
-
-                                    <div className="absolute right-0 mt-4 w-72 bg-white rounded-[4px] shadow-[0px_10px_40px_rgba(0,0,0,0.08)] border border-gray-50 overflow-hidden animate-in fade-in zoom-in duration-200 z-50">
-
-                                        {/* Header Dropdown */}
-                                        <div className="p-5 flex items-center gap-4">
-                                            <div className="w-12 h-12 rounded-[4px] overflow-hidden bg-gray-100">
-                                                <img
-                                                    src="https://ui-avatars.com/api/?name=Zahrah+Purnama&background=E0E0E0&color=9E9E9E&bold=true"
-                                                    alt="profile"
-                                                />
-                                            </div>
-                                            <div className="flex flex-col text-left leading-tight">
-                                                <p className="text-sm font-semibold text-[#111827]">Zahrah Purnama</p>
-                                                <p className="text-xs text-[#D82F5A] ">User</p>
-                                            </div>
-                                        </div>
-
-                                        <div className="border-b border-gray-100 mx-5"></div>
-
-                                        {/* List Menu */}
-                                        <div className="p-2">
-                                            <div className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-[#FEF5F6] text-[#E2A7B8] cursor-pointer transition-all group">
-                                                <IconUserCircle stroke={1.5} />
-                                                <span className="text-sm ">Profile</span>
-                                            </div>
-
-                                            <div className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-[#FEF5F6] text-[#E2A7B8] cursor-pointer transition-all group">
-                                                <IconBrandMyOppo stroke={1.5} />
-                                                <span className="text-sm ">Member</span>
-                                            </div>
-
-                                            <div className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-[#FEF5F6] text-[#E2A7B8] cursor-pointer transition-all group">
-                                                <IconLogout2 stroke={1.5} />
-                                                <span className="text-sm ">Keluar</span>
-                                            </div>
-                                        </div>
-
-                                    </div>
-                                </>
-                            )}
-                        </div>
-                    </header>
+                    <Header
+                        formData={user}
+                        profileImg={user?.profileImg}
+                    />
 
                     <div className="p-8 w-full">
                         <div className="mb-8">
@@ -267,46 +186,124 @@ const RiwayatPrediksi = () => {
                                     <AnimatePresence>
                                         {dataHistory.map((item) => (
                                             <motion.div
-                                                key={item.id} layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9 }}
+                                                key={item.prediction_id}
+                                                layout
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, scale: 0.9 }}
                                                 className="bg-white border border-gray-200 rounded-[4px] p-6 shadow-sm hover:shadow-md transition-all group"
                                             >
+
+                                                {/* HEADER */}
                                                 <div className="flex items-start gap-4 mb-3">
-                                                    <img src={CSVicon} alt="CSV Icon" className="w-10 h-10 object-contain" />
+
+                                                    <img
+                                                        src={CSVicon}
+                                                        alt="CSV Icon"
+                                                        className="w-10 h-10 object-contain"
+                                                    />
+
                                                     <div className="flex-1 min-w-0">
-                                                        <h4 className="text-sm font-semibold text-gray-900 truncate">{item.title}</h4>
+
+                                                        <h4 className="text-sm font-semibold text-gray-900 truncate">
+                                                            {item.filename}
+                                                        </h4>
+
                                                         <div className="flex items-center gap-1.5 mt-0.5">
-                                                            <span className="text-xs text-gray-400 font-medium">{item.size} dari {item.size} •</span>
+
                                                             <div className="flex items-center gap-1 text-[#22C55E]">
                                                                 <IconCircleCheckFilled size={14} />
-                                                                <span className="text-xs text-gray-400 font-medium tracking-tight">Selesai</span>
+
+                                                                <span className="text-xs text-gray-400 font-medium tracking-tight">
+                                                                    Selesai
+                                                                </span>
                                                             </div>
+
                                                         </div>
                                                     </div>
                                                 </div>
 
-
+                                                {/* DATE */}
                                                 <p className="text-xs mt-4 text-gray-400 pb-3 border-b border-[#EDEDED]">
-                                                    {item.date}
+                                                    {new Date(item.created_at).toLocaleDateString("id-ID", {
+                                                        weekday: "long",
+                                                        day: "numeric",
+                                                        month: "long",
+                                                        year: "numeric"
+                                                    })}
                                                 </p>
 
+                                                {/* DETAIL */}
                                                 <div className="space-y-4 border-t border-gray-50 pt-3 mb-7 text-xs">
-                                                    <div className="flex justify-between items-center"><span className="text-gray-400">Tingkat Pengunduran Diri</span><span className="font-medium">: {item.churn} Orang</span></div>
-                                                    <div className="flex justify-between items-center"><span className="text-gray-400">Total Pelanggan</span><span className="font-medium">: {item.total} Orang</span></div>
-                                                    <div className="flex justify-between items-center"><span className="text-gray-400">Beresiko Tinggi</span><span className="font-medium">: {item.risk}</span></div>
-                                                    <div className="flex justify-between items-center"><span className="text-gray-400">Pendapatan yang Berisiko</span><span className="font-medium">: {item.revenue}</span></div>
+
+                                                    <div className="flex justify-between items-center">
+                                                        <span className="text-gray-400">
+                                                            Tingkat Pengunduran Diri
+                                                        </span>
+
+                                                        <span className="font-medium">
+                                                            : {item.total_churn} Orang
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="flex justify-between items-center">
+                                                        <span className="text-gray-400">
+                                                            Total Pelanggan
+                                                        </span>
+
+                                                        <span className="font-medium">
+                                                            : {item.total_customer} Orang
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="flex justify-between items-center">
+                                                        <span className="text-gray-400">
+                                                            Beresiko Tinggi
+                                                        </span>
+
+                                                        <span className="font-medium">
+                                                            : {item.high_risk_percentage}%
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="flex justify-between items-center">
+                                                        <span className="text-gray-400">
+                                                            Total High Risk
+                                                        </span>
+
+                                                        <span className="font-medium">
+                                                            : {item.total_high_risk} Orang
+                                                        </span>
+                                                    </div>
+
                                                 </div>
 
+                                                {/* BUTTON */}
                                                 <div className="grid grid-cols-2 gap-3">
+
                                                     <button
-                                                        onClick={() => openConfirmModal(item.id)}
-                                                        className="bg-white border border-[#D82F5A] text-[#D82F5A] py-2.5 rounded-[4px] text-xs font-medium hover:bg-pink-50 transition-all "
+                                                        onClick={() =>
+                                                            navigate(
+                                                                `/dashboardhistory?prediction_id=${item.prediction_id}`
+                                                            )
+                                                        }
+                                                        className="bg-white border border-[#D82F5A] text-[#D82F5A] py-2.5 rounded-[4px] text-xs font-medium hover:bg-pink-50 transition-all"
                                                     >
                                                         Hapus
                                                     </button>
-                                                    <button className="bg-black text-white py-2.5 rounded-[4px] text-xs font-medium hover:bg-gray-800 transition-all ">
+
+                                                    <button
+                                                        onClick={() =>
+                                                            navigate(
+                                                                `/dashboardhistory?prediction_id=${item.prediction_id}`
+                                                            )
+                                                        }
+                                                        className="bg-black text-white py-2.5 rounded-[4px] text-xs font-medium hover:bg-gray-800 transition-all">
                                                         Rincian
                                                     </button>
+
                                                 </div>
+
                                             </motion.div>
                                         ))}
                                     </AnimatePresence>
@@ -334,73 +331,10 @@ const RiwayatPrediksi = () => {
                             </motion.div>
                         )}
                     </div>
+                    <footer></footer>
                 </main>
             </div>
 
-            {/* FOOTER */}
-            <footer className="bg-white border-t border-gray-100 pt-12 px-10 flex-shrink-0">
-                <div className="max-w-[1400px] mx-auto grid md:grid-cols-4 gap-12 border-b border-gray-100 pb-8">
-
-                    {/* BRAND SECTION & SOCIALS */}
-                    <div className="space-y-8 text-left">
-                        <div className="space-y-6">
-                            <h3 className="text-2xl tracking-tight font-semibold">
-                                ChurnGuard <span className="text-[#D82F5A]">CRM</span>
-                            </h3>
-                            <p className="text-[#616161] text-sm leading-relaxed">
-                                Solusi cerdas menjaga loyalitas dan memperkuat hubungan pelanggan Anda secara berkelanjutan.
-                            </p>
-                        </div>
-
-                        {/* Social Media Icons moved here */}
-                        <div className="flex gap-4">
-                            {['brand-instagram', 'brand-x', 'brand-youtube'].map(s => (
-                                <div key={s} className="w-10 h-10 border border-[#D82F5A]/20 rounded-[4px] flex items-center justify-center text-[#D82F5A] hover:bg-[#D82F5A] hover:text-white hover:-translate-y-1 transition-all duration-300 cursor-pointer shadow-sm">
-                                    <i className={`ti ti-${s} text-lg`}></i>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* ADDRESS */}
-                    <div>
-                        <h4 className="text-sm mb-6 flex items-center gap-2 text-[#111827]">
-                            <i className="ti ti-map-pin text-[#D82F5A]"></i> Alamat
-                        </h4>
-                        <p className="text-[#616161] text-[13px] leading-relaxed">
-                            Gedung Perpustakaan PNJ, Beji, Depok, Jawa Barat 16425.
-                        </p>
-                    </div>
-
-                    {/* PHONE */}
-                    <div>
-                        <h4 className="text-sm mb-6 flex items-center gap-2 text-[#111827]">
-                            <i className="ti ti-phone text-[#D82F5A]"></i> No. Telepon
-                        </h4>
-                        <p className="text-[#616161] text-[13px] leading-relaxed">
-                            +62 21 727 0036
-                        </p>
-                    </div>
-
-                    {/* EMAIL */}
-                    <div>
-                        <h4 className="text-sm mb-6 flex items-center gap-2 text-[#111827]">
-                            <i className="ti ti-mail text-[#D82F5A]"></i> Email
-                        </h4>
-                        <p className="text-[#616161] text-[13px] underline underline-offset-8 decoration-[#D82F5A]/30 hover:text-[#D82F5A] transition-colors cursor-pointer">
-                            petisatukan@pnj.ac.id
-                        </p>
-                    </div>
-
-                </div>
-
-                {/* COPYRIGHT */}
-                <div className="bg-black py-6 -mx-10">
-                    <p className="text-center text-white text-sm opacity-70">
-                        © 2026 CHURNGUARD CRM. Hak Cipta Dilindungi Undang-Undang.
-                    </p>
-                </div>
-            </footer>
         </div>
     );
 };

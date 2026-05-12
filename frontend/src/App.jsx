@@ -37,12 +37,16 @@ import MemberPayment from "./memberPayment.jsx";
 import Feedback from "./Feedback.jsx";
 import RiwayatPrediksi from "./RiwayatPrediksi.jsx";
 import LandingPage from "./LandingPage.jsx";
+import AnalisisUlasan from "./AnalisisUlasan.jsx";
+import DashboarHistory from "./DashboardHistory.jsx";
 
 
 export default function App() {
   return (
     <NotificationProvider>
       <Routes>
+        <Route path="/dashboardhistory" element = {<DashboarHistory />} />
+        <Route path="/analisisUlasan" element = {<AnalisisUlasan />} />
         <Route path="/landingpage" element={<LandingPage />} />
         <Route path="/dashboardUser" element={<DashboardUser />} />
         <Route path="/uploadData" element={<UploadData />} />
