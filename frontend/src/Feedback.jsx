@@ -22,6 +22,7 @@ import { IconBrandMyOppo } from '@tabler/icons-react';
 import { IconUserCircle } from '@tabler/icons-react';
 import { IconLogout2 } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const Feedback = () => {
   const [rating, setRating] = useState(0);
@@ -34,6 +35,58 @@ const Feedback = () => {
     e.preventDefault();
     setSubmitted(true);
     setTimeout(() => setSubmitted(false), 3000);
+  };
+
+  const [feedbackData, setFeedbackData] = useState({
+    topik: "",
+    subjek: "",
+    isi_feed: ""
+  });
+
+  const sendFeed = async (e) => {
+    e.preventDefault();
+
+    const token = localStorage.getItem("token");
+
+    try {
+
+      const response = await axios.post(
+        'http://localhost:5000/feedback/sendFeed',
+        {
+          topik: feedbackData.topik,
+          subjek: feedbackData.subjek,
+          isi_feed: feedbackData.isi_feed,
+          rating: rating
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          }
+        }
+      );
+
+      console.log(response.data);
+
+      setSubmitted(true);
+
+      setTimeout(() => {
+        setSubmitted(false);
+      }, 3000);
+
+      setFeedbackData({
+        topik: "",
+        subjek: "",
+        isi_feed: ""
+      });
+
+      setRating(0);
+
+    } catch (error) {
+
+      console.log(error);
+
+    }
   };
 
   return (
@@ -71,9 +124,9 @@ const Feedback = () => {
             </div>
 
             {/* Riwayat Prediksi - INACTIVE */}
-            <div 
-            onClick={() => navigate('/riwayatPrediksi')}
-            className="text-[#E2A7B8] flex items-center gap-4 px-6 py-4 rounded-[4px] hover:bg-gray-50 cursor-pointer transition-all">
+            <div
+              onClick={() => navigate('/riwayatPrediksi')}
+              className="text-[#E2A7B8] flex items-center gap-4 px-6 py-4 rounded-[4px] hover:bg-gray-50 cursor-pointer transition-all">
               <i className="ti ti-history text-xl" style={{ WebkitTextStroke: '0.5px white', paintOrder: 'stroke fill' }}></i>
               <span className="text-sm">Riwayat Prediksi</span>
             </div>
@@ -205,11 +258,20 @@ const Feedback = () => {
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-black">Topik Masukan</label>
                       <div className="relative">
-                        <select className="w-full bg-white border border-[#ededed] h-10 px-3 rounded-[4px] outline-none text-xs text-gray-700 appearance-none focus:border-[#ededed] transition-colors">
-                          <option>Pilih Kategori</option>
-                          <option>UI Accuracy</option>
-                          <option>Prediction Speed</option>
-                          <option>Data Security</option>
+                        <select
+                          value={feedbackData.topik}
+                          onChange={(e) =>
+                            setFeedbackData({
+                              ...feedbackData,
+                              topik: e.target.value
+                            })
+                          }
+                          className="w-full bg-white border border-[#ededed] h-10 px-3 rounded-[4px] outline-none text-xs text-gray-700 appearance-none focus:border-[#ededed] transition-colors"
+                        >
+                          <option value="">Pilih Kategori</option>
+                          <option value="UI Accuracy">UI Accuracy</option>
+                          <option value="Prediction Speed">Prediction Speed</option>
+                          <option value="Data Security">Data Security</option>
                         </select>
 
                         {/* Icon Dropdown */}
@@ -223,6 +285,13 @@ const Feedback = () => {
                       <label className="text-sm font-medium text-black">Subjek</label>
                       <input
                         type="text"
+                        value={feedbackData.subjek}
+                        onChange={(e) =>
+                          setFeedbackData({
+                            ...feedbackData,
+                            subjek: e.target.value
+                          })
+                        }
                         placeholder="Misal: Kendala sinkronisasi"
                         className="w-full bg-white border border-[#ededed] h-10 px-3 rounded-[4px] outline-none text-xs text-gray-700 focus:border-[#ededed] transition-colors"
                       />
@@ -232,6 +301,13 @@ const Feedback = () => {
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-black">Deskripsi Ulasan</label>
                     <textarea
+                      value={feedbackData.isi_feed}
+                      onChange={(e) =>
+                        setFeedbackData({
+                          ...feedbackData,
+                          isi_feed: e.target.value
+                        })
+                      }
                       placeholder="Deskripsikan masukan Anda secara mendetail..."
                       className="w-full border border-[#ededed] p-4 rounded-[4px] outline-none text-xs text-gray-700 focus:border-[#ededed] transition-colors min-h-[150px] resize-none"
                     ></textarea>
@@ -239,6 +315,7 @@ const Feedback = () => {
 
                   <button
                     type="submit"
+                    onClick={sendFeed}
                     className="bg-black text-white px-8 h-10 rounded-[4px] font-medium text-xs hover:bg-gray-800 transition-all flex items-center justify-center gap-2"
                   >
                     Kirim Feedback <IconSend size={14} />

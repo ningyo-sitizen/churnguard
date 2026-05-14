@@ -9,11 +9,11 @@ import {
     IconUserCircle,
     IconLogout2
 } from '@tabler/icons-react';
-
+import Sidebar from "./SideBar";
+import Header from "./Header";
 export default function CostumerDetail() {
-
+    const [disableButton, setDisableButton] = useState(false);
     const navigate = useNavigate();
-
     const [searchParams] = useSearchParams();
 
     const prediction_id = searchParams.get("prediction_id");
@@ -81,7 +81,6 @@ export default function CostumerDetail() {
             );
 
             setEmailMessage(response.data.html);
-            setChatMessage(response.data.html);
 
             setShowPopup(false);
 
@@ -110,6 +109,9 @@ export default function CostumerDetail() {
                 );
 
                 setDetail(response.data.data);
+                setChatMessage(response.data.data.email_sent)
+
+                setDisableButton(response.data.data.email_sent?.length > 0)
 
             } catch (error) {
 
@@ -205,7 +207,7 @@ export default function CostumerDetail() {
             icon: 'ti-star'
         },
         {
-            label: 'Subscription',
+            label: 'Subscription',  
             value: detail.SubscriptionType,
             icon: 'ti-crown'
         },
@@ -216,43 +218,7 @@ export default function CostumerDetail() {
         <div className="flex min-h-screen bg-[#F9FAFB] font-['Plus_Jakarta_Sans',sans-serif] text-[#1F2937]">
 
             {/* SIDEBAR */}
-            <aside className="w-[280px] bg-white border-r border-gray-100 flex flex-col h-screen sticky top-0 z-20">
-
-                <div className="pt-10 pb-4 flex flex-col items-center">
-
-                    <img
-                        src={logochurn}
-                        alt="logochurn"
-                        className="w-28 h-auto"
-                    />
-
-                    <div className="w-[85%] border-b border-gray-100 mt-4"></div>
-
-                </div>
-
-                <nav className="flex-1 px-4 space-y-2 mt-4">
-
-                    <div
-                        onClick={() => navigate('/DashboardUser')}
-                        className="bg-[#FEF5F6] text-[#D82F5A] flex items-center gap-4 px-5 py-3 rounded-[4px] cursor-pointer"
-                    >
-                        <i className="ti ti-home text-xl"></i>
-                        <span className="text-sm">Dashboard</span>
-                    </div>
-
-                    <div className="text-[#E2A7B8] flex items-center gap-4 px-6 py-4 rounded-[4px] hover:bg-gray-50 cursor-pointer">
-                        <i className="ti ti-chart-bar text-xl"></i>
-                        <span className="text-sm">Analisis</span>
-                    </div>
-
-                    <div className="text-[#E2A7B8] flex items-center gap-4 px-6 py-4 rounded-[4px] hover:bg-gray-50 cursor-pointer">
-                        <i className="ti ti-history text-xl"></i>
-                        <span className="text-sm">Riwayat</span>
-                    </div>
-
-                </nav>
-
-            </aside>
+        <Sidebar></Sidebar>
 
             {/* MAIN */}
             <main className="flex-grow flex flex-col">
@@ -518,10 +484,32 @@ export default function CostumerDetail() {
                                     />
 
                                     <button
+                                        disabled={disableButton}
                                         onClick={handleSendChat}
+                                        className={`
+                                            w-full py-3 rounded-[4px] text-white transition-all
+                                            ${disableButton
+                                                ? "bg-gray-400 cursor-not-allowed"
+                                                : "bg-[#D82F5A] hover:bg-[#bb244a]"
+                                            }
+    `}                                    >
+                                        Kirim Pesan
+                                    </button>
+
+                                    <button
+                                        
+                                        onClick={() => {
+
+                                            const previewWindow = window.open("", "_blank");
+
+                                            previewWindow.document.write(chatMessage);
+
+                                            previewWindow.document.close();
+
+                                        }}
                                         className="w-full mt-3 bg-black text-white py-3 rounded-[4px]"
                                     >
-                                        Kirim Pesan
+                                        view pesan
                                     </button>
 
                                 </div>
@@ -561,13 +549,21 @@ export default function CostumerDetail() {
                                     <div className="flex gap-3 mt-4">
 
                                         <button
+                                            disabled={disableButton}
                                             onClick={() => setShowPopup(true)}
-                                            className="w-full bg-[#D82F5A] text-white py-3 rounded-[4px]"
+                                            className={`
+                                            w-full py-3 rounded-[4px] text-white transition-all
+                                            ${disableButton
+                                                    ? "bg-gray-400 cursor-not-allowed"
+                                                    : "bg-[#D82F5A] hover:bg-[#bb244a]"
+                                                }
+    `}
                                         >
                                             Generate Email
                                         </button>
 
                                         <button
+                                            disabled={disableButton}
                                             onClick={() => {
 
                                                 const previewWindow = window.open("", "_blank");
@@ -577,7 +573,13 @@ export default function CostumerDetail() {
                                                 previewWindow.document.close();
 
                                             }}
-                                            className="w-full bg-black text-white py-3 rounded-[4px]"
+                                            className={`
+                                            w-full py-3 rounded-[4px] text-white transition-all
+                                            ${disableButton
+                                                    ? "bg-gray-400 cursor-not-allowed"
+                                                    : "bg-[#D82F5A] hover:bg-[#bb244a]"
+                                                }
+    `}
                                         >
                                             Preview
                                         </button>

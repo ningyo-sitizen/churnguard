@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const churnguard_con = require("../config/db");
 
+
 exports.googleCallback = async (req, res) => {
   const mode = req.query.state;
 
@@ -81,15 +82,12 @@ exports.googleCallback = async (req, res) => {
     );
   }
     const [rows] = await churnguard_con.query(
-      "SELECT role FROM users WHERE email = ?",
+      "SELECT * FROM users WHERE email = ?",
       [profile.email]
     );
 
   const user = {
     email: profile.email,
-    name: profile.displayName,
-    googleId: profile.id,
-    avatar: avatar,
     sessionVersion: sessionVersion,
     role: rows[0]?.role
   };

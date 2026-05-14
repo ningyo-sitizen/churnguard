@@ -7,7 +7,7 @@ import { IconLogout2 } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom';
 import axios from "axios";
 import { useAuth } from "../utils/auth";
-
+import Sidebar from './SideBar';
 
 const UploadDataFull = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -83,51 +83,7 @@ const UploadDataFull = () => {
         <div className="flex min-h-screen bg-[#F9FAFB] text-[#111827]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
 
             {/* --- SIDEBAR --- */}
-            <aside className="w-[280px] bg-white border-r border-gray-100 flex flex-col h-screen sticky top-0 z-20 font-['Plus_Jakarta_Sans',sans-serif]">
-                {/* Logo Section */}
-                <div className="pt-10 pb-4 flex flex-col items-center">
-                    <div className="flex flex-col items-center mb-4">
-                        <img
-                            src={logochurn}
-                            alt="logochurn"
-                            className="w-28 h-auto" // Logo ukuran sedang (pas)
-                        />
-                    </div>
-                    <div className="w-[85%] border-b border-gray-100"></div>
-                </div>
-
-                {/* Navigation Menu */}
-                <nav className="flex-1 px-4 space-y-2 mt-4">
-
-                    {/* Dashboard - ACTIVE (Pakai ti-home) */}
-                    <div className="bg-[#FEF5F6] text-[#D82F5A] flex items-center gap-4 px-5 py-3 rounded-[4px] cursor-pointer transition-all">
-                        <i className="ti ti-home text-xl" style={{ WebkitTextStroke: '0.5px white', paintOrder: 'stroke fill' }}></i>
-                        <span className="text-sm">Dashboard</span>
-                    </div>
-
-                    {/* Analisis Ulasan - INACTIVE */}
-                    <div className="text-[#E2A7B8] flex items-center gap-4 px-6 py-4 rounded-[4px] hover:bg-gray-50 cursor-pointer transition-all">
-                        <i className="ti ti-chart-bar text-xl" style={{ WebkitTextStroke: '0.5px white', paintOrder: 'stroke fill' }}></i>
-                        <span className="text-sm">Analisis Ulasan</span>
-                    </div>
-
-                    {/* Riwayat Prediksi - INACTIVE */}
-                    <div className="text-[#E2A7B8] flex items-center gap-4 px-6 py-4 rounded-[4px] hover:bg-gray-50 cursor-pointer transition-all">
-                        <i className="ti ti-history text-xl" style={{ WebkitTextStroke: '0.5px white', paintOrder: 'stroke fill' }}></i>
-                        <span className="text-sm">Riwayat Prediksi</span>
-                    </div>
-
-
-                    <div
-                        onClick={() => navigate('/feedback')}
-                        className="text-[#E2A7B8] flex items-center gap-4 px-6 py-4 rounded-[4px] hover:bg-gray-50 cursor-pointer transition-all"
-                    >
-                        <i className="ti ti-message text-xl" style={{ WebkitTextStroke: '0.5px white', paintOrder: 'stroke fill' }}></i>
-                        <span className="text-sm">User Feedback</span>
-                    </div>
-
-                </nav>
-            </aside>
+        <Sidebar></Sidebar>
             {/* --- MAIN SECTION --- */}
             <main className="flex-1 overflow-x-hidden">
 

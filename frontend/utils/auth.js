@@ -4,16 +4,19 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 export const useAuth = (options = {}) => {
+
   const {
-    redirect = true,     
+    redirect = true,
     requireRole = "user",
     validateServer = false
   } = options;
 
   const [user, setUser] = useState(null);
+
   const navigate = useNavigate();
 
   useEffect(() => {
+
     const token = localStorage.getItem("token");
 
     if (!token) {
@@ -21,40 +24,71 @@ export const useAuth = (options = {}) => {
       return;
     }
 
-    try {
-      const decoded = jwtDecode(token);
-      const now = Date.now() / 1000;
+    const fetchUser = async () => {
 
-      if (decoded.exp < now) {
-        throw new Error("expired");
-      }
+      try {
 
-      if (requireRole && decoded.role !== requireRole) {
-        navigate("/signup");
-        return;
-      }
+        const decoded = jwtDecode(token);
 
-      setUser(decoded);
+        const now = Date.now() / 1000;
 
-      if (validateServer) {
-        axios.get("http://localhost:5000/test/ping", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }).catch((error) => {
-          const status = error.response?.status;
+        if (decoded.exp < now) {
+          throw new Error("expired");
+        }
 
-          if (status === 401 || status === 403) {
-            localStorage.removeItem("token");
-            navigate("/signup");
+        if (
+          requireRole &&
+          decoded.role !== requireRole
+        ) {
+          navigate("/signup");
+          return;
+        }
+
+        // VALIDASI SERVER OPTIONAL
+        if (validateServer) {
+
+          await axios.get(
+            "http://localhost:5000/test/ping",
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+
+        }
+
+        // AMBIL DATA USER DARI DB
+        const res = await axios.get(
+          "http://localhost:5000/auth/me",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           }
+        );
+
+        setUser({
+          ...res.data,
+          role: decoded.role
         });
+
+      } catch (error) {
+
+        console.log(error);
+
+        localStorage.removeItem("token");
+
+        if (redirect) {
+          navigate("/signup");
+        }
+
       }
 
-    } catch {
-      localStorage.removeItem("token");
-      if (redirect) navigate("/signup");
-    }
+    };
+
+    fetchUser();
+
   }, [navigate, redirect, requireRole, validateServer]);
 
   return user;

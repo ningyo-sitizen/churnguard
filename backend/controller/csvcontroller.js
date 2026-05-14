@@ -95,6 +95,7 @@ exports.validateCSV = async (req, res) => {
       fs.readFileSync(filePath);
 
     let text;
+
     if (
       raw[0] === 0xFF &&
       raw[1] === 0xFE
@@ -134,6 +135,10 @@ exports.validateCSV = async (req, res) => {
           .replace(/^\uFEFF/, "")
       );
 
+    // =========================
+    // HEADER VALIDATION
+    // =========================
+
     missingColumns =
       expected.filter(
         col =>
@@ -148,11 +153,14 @@ exports.validateCSV = async (req, res) => {
 
       headerError = {
         type: "missing_columns",
-        missing: missingColumns
+        missing: missingColumns,
+        expected,
+        got: actualHeaders
       };
 
     }
-    if (orderMismatch) {
+
+    else if (orderMismatch) {
 
       headerError = {
         type: "order_mismatch",
@@ -161,6 +169,11 @@ exports.validateCSV = async (req, res) => {
       };
 
     }
+
+    // =========================
+    // INIT COLUMN STATS
+    // =========================
+
     actualHeaders.forEach(col => {
 
       columnStats[col] = {
@@ -170,6 +183,13 @@ exports.validateCSV = async (req, res) => {
       };
 
     });
+
+    let acceptedRows = 0;
+
+    // =========================
+    // VALIDATE ROWS
+    // =========================
+
     for (
       let i = 1;
       i < lines.length;
@@ -195,16 +215,25 @@ exports.validateCSV = async (req, res) => {
 
       const values = line.split(",");
 
+      let rowHasError = false;
+
       actualHeaders.forEach(
         (key, index) => {
 
           const value =
             values[index]?.trim();
+
+          // =========================
+          // EMPTY VALIDATION
+          // =========================
+
           if (
             value === undefined ||
             value === null ||
             value === ""
           ) {
+
+            rowHasError = true;
 
             errors.push({
               row: i + 1,
@@ -213,6 +242,10 @@ exports.validateCSV = async (req, res) => {
             });
 
           }
+
+          // =========================
+          // STATS
+          // =========================
 
           if (columnStats[key]) {
 
@@ -237,7 +270,9 @@ exports.validateCSV = async (req, res) => {
               columnStats[key]
                 .type = "number";
 
-            } else if (
+            }
+
+            else if (
               value === "true" ||
               value === "false"
             ) {
@@ -245,16 +280,27 @@ exports.validateCSV = async (req, res) => {
               columnStats[key]
                 .type = "boolean";
 
-            } else {
+            }
+
+            else {
 
               columnStats[key]
                 .type = "string";
 
             }
+
           }
 
         }
       );
+
+      // =========================
+      // ACCEPTED ROW
+      // =========================
+
+      if (!rowHasError) {
+        acceptedRows++;
+      }
 
     }
 
@@ -321,10 +367,23 @@ exports.validateCSV = async (req, res) => {
 
     return res.json({
       status: "success",
+
+      // TOTAL CSV ROW
       totalRows: rowNumber,
+
+      // ROW VALID
+      acceptedRows,
+
+      // TOTAL ERROR
       totalError: errors.length,
+
+      // HEADER ERROR
       headerError,
+
+      // DETAIL ERROR
       missingData: errors,
+
+      // SUMMARY
       columnSummary
     });
 

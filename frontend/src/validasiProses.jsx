@@ -9,13 +9,19 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from "../utils/auth";
 import { jwtDecode } from "jwt-decode";
 import { useNotif } from "./NotificationContext";
+import Header from './Header';
+import Footer from './footer';
+import Sidebar from './SideBar';
 import axios from 'axios';
 
 const ValidasiProses = () => {
+    const [disableButton, setDisableButton] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
+    const [showRowDetail, setShowRowDetail] = useState(false);
+    const [showHeaderDetail, setShowHeaderDetail] = useState(false);
     const navigate = useNavigate();
 
-    const {showNotif} = useNotif()
+    const { showNotif } = useNotif()
 
     const user = useAuth()
 
@@ -29,13 +35,13 @@ const ValidasiProses = () => {
     const file = location.state?.file;
 
     useEffect(() => {
+        console.log(validation)
         if (!validation) {
             navigate("/uploadData", { replace: true });
             showNotif("error", "mohon isi ulang file");
         }
 
     }, [validation, navigate]);
-
     const handleProcessData = () => {
         setLoadingProgress(0);
         setIsLoadingProcess(true);
@@ -95,10 +101,26 @@ const ValidasiProses = () => {
     const {
         totalRows = 0,
         totalError = 0,
-        headerError = [],
+        headerError = null,
         missingData = [],
         columnSummary = []
     } = validation || {};
+
+    useEffect(() => {
+        const noHeaderError =
+            !headerError || Object.keys(headerError).length === 0;
+
+        if (
+            totalError === 0 &&
+            noHeaderError &&
+            missingData?.length === 0
+        ) {
+            setDisableButton(false);
+        } else {
+            setDisableButton(true);
+        }
+    }, [totalError, headerError, missingData]);
+
 
     return (
         <div className="flex min-h-screen bg-[#F9FAFB] text-[#111827]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
@@ -154,79 +176,7 @@ const ValidasiProses = () => {
             {/* MAIN CONTENT */}
             <div className="flex-1 flex flex-col">
                 {/* HEADER - Benerin typo z-50 */}
-                <header className="h-20 bg-white border-b border-gray-100 flex items-center justify-end px-10 gap-6 sticky top-0 z-50">
-
-                    {/* Notification Bell */}
-                    <div className="w-10 h-10 border border-[#FEF5F6] rounded-xl flex items-center justify-center text-gray-500 cursor-pointer hover:bg-gray-50 transition-all group">
-                        <i className="ti ti-bell text-xl group-hover:shake"></i>
-                    </div>
-
-                    {/* User Profile Section dengan Dropdown */}
-                    <div className="relative">
-                        {/* Trigger Area */}
-                        <div
-                            className="flex items-center gap-3 pl-6 border-l border-gray-100 h-10 cursor-pointer group"
-                            onClick={() => setIsOpen(!isOpen)}
-                        >
-                            <img
-                                src="https://ui-avatars.com/api/?name=Zahrah+Purnama&background=D82F5A&color=fff&bold=true"
-                                className="w-10 h-10 rounded-xl object-cover shadow-sm"
-                                alt="avatar"
-                            />
-                            <div className="flex flex-col text-left leading-tight">
-                                <p className="text-sm font-semibold text-[#111827]">Hai, Zahrah Purnama</p>
-                                <p className="text-xs text-[#D82F5A] ">zahrah.purnama@gmail.com</p>
-                            </div>
-                            <i className={`ti ti-chevron-down text-gray-400 text-sm ml-1 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}></i>
-                        </div>
-
-                        {/* Dropdown Menu */}
-                        {isOpen && (
-                            <>
-                                <div className="fixed inset-0 z-[-1]" onClick={() => setIsOpen(false)}></div>
-
-                                <div className="absolute right-0 mt-4 w-72 bg-white rounded-[4px] shadow-[0px_10px_40px_rgba(0,0,0,0.08)] border border-gray-50 overflow-hidden z-50">
-
-                                    {/* Header Dropdown */}
-                                    <div className="p-5 flex items-center gap-4">
-                                        <div className="w-12 h-12 rounded-[4px] overflow-hidden bg-gray-100">
-                                            <img
-                                                src="https://ui-avatars.com/api/?name=Zahrah+Purnama&background=E0E0E0&color=9E9E9E&bold=true"
-                                                alt="profile"
-                                            />
-                                        </div>
-                                        <div className="flex flex-col text-left leading-tight">
-                                            <p className="text-sm font-semibold text-[#111827]">Zahrah Purnama</p>
-                                            <p className="text-xs text-[#D82F5A] ">User</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="border-b border-gray-100 mx-5"></div>
-
-                                    {/* List Menu */}
-                                    <div className="p-2">
-                                        <div className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-[#FEF5F6] text-[#E2A7B8] cursor-pointer transition-all group">
-                                            <IconUserCircle stroke={1.5} />
-                                            <span className="text-sm ">Profile</span>
-                                        </div>
-
-                                        <div className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-[#FEF5F6] text-[#E2A7B8] cursor-pointer transition-all group">
-                                            <IconBrandMyOppo stroke={1.5} />
-                                            <span className="text-sm ">Member</span>
-                                        </div>
-
-                                        <div className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-[#FEF5F6] text-[#E2A7B8] cursor-pointer transition-all group">
-                                            <IconLogout2 stroke={1.5} />
-                                            <span className="text-sm ">Keluar</span>
-                                        </div>
-                                    </div>
-
-                                </div>
-                            </>
-                        )}
-                    </div>
-                </header>
-
+                <Header formData={user} profileImg={user?.profileImg} />
                 {/* CONTENT AREA */}
                 <main className="p-10 flex-1">
                     <div className="mb-8">
@@ -279,43 +229,244 @@ const ValidasiProses = () => {
                         Ringkasan Error dan Peringatan
                     </h3>
                     <div className="grid grid-cols-3 gap-2 mb-12">
+
                         {[
                             {
                                 title: 'Total Rows',
-                                count: `${totalRows} data`,
-                                desc: 'Jumlah total data yang berhasil dibaca.'
+                                count: `${columnSummary.length} data`,
+                                desc: 'Jumlah total data yang berhasil diterima.',
+                                isRows: true
                             },
                             {
-                                title: 'Total Error',
+                                title: 'missing data',
                                 count: `${totalError} error ditemukan`,
-                                desc: 'Total error validasi pada file csv.'
+                                desc: 'missing data validasi pada file csv.',
+                                isError: true
                             },
                             {
                                 title: 'Header Error',
-                                count: `${headerError?.length || 0} header bermasalah`,
-                                desc: 'Periksa kembali nama kolom csv anda.'
+                                count: `${headerError?.type ? 1 : 0} header bermasalah`,
+                                desc: 'Periksa kembali nama kolom csv anda.',
+                                isHeader: true
                             }
                         ].map((err, i) => (
-                            <div key={i} className="bg-white border border-[#EDEDED] p-3 rounded-[4px] flex items-start gap-4">
-                                {/* Ikon Tanda Seru Merah */}
-                                <div className="w-10 h-10 rounded-full bg-[#FEF5F6] flex items-center justify-center flex-shrink-0">
-                                    <i className="ti ti-alert-triangle text-[#D82F5A] text-xl"></i>
+
+                            <div
+                                key={i}
+                                className="bg-white border border-[#EDEDED] p-3 rounded-[4px]"
+                            >
+
+                                <div className="flex items-start gap-4">
+
+                                    {/* ICON */}
+                                    <div className="w-10 h-10 rounded-full bg-[#FEF5F6] flex items-center justify-center flex-shrink-0">
+                                        <i className="ti ti-alert-triangle text-[#D82F5A] text-xl"></i>
+                                    </div>
+
+                                    {/* CONTENT */}
+                                    <div className="flex-1">
+
+                                        <div className="flex items-start justify-between gap-3">
+
+                                            <div>
+                                                <h4 className="text-sm font-medium text-[#111827]">
+                                                    {err.title}
+
+                                                    <span className="text-[#D82F5A] ml-2 text-xs">
+                                                        {err.count}
+                                                    </span>
+                                                </h4>
+
+                                                <p className="text-xs text-[#929191] mt-1 leading-relaxed">
+                                                    {err.desc}
+                                                </p>
+                                            </div>
+
+                                            {/* BUTTON DETAIL */}
+                                            {err.isError && missingData?.length > 0 && (
+                                                <button
+                                                    onClick={() =>
+                                                        setShowRowDetail(!showRowDetail)
+                                                    }
+                                                    className="
+                                    text-xs
+                                    border
+                                    border-[#D82F5A]
+                                    text-[#D82F5A]
+                                    px-3
+                                    py-1
+                                    rounded
+                                    hover:bg-[#D82F5A]
+                                    hover:text-white
+                                    transition-all
+                                "
+                                                >
+                                                    {showRowDetail
+                                                        ? "Hide Detail"
+                                                        : "View Detail"}
+                                                </button>
+                                            )}
+
+                                            {err.isHeader && headerError?.type && (
+                                                <button
+                                                    onClick={() =>
+                                                        setShowHeaderDetail(!showHeaderDetail)
+                                                    }
+                                                    className="
+                                    text-xs
+                                    border
+                                    border-[#D82F5A]
+                                    text-[#D82F5A]
+                                    px-3
+                                    py-1
+                                    rounded
+                                    hover:bg-[#D82F5A]
+                                    hover:text-white
+                                    transition-all
+                                "
+                                                >
+                                                    {showHeaderDetail
+                                                        ? "Hide Detail"
+                                                        : "View Detail"}
+                                                </button>
+                                            )}
+
+                                        </div>
+
+                                        {/* ========================= */}
+                                        {/* TOTAL ERROR DETAIL */}
+                                        {/* ========================= */}
+
+                                        {err.isError && showRowDetail && (
+
+                                            <div className="mt-4 border-t pt-4">
+
+                                                <p className="text-xs font-semibold text-[#111827] mb-3">
+                                                    Missing Data Detail
+                                                </p>
+
+                                                <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1">
+
+                                                    {missingData.map((item, idx) => (
+
+                                                        <div
+                                                            key={idx}
+                                                            className="
+                                            border
+                                            border-[#F3F4F6]
+                                            rounded
+                                            p-2
+                                            text-xs
+                                            bg-[#FAFAFA]
+                                        "
+                                                        >
+
+                                                            <div className="flex items-center gap-2 flex-wrap">
+
+                                                                <span className="px-2 py-1 bg-[#FEF2F2] text-[#D82F5A] rounded">
+                                                                    Row {item.row}
+                                                                </span>
+
+                                                                <span className="px-2 py-1 bg-[#EFF6FF] text-[#2563EB] rounded">
+                                                                    {item.column}
+                                                                </span>
+
+                                                            </div>
+
+                                                            <p className="text-[#6B7280] mt-2">
+                                                                {item.message}
+                                                            </p>
+
+                                                        </div>
+
+                                                    ))}
+
+                                                </div>
+
+                                            </div>
+
+                                        )}
+
+                                        {/* ========================= */}
+                                        {/* HEADER DETAIL */}
+                                        {/* ========================= */}
+
+                                        {err.isHeader &&
+                                            showHeaderDetail &&
+                                            headerError && (
+
+                                                <div className="mt-4 border-t pt-4">
+
+                                                    <div className="mb-4">
+
+                                                        <p className="text-xs font-semibold text-[#111827] mb-2">
+                                                            Error Type
+                                                        </p>
+
+                                                        <span className="px-2 py-1 bg-[#FEF2F2] text-[#D82F5A] rounded text-xs">
+                                                            {headerError.type}
+                                                        </span>
+
+                                                    </div>
+
+                                                    <div className="mb-4">
+
+                                                        <p className="text-xs font-semibold text-[#111827] mb-2">
+                                                            Expected Header
+                                                        </p>
+
+                                                        <div className="flex flex-wrap gap-2">
+
+                                                            {headerError.expected?.map((item, idx) => (
+
+                                                                <span
+                                                                    key={idx}
+                                                                    className="px-2 py-1 bg-[#F3F4F6] rounded text-xs text-[#374151]"
+                                                                >
+                                                                    {item}
+                                                                </span>
+
+                                                            ))}
+
+                                                        </div>
+
+                                                    </div>
+
+                                                    <div>
+
+                                                        <p className="text-xs font-semibold text-[#111827] mb-2">
+                                                            CSV Header Found
+                                                        </p>
+
+                                                        <div className="flex flex-wrap gap-2">
+
+                                                            {headerError.got?.map((item, idx) => (
+
+                                                                <span
+                                                                    key={idx}
+                                                                    className="px-2 py-1 bg-[#FEF2F2] rounded text-xs text-[#D82F5A]"
+                                                                >
+                                                                    {item}
+                                                                </span>
+
+                                                            ))}
+
+                                                        </div>
+
+                                                    </div>
+
+                                                </div>
+
+                                            )}
+
+                                    </div>
+
                                 </div>
 
-                                {/* Konten Teks */}
-                                <div className="pt-0.5">
-                                    <h4 className="text-sm font-medium text-[#111827]">
-                                        {err.title}
-                                        <span className="text-[#D82F5A] ml-2 text-xs">
-                                            {err.count}
-                                        </span>
-                                    </h4>
-                                    <p className="text-xs text-[#929191] mt-1 leading-relaxed">
-                                        {err.desc}
-                                    </p>
-                                </div>
                             </div>
+
                         ))}
+
                     </div>
 
                     {/* TABLE PREVIEW */}
@@ -409,8 +560,14 @@ const ValidasiProses = () => {
                         {/* TOMBOL PROSES DATA */}
                         {/* 1. TOMBOL PROSES DATA (PASTIKAN INI ADA) */}
                         <button
+                            disabled={disableButton}
                             onClick={handleUploadpy}
-                            className="px-8 py-2 bg-[#111827] text-white rounded-[4px] text-sm font-semibold hover:bg-black flex items-center gap-4 transition-all shadow-xl active:scale-95 group"
+                            className=
+                            {`px-8 py-2 bg-[#111827] text-white rounded-[4px] text-sm font-semibold hover:bg-black flex items-center gap-4 transition-all shadow-xl active:scale-95 group
+                                    ${disableButton
+                                    ? "bg-gray-400 cursor-not-allowed"
+                                    : "bg-[#D82F5A] hover:bg-[#bb244a]"
+                                }`}
                         >
                             Proses Data
                             <i className="ti ti-chevron-right text-lg group-hover:translate-x-1 transition-transform"></i>

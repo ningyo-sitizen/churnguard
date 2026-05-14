@@ -503,7 +503,7 @@ exports.getPredictionDashboardHistory = async (req, res) => {
             WHERE user_email = ? 
             AND status = ?
             `,
-      [email, "active"]
+      [email, "saved"]
     );
 
     if (active.length === 0) {

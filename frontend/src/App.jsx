@@ -39,12 +39,13 @@ import RiwayatPrediksi from "./RiwayatPrediksi.jsx";
 import LandingPage from "./LandingPage.jsx";
 import AnalisisUlasan from "./AnalisisUlasan.jsx";
 import DashboarHistory from "./DashboardHistory.jsx";
-
+import ProfilePage from "./ProfilePage.jsx";
 
 export default function App() {
   return (
     <NotificationProvider>
       <Routes>
+        <Route path="/profilepage" element = {<ProfilePage />} />
         <Route path="/dashboardhistory" element = {<DashboarHistory />} />
         <Route path="/analisisUlasan" element = {<AnalisisUlasan />} />
         <Route path="/landingpage" element={<LandingPage />} />

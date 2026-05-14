@@ -554,6 +554,7 @@ exports.bulkSend = async (req, res) => {
         const email = decoded.email;
 
         const promoList = [
+            
             {
                 name: promo_ALL_R_H_S,
                 value: promo_ALL_R_H_S_value,
@@ -561,33 +562,39 @@ exports.bulkSend = async (req, res) => {
                 risk: "High-Medium-Low",
                 segment: "Basic Frustrated user"
             },
+
             {
                 name: promo_H_M_R_L_S,
                 value: promo_H_M_R_L_S_value,
                 expired: promo_H_M_R_L_S_expired,
                 risk: "High-Medium",
-                segment: "Experienced User"
+                segment: "Experienced user"
             },
+
             {
                 name: promo_M_H_R_M_S,
                 value: promo_M_H_R_M_S_value,
                 expired: promo_M_H_R_M_S_expired,
                 risk: "Medium-High",
-                segment: "Basic User"
+                segment: "Basic user"
             },
+
             {
                 name: promo_L_R_M_L_S,
                 value: promo_L_R_M_L_S_value,
                 expired: promo_L_R_M_L_S_expired,
                 risk: "Low",
-                segment: "Basic User-Experienced User"
+                segment: "Basic user-Experienced user"
             }
+
         ];
 
         const [rows] = await churnguard_con.query(
             `SELECT prediction_id 
              FROM prediction_list 
-             WHERE user_email = ?`,
+             WHERE user_email = ?
+             AND status = "active"`
+             ,
             [email]
         );
 
@@ -619,6 +626,7 @@ exports.bulkSend = async (req, res) => {
                 ]
             );
             console.log(`Found customers for ${promo.name}:`, customerRows.length);
+            console.log(prediction_id)
 
             if (!customerRows || customerRows.length === 0) {
                 continue;

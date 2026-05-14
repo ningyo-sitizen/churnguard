@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { UserCircle, LogOut, Crown } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Header = ({ formData, profileImg }) => {
+    const navigate = useNavigate();
     const [isOpen, setIsOpen] = useState(false);
 
     return (
@@ -77,7 +79,10 @@ const Header = ({ formData, profileImg }) => {
                             {/* MENU */}
                             <div className="p-2">
 
-                                <div className="flex items-center gap-4 px-4 py-3 hover:bg-gray-50 cursor-pointer">
+                                <div className="flex items-center gap-4 px-4 py-3 hover:bg-gray-50 cursor-pointer"
+                                onClick={() => navigate('/profilepage')}
+                                >
+                                    
                                     <UserCircle size={18} />
                                     <span>Profile</span>
                                 </div>
