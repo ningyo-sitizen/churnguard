@@ -12,14 +12,15 @@ exports.get_otp = async (req, res) => {
       return res.status(400).json({ message: "Email required" });
     }
     const [rows] = await churnguard_con.query(
-      
+
       "SELECT * FROM otp_codes WHERE email = ?",
       [email]
     );
     if (rows.length > 0 && new Date() < rows[0].expires_at) {
-      return res.status(401).json({
-        message: "Masih memiliki kode OTP aktif"
-      });
+      await churnguard_con.query(
+        "DELETE FROM otp_codes WHERE email = ?",
+        [email]
+      );
     }
 
     if (rows.length > 0 && new Date() > rows[0].expires_at) {
