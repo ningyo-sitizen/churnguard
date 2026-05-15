@@ -1,111 +1,110 @@
-import { useState } from "react";
-import { UserCircle, LogOut, Crown } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from 'react';
+import { Crown, ChevronDown, UserCircle, LogOut, AlertCircle, X } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Header = ({ formData, profileImg }) => {
-    const navigate = useNavigate();
     const [isOpen, setIsOpen] = useState(false);
+    const [showLogoutModal, setShowLogoutModal] = useState(false);
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        setShowLogoutModal(false);
+        navigate('/landingpage');
+        setShowLogoutModal(false);
+        // Kirim state 'loggedOut: true' saat redirect
+        navigate('/landingpage', { state: { loggedOut: true } });
+    };
+
 
     return (
-        <header className="h-20 bg-white border-b border-gray-100 flex items-center justify-end px-10 sticky top-0 z-50">
+        <>
+            <header className="h-20 bg-white/80 backdrop-blur-md border-b border-gray-100 flex items-center justify-end px-10 sticky top-0 z-[50]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
 
-            <div className="relative">
-
-                {/* TRIGGER */}
-                <div
-                    onClick={() => setIsOpen(!isOpen)}
-                    className="flex items-center gap-3 cursor-pointer"
-                >
-
-                    <img
-                        src={
-                            profileImg
-                                ? profileImg
-                                : `https://ui-avatars.com/api/?name=${formData?.name || "User"}`
-                        }
-                        className="w-10 h-10 rounded-xl"
-                        alt="avatar"
-                    />
-                    
-                    <div>
-                        <p className="text-sm font-semibold">
-                            hai, {formData?.name?.split(" ")[0] || "User"}
-                        </p>
-
-                        <p className="text-xs text-[#D82F5A]">
-                            {formData?.email || "-"}
-                        </p>
-                    </div>
-
-                </div>
-
-                {/* DROPDOWN */}
-                {isOpen && (
-                    <>
-                        <div
-                            className="fixed inset-0 z-40"
-                            onClick={() => setIsOpen(false)}
-                        />
-
-                        <div className="absolute right-0 mt-4 w-72 bg-white rounded-[4px] shadow-xl border z-50">
-
-                            {/* PROFILE HEADER */}
-                            <div className="p-5 flex items-center gap-4">
-
-                                <img
-                                    src={
-                                        profileImg
-                                            ? profileImg
-                                            : `https://ui-avatars.com/api/?name=${formData?.name || "User"}`
-                                    }
-                                    className="w-12 h-12 rounded-xl"
-                                    alt="profile"
-                                />
-
-                                <div>
-                                    <p className="font-semibold">
-                                        {formData?.name}
-                                    </p>
-
-                                    <p className="text-xs text-[#D82F5A]">
-                                        {formData.email}
-                                    </p>
-                                </div>
-
-                            </div>
-
-                            <div className="border-t" />
-
-                            {/* MENU */}
-                            <div className="p-2">
-
-                                <div className="flex items-center gap-4 px-4 py-3 hover:bg-gray-50 cursor-pointer"
-                                onClick={() => navigate('/profilepage')}
-                                >
-                                    
-                                    <UserCircle size={18} />
-                                    <span>Profile</span>
-                                </div>
-
-                                <div className="flex items-center gap-4 px-4 py-3 hover:bg-gray-50 cursor-pointer">
-                                    <Crown size={18} />
-                                    <span>Member</span>
-                                </div>
-
-                                <div className="flex items-center gap-4 px-4 py-3 hover:bg-gray-50 cursor-pointer text-red-500">
-                                    <LogOut size={18} />
-                                    <span>Logout</span>
-                                </div>
-
-                            </div>
-
+                {/* Sisi Kanan - Actions (Tetap sesuai design asli kamu) */}
+                <div className="flex items-center gap-4">
+                    <Link to="/member" className="relative group mr-2">
+                        <div className="p-2.5 bg-amber-50/50 text-amber-500 rounded-[4px] cursor-pointer hover:bg-amber-100 transition-all border border-transparent hover:border-amber-400 flex items-center justify-center">
+                            <Crown size={16} strokeWidth={2} />
                         </div>
-                    </>
-                )}
+                    </Link>
 
-            </div>
+                    <div className="relative border-l border-gray-100 pl-6">
+                        <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setIsOpen(!isOpen)}>
+                            <div className="w-10 h-10 rounded-xl overflow-hidden bg-gray-100 ring-1 ring-gray-100 shadow-sm">
+                                <img src={profileImg} alt="avatar" className="w-full h-full object-cover" />
+                            </div>
+                            <div className="flex flex-col text-left mr-2">
+                                <p className="text-[13px] font-semibold text-[#1a1a1a] leading-tight">Hai, {formData?.name?.split(' ')[0]}</p>
+                                <p className="text-[11px] text-rose-500 leading-tight">{formData?.email}</p>
+                            </div>
+                            <ChevronDown size={16} className={`text-gray-400 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                        </div>
 
-        </header>
+                        {isOpen && (
+                            <>
+                                <div className="fixed inset-0 z-[-1]" onClick={() => setIsOpen(false)}></div>
+                                <div className="absolute right-0 mt-4 w-72 bg-white rounded-[4px] shadow-[0px_10px_40px_rgba(0,0,0,0.08)] border border-gray-100 overflow-hidden z-50">
+                                    <div className="p-5 flex items-center gap-4">
+                                        <div className="w-12 h-12 rounded-xl overflow-hidden bg-gray-100">
+                                            <img src={profileImg} alt="profile" className="w-full h-full object-cover" />
+                                        </div>
+                                        <div className="flex flex-col text-left leading-tight">
+                                            <p className="text-sm font-semibold text-[#111827]">{formData?.nama}</p>
+                                            <p className="text-xs text-[#D82F5A] font-medium uppercase tracking-wider">User</p>
+                                        </div>
+                                    </div>
+                                    <div className="border-b border-gray-100 mx-5"></div>
+                                    <div className="p-2">
+                                        <Link to="/profile" onClick={() => setIsOpen(false)} className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-[#FEF5F6] text-[#E2A7B8] hover:text-[#D82F5A] transition-all no-underline">
+                                            <UserCircle size={22} strokeWidth={1.5} />
+                                            <span className="text-[13px] font-semibold">Profile</span>
+                                        </Link>
+                                        <button
+                                            onClick={() => { setIsOpen(false); setShowLogoutModal(true); }}
+                                            className="w-full flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-[#FEF5F6] text-[#E2A7B8] hover:text-red-600 transition-all border-none bg-transparent cursor-pointer"
+                                        >
+                                            <LogOut size={22} strokeWidth={1.5} />
+                                            <span className="text-[13px] font-semibold">Keluar</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </div>
+            </header>
+
+            {/* SIMPLE CLEAN LOGOUT MODAL */}
+            {showLogoutModal && (
+                <div className="fixed inset-0 bg-[#111827]/30 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+                    <div className="bg-white w-full max-w-[340px] rounded-[4px] shadow-xl border border-gray-100 p-8 text-center animate-in fade-in zoom-in duration-200">
+
+                        {/* Icon Only */}
+                        <div className="text-[#D82F5A] mb-4 flex justify-center">
+                            <AlertCircle size={40} strokeWidth={1.5} />
+                        </div>
+
+                        <h2 className="text-lg font-semibold text-[#111827] mb-2 tracking-tight">Konfirmasi Keluar</h2>
+                        <p className="text-[13px] text-gray-400 font-medium mb-8">Apakah anda yakin ingin mengakhiri sesi ini?</p>
+
+                        <div className="flex flex-col gap-2">
+                            <button
+                                onClick={handleLogout}
+                                className="w-full bg-[#111827] text-white py-3 rounded-[4px] text-[12px] font-semibold hover:bg-black transition-all"
+                            >
+                                Keluar Aplikasi
+                            </button>
+                            <button
+                                onClick={() => setShowLogoutModal(false)}
+                                className="w-full bg-white text-gray-400 py-3 rounded-[4px] text-[12px] font-semibold hover:text-[#111827] transition-all"
+                            >
+                                Batal
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </>
     );
 };
 

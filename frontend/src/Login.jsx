@@ -199,22 +199,20 @@ function Login() {
             <div className="flex text-sm mb-2">
               <span
                 onClick={() => navigate("/Login")}
-                className={`w-1/2 text-center cursor-pointer transition-all duration-300 ${
-                  !isSignup
+                className={`w-1/2 text-center cursor-pointer transition-all duration-300 ${!isSignup
                     ? "text-black font-medium"
                     : "text-[#929191]"
-                }`}
+                  }`}
               >
                 Login
               </span>
 
               <span
                 onClick={() => navigate("/SignUp")}
-                className={`w-1/2 text-center cursor-pointer transition-all duration-300 ${
-                  isSignup
+                className={`w-1/2 text-center cursor-pointer transition-all duration-300 ${isSignup
                     ? "text-black font-medium"
                     : "text-[#929191]"
-                }`}
+                  }`}
               >
                 Sign Up
               </span>
@@ -225,11 +223,10 @@ function Login() {
               <div
                 className={`absolute top-0 left-0 h-full w-1/2 bg-[#D82F5A]
                 transition-all duration-300 ease-in-out
-                ${
-                  isSignup
+                ${isSignup
                     ? "translate-x-full"
                     : "translate-x-0"
-                }`}
+                  }`}
               />
             </div>
 
@@ -258,7 +255,10 @@ function Login() {
                 <div className="flex items-center justify-between">
                   <p className="text-regular">Password</p>
 
-                  <p className="text-regular text-[#D82F5A] cursor-pointer">
+                  <p
+                    onClick={() => navigate('/forgetpass')}
+                    className="text-regular text-[#D82F5A] cursor-pointer"
+                  >
                     Lupa password?
                   </p>
                 </div>

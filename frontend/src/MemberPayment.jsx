@@ -22,9 +22,11 @@ import { IconBrandMyOppo } from '@tabler/icons-react';
 import { IconUserCircle } from '@tabler/icons-react';
 import { IconLogout2 } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom';
+import Header from './header';
+import { useAuth } from '../utils/auth';
 
 const MemberPayment = () => {
-  // Data Master Paket
+  const user = useAuth()
   const plans = [
     { id: 1, title: "Paket Premium Growth Strategist", duration: "1 Bulan", price: 499000, oldPrice: 549900 },
     { id: 2, title: "Paket Insight Enthusiast", duration: "3 Bulan", price: 199000, oldPrice: 549900 },
@@ -83,97 +85,7 @@ const MemberPayment = () => {
     <div className="min-h-screen bg-[#F9FAFB] font-['Plus_Jakarta_Sans',sans-serif] text-[#1F2937]">
       {/* NAVBAR */}
       {/* Tambahkan justify-between dan z-index yang sangat tinggi (z-50 atau lebih) */}
-      <header className="h-20 bg-white border-b border-gray-100 flex items-center justify-between px-10 sticky top-0 z-[100]">
-
-        {/* KIRI: Logo */}
-        <div className="flex items-center">
-          <img
-            src={logochurn}
-            alt="Logo Churn"
-            className="h-14 w-auto object-contain cursor-pointer"
-            onClick={() => window.location.href = '/'}
-          />
-        </div>
-
-        {/* KANAN: Navigasi & Profile */}
-        <div className="flex items-center gap-6">
-          {/* Notification Bell */}
-          <div className="w-10 h-10 border border-[#FEF5F6] rounded-xl flex items-center justify-center text-gray-500 cursor-pointer hover:bg-gray-50 transition-all group">
-            <i className="ti ti-bell text-xl group-hover:shake"></i>
-          </div>
-
-          {/* User Profile Section */}
-          <div className="relative">
-            {/* Trigger Area */}
-            <div
-              className="flex items-center gap-3 pl-6 border-l border-gray-100 h-10 cursor-pointer group"
-              onClick={() => setIsOpen(!isOpen)}
-            >
-              <img
-                src="https://ui-avatars.com/api/?name=Zahrah+Purnama&background=D82F5A&color=fff&bold=true"
-                className="w-10 h-10 rounded-xl object-cover shadow-sm"
-                alt="avatar"
-              />
-              <div className="flex flex-col text-left leading-tight">
-                <p className="text-sm font-semibold text-[#111827]">Hai, Zahrah Purnama</p>
-                <p className="text-xs text-[#D82F5A]">zahrah.purnama@gmail.com</p>
-              </div>
-              <i className={`ti ti-chevron-down text-gray-400 text-sm ml-1 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}></i>
-            </div>
-
-            {/* Dropdown Menu */}
-            {isOpen && (
-              <>
-                {/* Overlay: Pastikan z-index di bawah dropdown tapi di atas konten lain */}
-                <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)}></div>
-
-                {/* Dropdown Container: z-50 agar di atas overlay */}
-                <div className="absolute right-0 mt-4 w-72 bg-white rounded-[4px] shadow-[0px_10px_40px_rgba(0,0,0,0.15)] border border-gray-50 overflow-hidden animate-in fade-in zoom-in duration-200 z-50">
-                  {/* Header Dropdown */}
-                  <div className="p-5 flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-[4px] overflow-hidden bg-gray-100">
-                      <img
-                        src="https://ui-avatars.com/api/?name=Zahrah+Purnama&background=E0E0E0&color=9E9E9E&bold=true"
-                        alt="profile"
-                      />
-                    </div>
-                    <div className="flex flex-col text-left leading-tight">
-                      <p className="text-sm font-semibold text-[#111827]">Zahrah Purnama</p>
-                      <p className="text-xs text-[#D82F5A]">User</p>
-                    </div>
-                  </div>
-
-                  <div className="border-b border-gray-100 mx-5"></div>
-
-                  {/* List Menu */}
-                  <div className="p-2">
-                    <div
-                      onClick={() => window.location.href = '/Profile'}
-                      className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-[#FEF5F6] text-gray-600 hover:text-[#D82F5A] cursor-pointer transition-all group"
-                    >
-                      <IconUserCircle stroke={1.5} size={20} />
-                      <span className="text-sm font-medium">Profile</span>
-                    </div>
-
-                    <div
-                      onClick={() => window.location.href = '/Member'}
-                      className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-[#FEF5F6] text-gray-600 hover:text-[#D82F5A] cursor-pointer transition-all group"
-                    >
-                      <IconBrandMyOppo stroke={1.5} size={20} />
-                      <span className="text-sm font-medium">Member</span>
-                    </div>
-
-                    <div className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-[#FEF5F6] text-gray-600 hover:text-[#D82F5A] cursor-pointer transition-all group">
-                      <IconLogout2 stroke={1.5} size={20} />
-                      <span className="text-sm font-medium">Keluar</span>
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      </header>
+      <Header formData={user} profileImg={user?.avatar} />
       {/* MAIN CONTENT */}
       <main className="max-w-[1600px] mx-auto px-10 py-8 grid grid-cols-12 gap-8">
 

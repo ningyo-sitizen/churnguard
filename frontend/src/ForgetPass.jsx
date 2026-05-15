@@ -1,14 +1,14 @@
 import { useState, useEffect, useRef } from "react";
+
 import { useNavigate } from "react-router-dom";
 import { useNotif } from "./NotificationContext"
 import { Link } from "react-router-dom";
 import imgpnj from "./assets/logo_pnj.jpg";
 import { IconEye, IconEyeOff } from "@tabler/icons-react";
 
-function SignUp() {
+function ForgetPass() {
     const { showNotif } = useNotif();
     const [name, setName] = useState("");
-    const [email, setEmail] = useState("")
     const [isSignup, setIsSignup] = useState(true);
     const [failedLogin, setFailedLogin] = useState("");
     const [password, setPassword] = useState("");
@@ -20,140 +20,53 @@ function SignUp() {
     const [otp, setOtp] = useState(Array(6).fill(""))
     const [timer, setTimer] = useState(60)
     const inputsRef = useRef([])
-    const openPopup = (url) => {
-        const width = 500;
-        const height = 600;
-
-        const left = window.screenX + (window.innerWidth - width) / 2;
-        const top = window.screenY + (window.innerHeight - height) / 2;
-
-        window.open(
-            url,
-            "Google OAuth",
-            `width=${width},height=${height},top=${top},left=${left}`
-        );
 
 
-    };
-    const makeNewAcc = async () => {
-        const res = await fetch("http://localhost:5000/auth/register/newAcc", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name: name, email: email, password: password }),
-        })
 
-        const data = await res.json()
 
-        localStorage.setItem("token", data.token);
-        navigate('/dashboardUser')
-    }
-    const handleLogin = async () => {
+    const handleForgetPassEmailCheck = async () => {
         try {
 
-            const token = localStorage.getItem("token");
-
-            const res = await fetch("http://localhost:5000/auth/login", {
+            const res = await fetch("http://localhost:5000/auth/forgetpass/check-email", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: emailLogin, pass: password }),
+                body: JSON.stringify({ email: name })
             });
 
             const data = await res.json();
 
-            if (!res.ok) {
-                console.log("Login error:", data.message);
-                return;
-            }
-            localStorage.setItem("token", data.token);
-            navigate('/dashboardUser')
-        } catch (err) {
-            console.log("Login failed:", err);
-        }
-    };
-    const handleOtpCheck = async () => {
-        const otpCode = otp.join("");
+            console.log("DEBUG:", data);
 
-        if (!otpCode.trim()) {
-            showNotif("error", "Tolong isi kode OTP");
-            return;
-        }
-
-        if (otpCode.length < 6) {
-            showNotif("error", "OTP harus 6 digit");
-            return;
-        }
-
-        try {
-            const res = await fetch("http://localhost:5000/auth/register/check-otp", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    email: email,
-                    otp: otpCode
-                }),
-            });
-
-            const data = await res.json();
-
-            if (!res.ok) {
-                showNotif("error", data.message || "OTP salah");
-                return;
-            }
-
-            showNotif("success", "OTP berhasil diverifikasi");
-            console.log("OTP benar");
-
-            setStep(3);
-
-        } catch (err) {
-            console.log("OTP check failed:", err);
-            showNotif("error", "Terjadi kesalahan saat verifikasi OTP");
-        }
-    };
-    const handleOtpGet = async () => {
-        try {
-            const res = await fetch(
-                `http://localhost:5000/auth/register/get-otp?email=${email}`
-            );
-        } catch (err) {
-            console.log("Register failed:", err);
-        }
-    }
-
-    const handleRegister = async () => {
-        try {
-            const res = await fetch("http://localhost:5000/auth/register/check-email", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: email }),
-            });
-            const data = await res.json();
-
-            if (!res.ok) {
+            if (data.status !== "success") {
                 showNotif("error", data.message);
                 return;
             }
-            console.log("Email available, show OTP");
-            setStep(2)
-            handleOtpGet()
+
+            showNotif("success", data.message);
+            setStep(2);
 
         } catch (err) {
             console.log("Register failed:", err);
+            showNotif("error", "Server error");
         }
     };
+
     const handleNext = (e) => {
-        e.preventDefault()
+        e.preventDefault();
+
+        if (step === 1 && !emailValid) {
+            showNotif("error", "Email belum valid");
+            return;
+        }
 
         if (step < 3) {
-            setStep(step + 1)
+            setStep(step + 1);
         } else {
-            console.log("create acc")
+            console.log("create acc");
         }
-    }
+    };
     const handleChange = (e, index) => {
-        const val = e.target.value.replace(/[^0-9]/g, "")
+        const val = e.target.value.replace(/[^0-9]/g, "") // cuma angka
         const newOtp = [...otp]
         newOtp[index] = val
         setOtp(newOtp)
@@ -186,9 +99,9 @@ function SignUp() {
     )
 
     const strength = Object.values(checks).filter(Boolean).length
+
     const strengthText = ["Lemah", "Lemah", "Sedang", "Kuat", "Sangat Kuat"][strength]
     const strengthColor = ["#FF1515", "#FF1515", "#FFCA00", "#4ABC4C", "#4ABC4C"][strength]
-
     useEffect(() => {
         const savedName = localStorage.getItem("remember_name");
         const savedPw = localStorage.getItem("remember_password");
@@ -204,39 +117,6 @@ function SignUp() {
         const interval = setInterval(() => setTimer(timer - 1), 1000)
         return () => clearInterval(interval)
     }, [timer])
-    useEffect(() => {
-        const params = new URLSearchParams(window.location.search);
-        const error = params.get("error");
-
-        if (error === "cancelled") {
-            console.log("User cancel login");
-            window.close();
-        }
-
-        const handleMessage = (event) => {
-            if (!event.origin.includes("localhost")) return;
-
-            const { token } = event.data;
-
-            if (token) {
-                localStorage.setItem("token", token);
-
-                console.log("Google Token:", token);
-
-                navigate("/dashboardUser");
-            }
-
-            if (event.data?.error) {
-                console.log("Error:", event.data.error);
-            }
-        };
-
-        window.addEventListener("message", handleMessage);
-
-        return () => {
-            window.removeEventListener("message", handleMessage);
-        };
-    }, [navigate]);
 
     return (
         <main className="w-full min-h-screen font-jakarta mx-auto bg-gradient-to-b from-white to-[#F6EAEC]">
@@ -314,48 +194,25 @@ function SignUp() {
 
                 </section>
 
-                <div className="flex-1 flex justify-start lg:justify-start items-center min-h-screen ml-40 z-10">
+                {/* Kanannnnnnnn */}
+                <div className="flex-1 flex justify-start lg:justify-start items-center min-h-screen lg:pl-20 z-10">
 
-                    <div className="absolute max-w-lg lg:max-w-lg bg-[#F9FAFB] border border-[#EDEDED] rounded-lg p-8 shadow-sm"
+                    <div className="relative w-full max-w-lg lg:max-w-lg bg-[#F9FAFB] border border-[#EDEDED] rounded-lg p-8 shadow-sm"
                     >
 
                         <div className="text-left pt-2">
-                            <h2 className="text-xl font-semibold text-black">Daftar Akun</h2>
+                            <h2 className="text-xl font-semibold text-black">Reset Akun </h2>
                             <p className="text-lg font-normal text-[#9A9A9A] mt-2 mb-8">
-                                Masukkan detail akun Anda untuk mengakses dashboard!
+                                Masukkan detail akun Anda untuk mengganti password
                             </p>
                         </div>
 
-                        {/* persimpangan login sign up */}
-                        <div className="flex text-sm mb-2">
-                            <span
-                                onClick={() => navigate("/Login")}
-                                className={`w-1/2 text-center cursor-pointer ${!isSignup ? "text-black font-medium" : "text-[#929191]"
-                                    }`}
-                            >
-                                Login
-                            </span>
 
-                            <span
-                                onClick={() => navigate("/SignUp")}
-                                className={`w-1/2 text-center cursor-pointer ${isSignup ? "text-black font-medium" : "text-[#929191]"
-                                    }`}
-                            >
-                                Sign Up
-                            </span>
-                        </div>
 
-                        <div className="relative w-full h-[2px] bg-[#EDEDED] mb-4 overflow-hidden">
-
-                            <div
-                                className={`absolute top-0 left-0 h-full w-1/2 bg-[#D82F5A] transition-all duration-300 ease-in-out
-                                ${isSignup ? "translate-x-full" : "translate-x-0"}`}
-                            ></div>
-
-                        </div>
-
-                        <form className="relative text-sm items-center p-3 w-full mb-6"
+                        {/* Input Email */}
+                        <form className="relative text-sm items-center w-full mb-6"
                             onSubmit={handleNext}>
+                            {/* fungsi hanya placeholder */}
                             {step === 1 && (
                                 <>
                                     <div className="relative w-full text-sm text-left">
@@ -380,14 +237,16 @@ function SignUp() {
                                                 <path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10" />
                                                 <path d="M3 7l9 6l9 -6" />
                                             </svg>
+
                                             <input
                                                 type="text"
                                                 placeholder="guess@gmail.com"
-                                                value={email}
+                                                value={name}
                                                 onChange={(e) => {
-                                                    setEmail(e.target.value);
+                                                    setName(e.target.value);
                                                 }}
                                                 className="outline-none w-full"
+
                                             />
                                         </div>
                                     </div>
@@ -401,54 +260,25 @@ function SignUp() {
                                         </label>
                                     </div>
                                     <button
-                                        type="button"
-                                        onClick={() => {
-                                            if (!email.trim()) {
-                                                showNotif("error", "Tolong isi email");
-                                                return;
-                                            }
-                                            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-                                            if (!emailRegex.test(email)) {
-                                                showNotif("error", "Format email tidak valid");
-                                                return;
-                                            }
-
-                                            handleRegister();
-                                        }}
+                                        type="submit"
+                                        onClick={handleForgetPassEmailCheck}
                                         className="bg-[#000000] text-white w-full h-12 rounded-lg hover:bg-[#667790] transition duration-200 font-semibold"
                                     >
                                         Selanjutnya
                                     </button>
-                                    <div className="flex items-center w-full text-[#616161] text-sm py-4">
-                                        <div className="flex-1 border-t border-[#BFC0C0]"></div>
 
-                                        <span className="px-4 text-center">
-                                            Atau
+                                    <p className="text-sm text-center mt-4">
+                                        <span className="text-black">
+                                            Sudah punya akun?{" "}
                                         </span>
 
-                                        <div className="flex-1 border-t border-[#BFC0C0]"></div>
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => openPopup("http://localhost:5000/auth/google/register")}
-                                        className="flex items-center justify-center gap-3 w-full border border-gray-300 rounded-lg p-3 text-[#616161] hover:bg-gray-50 transition"
-                                    >
-                                        <svg
-                                            width="20"
-                                            height="20"
-                                            viewBox="0 0 48 48"
+                                        <span
+                                            onClick={() => navigate("/login")}
+                                            className="text-[#FF1515] cursor-pointer font-medium hover:underline"
                                         >
-                                            <path fill="#EA4335" d="M24 9.5c3.54 0 6.36 1.22 8.36 3.23l6.2-6.2C34.64 2.52 29.74 0 24 0 14.82 0 6.73 5.48 2.69 13.44l7.22 5.61C11.98 13.11 17.47 9.5 24 9.5z" />
-                                            <path fill="#4285F4" d="M46.5 24c0-1.64-.15-3.22-.43-4.73H24v9.02h12.7c-.55 2.96-2.23 5.46-4.75 7.14l7.27 5.65C43.98 36.98 46.5 30.99 46.5 24z" />
-                                            <path fill="#FBBC05" d="M9.91 28.05A14.5 14.5 0 0 1 9.5 24c0-1.41.24-2.77.67-4.05l-7.22-5.61A23.94 23.94 0 0 0 0 24c0 3.87.93 7.53 2.95 10.66l6.96-6.61z" />
-                                            <path fill="#34A853" d="M24 48c6.48 0 11.92-2.14 15.9-5.82l-7.27-5.65c-2.02 1.36-4.61 2.17-8.63 2.17-6.53 0-12.02-3.61-14.09-8.95l-6.96 6.61C6.73 42.52 14.82 48 24 48z" />
-                                        </svg>
-
-                                        <span className="text-sm font-medium">
-                                            Daftar dengan Google
+                                            Masuk di sini
                                         </span>
-                                    </button>
+                                    </p>
                                 </>
                             )}
                             {step === 2 && (
@@ -489,54 +319,41 @@ function SignUp() {
                                         </div>
                                     </div>
                                     <button
-                                        type="button"
-                                        onClick={handleOtpCheck}
+                                        type="submit"
                                         className="bg-[#000000] text-white w-full h-12 rounded-lg hover:bg-[#667790] transition duration-200 font-semibold"
                                     >
                                         Selanjutnya
                                     </button>
+                                    <div className="flex items-center w-full text-[#616161] text-sm py-4">
+                                        <div className="flex-1 border-t border-[#BFC0C0]"></div>
 
+                                        <span className="px-4 text-center">
+                                            Atau
+                                        </span>
+
+                                        <div className="flex-1 border-t border-[#BFC0C0]"></div>
+                                    </div>
+                                    <button
+                                        onClick={() => navigate("/login")}
+                                        type="button"
+                                        className="flex items-center justify-center gap-3 w-full border border-gray-300 rounded-lg p-3 text-[#616161] hover:bg-gray-50 transition"
+                                    >
+                                        <span className="text-sm font-medium">
+                                            Kembali
+                                        </span>
+                                    </button>
                                 </>
                             )}
                             {step === 3 && (
                                 <>
                                     <form className="relative text-sm items-centerp-3 w-full mb-6"
                                         onSubmit={handleLogin}>
+                                        {/* fungsi hanya placeholder */}
                                         <div className="relative w-full text-sm text-left">
                                             <p className="font-medium text-base py-2">Otentikasi langkah ke tiga</p>
                                             <p className="font-extralight text-sm text-[#616161]">Buat kata sandi yang kuat untuk melindungi data pelanggan Anda di dashboard ChurnGuard.</p>
                                         </div>
-                                        <div className="relative text-left mt-4">
-                                            <p className="text-regular">Username</p>
-                                            <div className="flex text-sm items-center border border-[#B3B3B3] rounded-lg p-3 w-full focus-within:ring-2 focus-within:ring-[#023048] mb-3">
-                                                <svg xmlns="http://www.w3.org/2000/svg"
-                                                    width="20"
-                                                    height="20"
-                                                    viewBox="0 0 24 24"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    stroke-width="2"
-                                                    className="text-gray-400 mr-2"
-                                                    stroke-linecap="round"
-                                                    stroke-linejoin="round"
-                                                    class="icon icon-tabler icons-tabler-outline icon-tabler-user">
-                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                                    <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" />
-                                                    <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
-                                                </svg>
 
-                                                <input
-                                                    type="text"
-                                                    placeholder="Username"
-                                                    value={name}
-                                                    onChange={(e) => {
-                                                        setName(e.target.value);
-                                                    }}
-                                                    className="outline-none w-full"
-
-                                                />
-                                            </div>
-                                        </div>
                                         {/* Password */}
                                         <div className="relative text-left mt-4">
                                             <p className="text-regular">Password</p>
@@ -579,6 +396,8 @@ function SignUp() {
                                             <p className="mb-2 text-black">Kata sandi Anda harus memiliki:</p>
 
                                             <div className="flex gap-8">
+
+                                                {/* LEFT */}
                                                 <div className="flex flex-col gap-2">
                                                     <div className="flex items-start gap-2">
                                                         <CheckIcon ok={checks.length} />
@@ -627,15 +446,45 @@ function SignUp() {
                                         <p className="text-xs mt-2 text-[#929191]">
                                             Kekuatan kata sandi: <span style={{ color: strengthColor }}>{strengthText}</span>
                                         </p>
-                                        <span className="px-4 text-center">
-                                        </span>
                                         <button
-                                            onClick={makeNewAcc}
-                                            type="button"
+                                            type="submit"
                                             className="bg-[#000000] text-white w-full h-10 rounded-lg hover:bg-[#667790] transition duration-200 font-semibold"
                                         >
                                             Selanjutnya
                                         </button>
+                                        <div className="flex items-center w-full text-[#616161] text-sm py-4">
+                                            <div className="flex-1 border-t border-[#BFC0C0]"></div>
+
+                                            <span className="px-4 text-center">
+                                                Atau
+                                            </span>
+
+                                            <div className="flex-1 border-t border-[#BFC0C0]"></div>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            className="flex items-center justify-center gap-3 h-10 w-full border border-gray-300 rounded-lg p-3 text-[#616161] hover:bg-gray-50 transition"
+                                        >
+
+                                            <span
+                                                onClick={() => navigate("/login")}
+                                                className="text-sm font-medium">
+                                                Kembali
+                                            </span>
+                                        </button>
+
+                                        <p className="text-sm text-center mt-4">
+                                            <span className="text-black">
+                                                Sudah punya akun?{" "}
+                                            </span>
+
+                                            <span
+                                                onClick={() => navigate("/login")}
+                                                className="text-[#FF1515] cursor-pointer font-medium hover:underline"
+                                            >
+                                                Masuk di sini
+                                            </span>
+                                        </p>
                                     </form>
                                 </>
                             )}
@@ -649,4 +498,4 @@ function SignUp() {
     );
 }
 
-export default SignUp;
+export default ForgetPass;

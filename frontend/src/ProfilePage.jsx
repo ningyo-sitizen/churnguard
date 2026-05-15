@@ -26,6 +26,10 @@ import axios from 'axios';
 
 const ProfilePage = () => {
 
+  const [selectedFile, setSelectedFile] = useState(null);
+
+  const [uploading, setUploading] = useState(false);
+
   const user = useAuth();
 
   const [isEditing, setIsEditing] = useState(false);
@@ -34,7 +38,7 @@ const ProfilePage = () => {
     useState(false);
 
   const [profileImg, setProfileImg] =
-    useState("");
+    useState(null);
 
   const fileInputRef = useRef(null);
 
@@ -58,7 +62,7 @@ const ProfilePage = () => {
         link_app: user?.link_app || ""
       });
 
-      setProfileImg(user?.avatar || "");
+      setProfileImg(user?.avatar || null);
 
     }
 
@@ -71,16 +75,40 @@ const ProfilePage = () => {
 
     try {
 
+      const form = new FormData();
+
+      form.append(
+        "name",
+        formData.nama
+      );
+
+      form.append(
+        "nama_perusahaan",
+        formData.perusahaan
+      );
+
+      form.append(
+        "nama_app",
+        formData.nama_app
+      );
+
+      form.append(
+        "link_app",
+        formData.link_app
+      );
+
+      if (selectedFile) {
+
+        form.append(
+          "avatar",
+          selectedFile
+        );
+
+      }
+
       await axios.put(
         "http://localhost:5000/auth/update-profile",
-        {
-          name: formData.nama,
-          nama_perusahaan:
-            formData.perusahaan,
-          nama_app: formData.nama_app,
-          link_app: formData.link_app,
-          avatar_url: profileImg
-        },
+        form,
         {
           headers: {
             Authorization:
@@ -88,10 +116,6 @@ const ProfilePage = () => {
           }
         }
       );
-
-      setIsEditing(false);
-
-      window.location.reload();
 
     } catch (error) {
 
@@ -102,32 +126,55 @@ const ProfilePage = () => {
   };
 
   const handlePhotoClick = () => {
-
-    if (isEditing) {
-      fileInputRef.current.click();
-    }
-
+    fileInputRef.current?.click();
   };
+
 
   const handleFileChange = (event) => {
 
     const file = event.target.files[0];
 
-    if (file) {
+    if (!file) return;
 
-      const reader = new FileReader();
+    const allowedTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png"
+    ];
 
-      reader.onloadend = () => {
+    if (!allowedTypes.includes(file.type)) {
 
-        setProfileImg(reader.result);
+      alert("Hanya JPG/JPEG");
 
-        setShowCropModal(true);
-
-      };
-
-      reader.readAsDataURL(file);
+      return;
 
     }
+
+    const maxSize = 2 * 1024 * 1024;
+
+    if (file.size > maxSize) {
+
+      alert("Maksimal 2MB");
+
+      return;
+
+    }
+
+    setSelectedFile(file);
+
+    console.log(selectedFile)
+
+    const reader = new FileReader();
+
+    reader.onloadend = () => {
+
+      setProfileImg(reader.result);
+
+      setShowCropModal(true);
+
+    };
+
+    reader.readAsDataURL(file);
 
   };
 

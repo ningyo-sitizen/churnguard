@@ -2,98 +2,166 @@ const jwt = require("jsonwebtoken");
 const churnguard_con = require("../config/db");
 const bcrypt = require("bcryptjs");
 const cloudinary = require("../config/cloud")
+const fs = require("fs")
 
-exports.validateImage = async (req,res) => {
 
-}
 
-exports.saveImage = async (req,res) => {
-  
-}
+exports.update_user_profile =
+  async (req, res) => {
 
-exports.update_user_profile = async (req, res) => {
+    const email =
+      req.user.email;
 
-  const email = req.user.email;
+    const {
+      name,
+      nama_perusahaan,
+      nama_app,
+      link_app
 
-  const {
-    name,
-    nama_perusahaan,
-    nama_app,
-    link_app,
-    avatar
-  } = req.body;
+    } = req.body;
 
-  try {
+    let avatarUrl = null;
 
-    const [existing] = await churnguard_con.query(
-      "SELECT * FROM users WHERE email = ?",
-      [email]
-    );
+    try {
 
-    if (existing.length === 0) {
-      return res.status(404).json({
-        message: "user tidak ditemukan"
+      const [existing] =
+        await churnguard_con.query(`SELECT * FROM users WHERE email = ?`, [email]);
+
+      if (existing.length === 0) {
+        return res.status(404).json({
+
+          message:
+            "user tidak ditemukan"
+
+        });
+
+      }
+
+      if (req.file) {
+        const result =
+          await cloudinary.uploader.upload(req.file.path,
+            {
+              folder:
+                "uploads"
+            }
+          );
+
+        avatarUrl =
+          result.secure_url;
+        if (
+          fs.existsSync(
+            req.file.path
+          )
+        ) {
+          fs.unlinkSync(
+            req.file.path
+          );
+
+        }
+
+      }
+
+      let query = `UPDATE users SET name = ?,nama_perusahaan = ?,nama_app = ?,link_app = ?`;
+
+      const values = [
+        name,
+        nama_perusahaan,
+        nama_app,
+        link_app,
+      ];
+      if (avatarUrl) {
+        query += `, avatar_url = ? `;
+        values.push(
+          avatarUrl
+        );
+      }
+
+      query += `
+        WHERE email = ?
+      `;
+
+      values.push(email);
+
+      await churnguard_con.query(
+        query,
+        values
+      );
+
+      const [updatedUser] =
+        await churnguard_con.query(
+          `
+          SELECT
+            name,
+            email,
+            nama_perusahaan,
+            nama_app,
+            link_app,
+            avatar_url
+          FROM users
+          WHERE email = ?
+          `,
+
+          [email]
+
+        );
+
+      return res.status(200).json({
+
+        message:
+          "profile berhasil diupdate",
+
+        user: {
+
+          name:
+            updatedUser[0].name,
+
+          email:
+            updatedUser[0].email,
+
+          nama_perusahaan:
+            updatedUser[0]
+              .nama_perusahaan,
+
+          nama_app:
+            updatedUser[0]
+              .nama_app,
+
+          link_app:
+            updatedUser[0]
+              .link_app,
+
+          avatar:
+            updatedUser[0]
+              .avatar_url
+
+        }
+
       });
+
+    } catch (error) {
+
+      console.log(error);
+      if (
+        req.file &&
+        fs.existsSync(
+          req.file.path
+        )
+      ) {
+
+        fs.unlinkSync(
+          req.file.path
+        );
+
+      }
+      return res.status(500).json({
+        message:
+          "server error"
+
+      });
+
     }
 
-    await churnguard_con.query(
-      `
-      UPDATE users
-      SET
-        name = ?,
-        nama_perusahaan = ?,
-        nama_app = ?,
-        link_app = ?,
-        avatar_url = ?
-      WHERE email = ?
-      `,
-      [
-        name,
-        nama_perusahaan,
-        nama_app,
-        link_app,
-        avatar,
-        email
-      ]
-    );
-
-    const [updatedUser] = await churnguard_con.query(
-      `
-      SELECT
-        name,
-        email,
-        nama_perusahaan,
-        nama_app,
-        link_app,
-        avatar_url
-      FROM users
-      WHERE email = ?
-      `,
-      [email]
-    );
-
-    return res.status(200).json({
-      message: "profile berhasil diupdate",
-      user: {
-        name: updatedUser[0].name,
-        email: updatedUser[0].email,
-        nama_perusahaan: updatedUser[0].nama_perusahaan,
-        nama_app: updatedUser[0].nama_app,
-        link_app: updatedUser[0].link_app,
-        avatar: updatedUser[0].avatar_url
-      }
-    });
-
-  } catch (error) {
-
-    console.log(error);
-
-    return res.status(500).json({
-      message: "server error"
-    });
-
-  }
-};
+  };
 
 
 exports.get_user_data = async (req, res) => {
@@ -254,5 +322,66 @@ exports.ChurnGuardLogin = async (req, res) => {
   } catch (error) {
     console.error("Login error:", error);
     return res.status(500).json({ message: "Database error" });
+  }
+};
+
+exports.ChurnGuardEmailCheckForget = async (req, res) => {
+
+  try {
+
+    const { email } = req.body;
+
+    // validasi
+    if (!email) {
+      return res.status(400).json({
+        status: "error",
+        message: "Email wajib diisi"
+      });
+    }
+
+    const [rowsgoogle] = await churnguard_con.query(
+      `SELECT id, email 
+             FROM users 
+             WHERE email = ? AND google_id IS NOT NULL`,
+      [email]
+    );
+
+    if (rowsgoogle.length > 0) {
+      return res.status(404).json({
+        status: "error",
+        message: "Email yang dikirim menggunakan login google"
+      });
+    }
+
+    const [rows] = await churnguard_con.query(
+      `SELECT id, email 
+             FROM users 
+             WHERE email = ?`,
+      [email]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        status: "error",
+        message: "Email tidak terdaftar"
+      });
+    }
+
+
+
+    return res.status(200).json({
+      status: "success",
+      message: "Email ditemukan",
+      data: rows[0]
+    });
+
+  } catch (err) {
+
+    console.log(err);
+
+    return res.status(500).json({
+      status: "error",
+      message: "Internal server error"
+    });
   }
 };

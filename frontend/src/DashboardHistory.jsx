@@ -236,10 +236,7 @@ const DashboarHistory = () => {
             <main className="flex-1 overflow-x-hidden">
 
                 {/* TOPBAR */}
-                <Header
-                    formData={user}
-                    profileImg={user?.profileImg}
-                />
+                <Header formData={user} profileImg={user?.avatar} />
 
                 {/* CONTENT */}
                 <div className="p-8">

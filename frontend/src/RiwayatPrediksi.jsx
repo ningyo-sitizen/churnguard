@@ -52,9 +52,34 @@ const RiwayatPrediksi = () => {
         setIsModalOpen(true);
     };
 
-    const handleDelete = () => {
-        setDataHistory(dataHistory.filter(item => item.id !== selectedId));
-        setIsModalOpen(false);
+    const handleDelete = async () => {
+        try {
+
+            const token = localStorage.getItem("token");
+
+            const response = await axios.post(
+                "http://localhost:5000/prediction/delete",
+                {
+                    id: selectedId
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            console.log(response.data);
+
+            getHistory();
+
+            setIsModalOpen(false);
+
+            setSelectedId(null);
+
+        } catch (err) {
+            console.log(err);
+        }
     };
 
     useEffect(() => {
@@ -156,10 +181,7 @@ const RiwayatPrediksi = () => {
 
                 {/* MAIN CONTENT */}
                 <main className="flex-1 flex flex-col min-w-0 bg-[#F9FAFB]">
-                    <Header
-                        formData={user}
-                        profileImg={user?.profileImg}
-                    />
+                    <Header formData={user} profileImg={user?.avatar} />
 
                     <div className="p-8 w-full">
                         <div className="mb-8">
@@ -282,11 +304,7 @@ const RiwayatPrediksi = () => {
                                                 <div className="grid grid-cols-2 gap-3">
 
                                                     <button
-                                                        onClick={() =>
-                                                            navigate(
-                                                                `/dashboardhistory?prediction_id=${item.prediction_id}`
-                                                            )
-                                                        }
+                                                        onClick={() => openConfirmModal(item.prediction_id)}
                                                         className="bg-white border border-[#D82F5A] text-[#D82F5A] py-2.5 rounded-[4px] text-xs font-medium hover:bg-pink-50 transition-all"
                                                     >
                                                         Hapus

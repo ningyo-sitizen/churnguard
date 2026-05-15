@@ -6,19 +6,18 @@ const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Fungsi pembantu untuk menentukan styling
   const getMenuStyles = (path) => {
     const isActive = location.pathname === path;
     
     return isActive
-      ? "bg-[#FEF5F6] text-[#D82F5A] flex items-center gap-4 px-5 py-3 rounded-[4px] cursor-pointer transition-all"
+      ? "bg-[#FEF5F6] text-[#D82F5A] flex items-center gap-4 px-6 py-4 rounded-[4px] cursor-pointer transition-all"
       : "text-[#E2A7B8] flex items-center gap-4 px-6 py-4 rounded-[4px] hover:bg-gray-50 cursor-pointer transition-all";
   };
 
   return (
     <aside className="w-[280px] bg-white border-r border-gray-100 flex flex-col h-screen sticky top-0 z-20 font-['Plus_Jakarta_Sans',sans-serif]">
       
-      {/* Logo Section - Padding dikurangi agar lebih compact */}
+      {/* Logo Section */}
       <div className="pt-6 pb-2 flex flex-col items-center">
         <div className="flex flex-col items-center mb-2">
           <img src={logochurn} alt="logochurn" className="w-28 h-auto" />
@@ -34,7 +33,6 @@ const Sidebar = () => {
           onClick={() => navigate('/dashboarduser')} 
           className={getMenuStyles('/dashboarduser')}
         >
-          {/* WebkitTextStroke DIHAPUS agar ikon tidak putus-putus */}
           <i className="ti ti-home text-xl"></i>
           <span className="text-sm font-medium">Dashboard</span>
         </div>
@@ -46,6 +44,15 @@ const Sidebar = () => {
         >
           <i className="ti ti-chart-bar text-xl"></i>
           <span className="text-sm font-medium">Analisis Ulasan</span>
+        </div>
+
+        {/* Sentimen Analysis -> Respon Pelanggan */}
+        <div 
+          onClick={() => navigate('/sentimenAnalysis')} 
+          className={getMenuStyles('/sentimenAnalysis')}
+        >
+          <i className="ti ti-heart-rate-monitor text-xl"></i>
+          <span className="text-sm font-medium">Respon Pelanggan</span>
         </div>
 
         {/* Riwayat Prediksi */}

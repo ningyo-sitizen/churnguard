@@ -556,3 +556,52 @@ exports.getPredictionDashboardHistory = async (req, res) => {
 
   }
 };
+
+exports.deletePrediction = async (req, res) => {
+
+    try {
+
+        const { id } = req.body;
+
+        if (!id) {
+            return res.status(400).json({
+                status: "error",
+                message: "ID wajib diisi"
+            });
+        }
+
+        const [checkData] = await churnguard_con.query(
+            `SELECT * FROM prediction_list
+             WHERE prediction_id = ?`,
+            [id]
+        );
+
+        if (checkData.length === 0) {
+            return res.status(404).json({
+                status: "error",
+                message: "Data tidak ditemukan"
+            });
+        }
+
+        await churnguard_con.query(
+            `DELETE FROM prediction_list
+             WHERE prediction_id = ?`,
+            [id]
+        );
+
+        return res.status(200).json({
+            status: "success",
+            message: "History berhasil dihapus"
+        });
+
+    } catch (err) {
+
+        console.log(err);
+
+        return res.status(500).json({
+            status: "error",
+            message: "Internal server error"
+        });
+    }
+};
+
