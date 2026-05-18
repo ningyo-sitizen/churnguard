@@ -62,7 +62,7 @@ function Login() {
       const data = await res.json();
 
       if (!res.ok) {
-        setFailedLogin("*Email atau password salah");
+        setFailedLogin(data.message);
         return;
       }
 
@@ -123,6 +123,7 @@ function Login() {
       }
 
       if (event.data?.error) {
+        showNotif("err", event.data.error)
         console.log("Error:", event.data.error);
       }
     };

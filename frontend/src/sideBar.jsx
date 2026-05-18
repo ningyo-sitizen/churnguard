@@ -64,7 +64,7 @@ const Sidebar = () => {
           <span className="text-sm font-medium">Riwayat Prediksi</span>
         </div>
 
-        {/* User Feedback */}
+
         <div
           onClick={() => navigate('/feedback')}
           className={getMenuStyles('/feedback')}

@@ -62,7 +62,6 @@ exports.googleCallback = async (req, res) => {
     );
 
     if (existing.length > 0) {
-      console.log("email sudah terpakai")
       return res.send(`
         <script>
           window.opener.postMessage(

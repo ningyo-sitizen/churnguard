@@ -117,8 +117,44 @@ function SignUp() {
             const res = await fetch(
                 `http://localhost:5000/auth/register/get-otp?email=${email}`
             );
+            showNotif(res.data.status, res.data.message)
         } catch (err) {
             console.log("Register failed:", err);
+        }
+    }
+    const handleOtpNewGet = async () => {
+
+        try {
+
+            const res = await fetch(
+                `http://localhost:5000/auth/register/new-otp?email=${email}`
+            );
+
+            const data = await res.json();
+
+            if (!res.ok) {
+
+                return showNotif(
+                    "error",
+                    data.message
+                );
+            }
+
+            setTimer(120);
+
+            showNotif(
+                "success",
+                data.message
+            );
+
+        } catch (err) {
+
+            console.log("Register failed:", err);
+
+            showNotif(
+                "error",
+                "Server error"
+            );
         }
     }
 
@@ -227,7 +263,7 @@ function SignUp() {
             }
 
             if (event.data?.error) {
-                console.log("Error:", event.data.error);
+                showNotif("error",event.data.error)
             }
         };
 
@@ -480,7 +516,7 @@ function SignUp() {
                                                 </span>
                                             ) : (
                                                 <span
-                                                    onClick={() => setTimer(60)}
+                                                    onClick={handleOtpNewGet}
                                                     className="text-[#D82F5A] cursor-pointer hover:underline"
                                                 >
                                                     Kirim ulang kode

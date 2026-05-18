@@ -8,11 +8,10 @@ const Header = ({ formData, profileImg }) => {
     const navigate = useNavigate();
 
     const handleLogout = () => {
+        localStorage.removeItem("token");
         setShowLogoutModal(false);
-        navigate('/landingpage');
+        navigate('/login');
         setShowLogoutModal(false);
-        // Kirim state 'loggedOut: true' saat redirect
-        navigate('/landingpage', { state: { loggedOut: true } });
     };
 
 
@@ -49,8 +48,8 @@ const Header = ({ formData, profileImg }) => {
                                             <img src={profileImg} alt="profile" className="w-full h-full object-cover" />
                                         </div>
                                         <div className="flex flex-col text-left leading-tight">
-                                            <p className="text-sm font-semibold text-[#111827]">{formData?.nama}</p>
-                                            <p className="text-xs text-[#D82F5A] font-medium uppercase tracking-wider">User</p>
+                                            <p className="text-sm font-semibold text-[#111827]">{formData?.name}</p>
+                                            <p className="text-xs text-[#D82F5A] font-small tracking-wider">{formData?.email}</p>
                                         </div>
                                     </div>
                                     <div className="border-b border-gray-100 mx-5"></div>

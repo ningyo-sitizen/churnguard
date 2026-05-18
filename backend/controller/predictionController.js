@@ -71,6 +71,16 @@ exports.getPrediction = async (req, res) => {
 
     const prediction_id = active[0].prediction_id;
 
+    const [detail_exsist] = await churnguard_con.query(`
+      select detail_id from prediction_detail where prediction_id = ? LIMIT 1
+    `,[prediction_id])
+
+    if(detail_exsist.length === 0){
+      const [delete_active] = await churnguard_con.query(`
+        DELETE FROM prediction_list WHERE prediction_id = ?
+        `,[prediction_id])
+    }
+
     const [countResult] = await churnguard_con.query(
       `
             SELECT COUNT(*) as total
@@ -588,6 +598,11 @@ exports.deletePrediction = async (req, res) => {
              WHERE prediction_id = ?`,
             [id]
         );
+
+        await churnguard_con.query(
+          `DELETE FROM prediction_detail
+          WHERE prediction_id = ?`,[id]
+        )
 
         return res.status(200).json({
             status: "success",

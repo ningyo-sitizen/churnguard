@@ -44,7 +44,6 @@ export const useAuth = (options = {}) => {
           return;
         }
 
-        // VALIDASI SERVER OPTIONAL
         if (validateServer) {
 
           await axios.get(
@@ -57,9 +56,7 @@ export const useAuth = (options = {}) => {
           );
 
         }
-
-        // AMBIL DATA USER DARI DB
-        const res = await axios.get(
+         const res = await axios.get(
           "http://localhost:5000/auth/me",
           {
             headers: {

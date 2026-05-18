@@ -92,6 +92,8 @@ const DashboardUser = () => {
 
             if (data.status === "success") {
 
+                showNotif("success","data berhasil diambil")
+
                 setPredictionData(data.data || []);
                 setPage(data.page || 1);
                 setTotalPages(data.totalPages || 1);
@@ -102,6 +104,7 @@ const DashboardUser = () => {
                 setPredictionData([]);
 
             }
+
 
         } catch (err) {
 

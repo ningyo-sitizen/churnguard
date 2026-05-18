@@ -291,6 +291,10 @@ exports.ChurnGuardLogin = async (req, res) => {
 
     const userLogin = existing[0];
 
+    if(userLogin.role === "admin"){
+      return res.status(401).json({ message: 'invalid email or password' });
+    }
+
     const valid = await bcrypt.compare(pass, userLogin.password);
 
     if (!valid) {
@@ -331,7 +335,6 @@ exports.ChurnGuardEmailCheckForget = async (req, res) => {
 
     const { email } = req.body;
 
-    // validasi
     if (!email) {
       return res.status(400).json({
         status: "error",
