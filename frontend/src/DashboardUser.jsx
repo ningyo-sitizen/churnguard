@@ -19,6 +19,7 @@ import { useNotif } from "./NotificationContext";
 
 const DashboardUser = () => {
 
+
     const navigate = useNavigate();
     const { showNotif } = useNotif();
     const user = useAuth();
@@ -92,7 +93,7 @@ const DashboardUser = () => {
 
             if (data.status === "success") {
 
-                showNotif("success","data berhasil diambil")
+                showNotif("success", "data berhasil diambil")
 
                 setPredictionData(data.data || []);
                 setPage(data.page || 1);
@@ -310,14 +311,16 @@ const DashboardUser = () => {
                         {/* BOTTOM ROW: Analisis Note */}
                         <div className="flex items-center justify-between bg-gray-50/50 border border-[#DCDBDB] rounded-[4px] p-4 px-8 group cursor-pointer hover:bg-gray-50 transition-colors">
                             <div className="flex items-center gap-2 text-xs">
-                                <span className="text-[#D82F5A] font-semibold">Naik 18,2%</span>
+                                <span className="text-[#D82F5A] font-semibold">cek grafik analitik</span>
                                 <span className="text-gray-400 text-xs">|</span>
                                 <span className="text-gray-600 text-xs">
                                     Ini adalah hasil analisis data statistik di atas
                                 </span>
                             </div>
 
-                            <div className="flex items-center gap-2 text-gray-400 group-hover:text-[#D82F5A] transition-colors text-xs">
+                            <div 
+                            onClick={() => navigate('/analisisUlasan')}
+                            className="flex items-center gap-2 text-gray-400 group-hover:text-[#D82F5A] transition-colors text-xs">
                                 <span>Lihat detail analitik</span>
                                 <i className="ti ti-arrow-right"></i>
                             </div>
@@ -565,33 +568,86 @@ const DashboardUser = () => {
 
                                         {/* PAGINATION */}
                                         <div className="flex justify-center items-center gap-2 mt-8 font-['Plus_Jakarta_Sans',_sans-serif]">
+
                                             {/* Tombol Sebelumnya */}
                                             <button
                                                 disabled={page === 1}
-                                                onClick={() => setPage(page - 1)}
-                                                className={`flex items-center gap-2 px-3 py-1 text-sm transition-colors ${page === 1 ? "text-[#B3B3B3] cursor-not-allowed" : "text-[#757575] hover:text-[#D82F5A]"
+                                                onClick={(e) => { e.preventDefault(); setPage(page - 1) }}
+                                                className={`flex items-center gap-2 px-3 py-1 text-sm transition-colors ${page === 1
+                                                    ? "text-[#B3B3B3] cursor-not-allowed"
+                                                    : "text-[#757575] hover:text-[#D82F5A]"
                                                     }`}
                                             >
-                                                <ChevronLeft size={18} strokeWidth={2.5} color={page === 1 ? "#B3B3B3" : "#D82F5A"} />
-                                                <span className="font-medium">Sebelumnya</span>
+                                                <ChevronLeft
+                                                    size={18}
+                                                    strokeWidth={2.5}
+                                                    color={page === 1 ? "#B3B3B3" : "#D82F5A"}
+                                                />
+
+                                                <span className="font-medium">
+                                                    Sebelumnya
+                                                </span>
                                             </button>
 
                                             {/* Render Angka Halaman */}
                                             <div className="flex items-center gap-1.5">
-                                                {[...Array(totalPages)].map((_, index) => {
-                                                    const pageNum = index + 1;
-                                                    const isActive = page === pageNum;
+
+                                                {[
+
+                                                    1,
+
+                                                    ...(page > 4 ? ["..."] : []),
+
+                                                    ...Array.from(
+                                                        {
+                                                            length: Math.min(5, totalPages)
+                                                        },
+                                                        (_, i) => {
+
+                                                            let start = Math.max(
+                                                                2,
+                                                                Math.min(
+                                                                    page - 2,
+                                                                    totalPages - 4
+                                                                )
+                                                            );
+
+                                                            return start + i;
+                                                        }
+                                                    ).filter(
+                                                        p => p > 1 && p < totalPages
+                                                    ),
+
+                                                    ...(page < totalPages - 3 ? ["..."] : []),
+
+                                                    ...(totalPages > 1 ? [totalPages] : [])
+
+                                                ].map((item, index) => {
+
+                                                    if (item === "...") {
+
+                                                        return (
+                                                            <span
+                                                                key={index}
+                                                                className="px-2 text-gray-400 text-sm"
+                                                            >
+                                                                ...
+                                                            </span>
+                                                        );
+                                                    }
+
+                                                    const isActive = page === item;
 
                                                     return (
                                                         <button
-                                                            key={pageNum}
-                                                            onClick={() => setPage(pageNum)}
+                                                            key={index}
+                                                            onClick={() => setPage(item)}
                                                             className={`w-9 h-9 flex items-center justify-center rounded-xl text-sm transition-all ${isActive
                                                                 ? "bg-[#F6EAEC] text-[#D82F5A] border border-[#DE869D] font-bold shadow-sm"
                                                                 : "text-[#D82F5A] hover:bg-[#F6EAEC]/50 font-medium"
                                                                 }`}
                                                         >
-                                                            {pageNum}
+                                                            {item}
                                                         </button>
                                                     );
                                                 })}
@@ -600,14 +656,24 @@ const DashboardUser = () => {
                                             {/* Tombol Selanjutnya */}
                                             <button
                                                 disabled={page === totalPages}
-                                                onClick={() => setPage(page + 1)}
-                                                className={`flex items-center gap-2 px-3 py-1 text-sm transition-colors ${page === totalPages ? "text-[#B3B3B3] cursor-not-allowed" : "text-[#757575] hover:text-[#D82F5A]"
+                                                onClick={(e) => {e.preventDefault(); setPage(page + 1)
+                                                }}
+                                                className={`flex items-center gap-2 px-3 py-1 text-sm transition-colors ${page === totalPages
+                                                    ? "text-[#B3B3B3] cursor-not-allowed"
+                                                    : "text-[#757575] hover:text-[#D82F5A]"
                                                     }`}
                                             >
-                                                <span className="font-medium text-[#757575]">Selanjutnya</span>
-                                                <ChevronRight size={18} strokeWidth={2.5} color={page === totalPages ? "#B3B3B3" : "#D82F5A"} />
+                                                <span className="font-medium text-[#757575]">
+                                                    Selanjutnya
+                                                </span>
+
+                                                <ChevronRight
+                                                    size={18}
+                                                    strokeWidth={2.5}
+                                                    color={page === totalPages ? "#B3B3B3" : "#D82F5A"}
+                                                />
                                             </button>
-                                        </div>                                    </>
+                                        </div>                                 </>
                                 )
                             }
 

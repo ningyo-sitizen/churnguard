@@ -7,6 +7,9 @@ import {
 } from 'recharts';
 import Footer from './footer';
 import { useAuth } from "../utils/auth";
+import { useNotif } from "./NotificationContext";
+
+
 
 // Color Palette dari design sebelumnya
 const PINK_DARK = "#D82F5A";
@@ -16,18 +19,27 @@ const BLACK_MAROON = "#4A0E1C";
 const COLORS_PIE = [BLACK_MAROON, PINK_DARK, PINK_MEDIUM];
 
 const AnalisisUlasan = () => {
+    const { showNotif } = useNotif();
     const user = useAuth();
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState({
         totalCustomer: 0,
         highRisk: 0,
         churnCustomer: 0,
-        totalRevenue: 0
+        totalRevenue: 0,
+        churnRevenue: 0
     });
 
     const [riskData, setRiskData] = useState([]);
     const [subscriptionData, setSubscriptionData] = useState([]);
     const [segmentData, setSegmentData] = useState([]);
+    const [ageData, setAgeData] = useState([]);
+    const [clusterData, setClusterData] = useState([]);
+    const [contentTypeData, setContentTypeData] = useState([]);
+    const [chargesData, setChargesData] = useState([]);
+    const [fileName, setFileName] = useState()
+    const [genreData, setGenreData] = useState([]);
+    const [subscriptionRevenueData, setSubscriptionRevenueData] = useState([]);
 
     useEffect(() => {
         fetchAnalytics();
@@ -48,12 +60,19 @@ const AnalisisUlasan = () => {
                 }
             );
             const data = await response.json();
+            showNotif("success", "data analitik berhasil diambil")
+            console.log(data)
             if (data.status === "success") {
                 setStats(data.stats);
                 setRiskData(data.riskDistribution);
                 setSubscriptionData(data.subscriptionVsChurn);
                 setSegmentData(data.segmentInsight);
+                setFileName(data.filename)
+                setGenreData(data.genreInsight);
+                setSubscriptionRevenueData(data.subscriptionRevenueLoss);
             }
+
+            console.log(data)
         } catch (err) {
             console.log(err);
         } finally {
@@ -83,7 +102,7 @@ const AnalisisUlasan = () => {
                         <div className="bg-white border border-gray-100 px-4 py-2 rounded-[4px] flex items-center gap-3 shadow-sm">
                             <span className="text-xs text-gray-400">Dataset :</span>
                             <select className="text-xs font-medium outline-none bg-transparent">
-                                <option>Live_Database_Connection</option>
+                                <option>{fileName}</option>
                             </select>
                         </div>
                         <span className="text-xs text-gray-400">{stats.totalCustomer.toLocaleString()} Data terdeteksi</span>
@@ -113,7 +132,13 @@ const AnalisisUlasan = () => {
                                 },
                                 {
                                     label: "Total Pendapatan",
-                                    val: `Rp. ${stats.totalRevenue.toLocaleString()}`,
+                                    val: `$. ${stats.totalRevenue.toLocaleString()}`,
+                                    icon: "ti-cash",
+                                    col: "text-[#C6CE56] bg-[#F6F7E6]"
+                                },
+                                {
+                                    label: "Total Pendapatan dalam bahaya",
+                                    val: `$ . ${stats.churnRevenue.toLocaleString()}`,
                                     icon: "ti-cash",
                                     col: "text-[#C6CE56] bg-[#F6F7E6]"
                                 }
@@ -136,10 +161,10 @@ const AnalisisUlasan = () => {
                         {/* Analisis Note Design */}
                         <div className="flex items-center justify-between bg-gray-50/50 border border-[#DCDBDB] rounded-[4px] p-4 px-8 group cursor-pointer hover:bg-gray-50 transition-colors">
                             <div className="flex items-center gap-2 text-xs">
-                                <span className="text-[#D82F5A] font-semibold">Live Insight</span>
+                                <span className="text-[#D82F5A] font-semibold">dashboard data insight</span>
                                 <span className="text-gray-400 text-xs">|</span>
                                 <span className="text-gray-600 text-xs">
-                                    Data diperbarui secara otomatis berdasarkan aktivitas database terbaru.
+                                    Data didapat dari dashboard
                                 </span>
                             </div>
                         </div>
@@ -151,7 +176,7 @@ const AnalisisUlasan = () => {
                         <div className="col-span-12 lg:col-span-8 bg-white p-6 rounded-[4px] border border-gray-100 shadow-sm">
                             <div className="flex justify-between items-start mb-6">
                                 <div>
-                                    <h3 className="text-sm font-semibold text-[#111827]">Subscription vs Churn</h3>
+                                    <h3 className="text-sm font-semibold text-[#111827]">Subscription vs Predicted Churn</h3>
                                     <p className="text-[10px] text-gray-400 mt-1">Perbandingan churn berdasarkan jenis paket</p>
                                 </div>
                                 <div className="flex gap-4 text-[10px] font-semibold mt-1">
@@ -199,14 +224,112 @@ const AnalisisUlasan = () => {
                                 {riskData.map((item, i) => (
                                     <div key={i} className="text-left bg-gray-50 p-2 rounded">
                                         <p className="text-[9px] text-gray-500 uppercase tracking-wider">{item.name}</p>
-                                        <p className="text-xs font-bold" style={{ color: COLORS_PIE[i % COLORS_PIE.length] }}>{item.value}%</p>
+                                        <p className="text-xs font-bold" style={{ color: COLORS_PIE[i % COLORS_PIE.length] }}>{item.value}</p>
                                     </div>
                                 ))}
                             </div>
                         </div>
                     </div>
+                    <div className="grid grid-cols-12 gap-6 mb-12">
 
-                    {/* Segment Insight Section (Design "Solusi" style) */}
+                        {/* Genre Chart */}
+                        <div className="col-span-12 lg:col-span-6 bg-white p-6 rounded-[4px] border border-gray-100 shadow-sm">
+
+                            <div className="mb-6">
+                                <h3 className="text-sm font-semibold text-[#111827]">
+                                    Genre Preference Analysis
+                                </h3>
+
+                                <p className="text-[10px] text-gray-400 mt-1">
+                                    Distribusi pelanggan berdasarkan genre favorit
+                                </p>
+                            </div>
+
+                            <div className="h-72">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={genreData}>
+                                        <CartesianGrid
+                                            strokeDasharray="3 3"
+                                            vertical={false}
+                                            stroke="#F3F4F6"
+                                        />
+
+                                        <XAxis
+                                            dataKey="GenrePreference"
+                                            fontSize={10}
+                                            axisLine={false}
+                                            tickLine={false}
+                                        />
+
+                                        <YAxis
+                                            fontSize={10}
+                                            axisLine={false}
+                                            tickLine={false}
+                                        />
+
+                                        <Tooltip />
+
+                                        <Bar
+                                            dataKey="COUNT(*)"
+                                            fill={PINK_DARK}
+                                            radius={[4, 4, 0, 0]}
+                                            barSize={28}
+                                        />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
+
+                        {/* Revenue Loss Chart */}
+                        <div className="col-span-12 lg:col-span-6 bg-white p-6 rounded-[4px] border border-gray-100 shadow-sm">
+
+                            <div className="mb-6">
+                                <h3 className="text-sm font-semibold text-[#111827]">
+                                    Revenue Loss by Subscription
+                                </h3>
+
+                                <p className="text-[10px] text-gray-400 mt-1">
+                                    Estimasi revenue hilang akibat churn
+                                </p>
+                            </div>
+
+                            <div className="h-72">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={subscriptionRevenueData}>
+                                        <CartesianGrid
+                                            strokeDasharray="3 3"
+                                            vertical={false}
+                                            stroke="#F3F4F6"
+                                        />
+
+                                        <XAxis
+                                            dataKey="subscription"
+                                            fontSize={10}
+                                            axisLine={false}
+                                            tickLine={false}
+                                        />
+
+                                        <YAxis
+                                            fontSize={10}
+                                            axisLine={false}
+                                            tickLine={false}
+                                        />
+
+                                        <Tooltip />
+
+                                        <Bar
+                                            dataKey="lostRevenue"
+                                            fill="#D82F5A"
+                                            radius={[4, 4, 0, 0]}
+                                            barSize={32}
+                                        />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
+
+                    </div>
+
                     <div className="mb-12">
                         <h3 className="text-md font-semibold text-gray-800 mb-6">Segment Insight</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

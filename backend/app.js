@@ -22,6 +22,8 @@ app.use("/auth", auth_normal);
 app.use("/prediction", require("./routes/predictRoutes.js"))
 app.use("/email",require("../backend/routes/emailRoutes.js"))
 app.use("/feedback",require("../backend/routes/feedback.js"))
+app.use("/api/payment", require("../backend/routes/paymentroutes.js"));
+
 
 app.use("/test", require("./routes/testRoutes.js"));
 
