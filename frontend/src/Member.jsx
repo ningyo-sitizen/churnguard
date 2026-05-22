@@ -16,9 +16,9 @@ const Member = () => {
 
     const pricingPlans = [
         {
-            title: "Insight Enthusiast",
-            price: "Rp 149.000",
-            description: "Paket paling hemat untuk memahami perasaan pelanggan.",
+            title: "free account",
+            price: "free",
+            description: "Paket paling gratis.",
             features: [
                 "Analisis Sentimen NLP (Positif/Negatif/Netral).",
                 "Ringkasan topik otomatis.",
@@ -35,23 +35,11 @@ const Member = () => {
                 "Prediksi yang akan berhenti berlangganan.",
                 "Fitur Email Marketing.",
                 "Skor loyalitas pelanggan.",
-                "Limit 50.000 profil pelanggan/bulan."
+                "Limit 2000 profil pelanggan/bulan.",
+                "Sentiment analisis sesuai nama app anda"
             ],
             isBestSeller: true,
         },
-        {
-            title: "Intelligence Master",
-            price: "Rp 899.000",
-            description: "Paket paling hemat untuk memahami perasaan pelanggan.",
-            features: [
-                "Semua Fitur NLP + Semua Fitur Prediksi.",
-                "Analisis mendalam berdasarkan data sentimen.",
-                "Prioritas pemrosesan data (Lebih cepat).",
-                "Limit 100.000 profil & teks/bulan.",
-                "Dukungan konsultasi teknis."
-            ],
-            isBestSeller: false,
-        }
     ];
 
     return (

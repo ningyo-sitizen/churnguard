@@ -9,6 +9,7 @@ console.log("PAYMENT ROUTE FILE LOADED");
 // DATABASE
 // ==========================
 const db = require("../config/db");
+const churnguard_con = require("../config/db");
 
 // ==========================
 // TEST ROUTE
@@ -56,16 +57,9 @@ router.post("/create-transaction", async (req, res) => {
         message: "Incomplete data"
       });
     }
-
-    // ==========================
-    // ORDER ID
-    // ==========================
     const orderId =
-      "ORDER-" + Date.now();
+      `ORDER-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
 
-    // ==========================
-    // MIDTRANS PARAMETER
-    // ==========================
     const parameter = {
 
       transaction_details: {
@@ -110,57 +104,42 @@ router.post("/create-transaction", async (req, res) => {
     console.log("MIDTRANS TRANSACTION:");
     console.log(transaction);
 
-    // ==========================
-    // INSERT DATABASE
-    // ==========================
     const sql = `
-      INSERT INTO payment
-      (
-        order_id,
-        name,
-        price,
-        payment_method,
-        plan,
-        status
-      )
-      VALUES (?, ?, ?, ?, ?, ?)
-    `;
+  INSERT INTO payment
+  (
+    order_id,
+    name,
+    email,
+    price,
+    payment_method,
+    plan,
+    status
+  )
+  VALUES (?,?, ?, ?, ?, ?, ?)
+`;
 
-    db.query(
+    const [result] = await db.query(
       sql,
       [
         orderId,
         name,
+        email,
         Number(amount),
         payment || "e-wallet",
         plan || "Premium",
         "pending"
-      ],
-      (err, result) => {
-
-        if (err) {
-
-          console.log("MYSQL INSERT ERROR:");
-          console.log(err);
-
-          return res.status(500).json({
-            success: false,
-            message: "Database insert failed",
-            mysql_error: err.message
-          });
-        }
-
-        console.log("INSERT SUCCESS");
-        console.log(result);
-
-        return res.json({
-          success: true,
-          token: transaction.token,
-          redirect_url: transaction.redirect_url,
-          order_id: orderId
-        });
-      }
+      ]
     );
+
+    console.log("INSERT SUCCESS");
+    console.log(result);
+
+    return res.json({
+      success: true,
+      token: transaction.token,
+      redirect_url: transaction.redirect_url,
+      order_id: orderId
+    });
 
   } catch (error) {
 
@@ -175,9 +154,167 @@ router.post("/create-transaction", async (req, res) => {
   }
 });
 
-
 router.post("/notification", async (req, res) => {
-    console.log("kiana")
+  console.log(JSON.stringify(req.body, null, 2));
+
+  try {
+
+    const statusResponse =
+      await snap.transaction.notification(req.body);
+
+    console.log("STATUS RESPONSE:");
+    console.log(statusResponse);
+
+    const orderId =
+      statusResponse.order_id;
+
+    const [email_buyer] = await churnguard_con.query('select * from payment where order_id = ?',[orderId])
+    const email_member= email_buyer[0]?.email
+
+    const transactionStatus =
+      statusResponse.transaction_status;
+
+    const fraudStatus =
+      statusResponse.fraud_status;
+
+    const paymentType =
+      statusResponse.payment_type || "unknown";
+
+    let paymentStatus = "pending";
+
+    if (transactionStatus === "capture") {
+
+      if (fraudStatus === "challenge") {
+
+        paymentStatus = "cancel";
+
+      } else if (fraudStatus === "accept") {
+
+        paymentStatus = "success";
+      }
+
+    }
+
+    else if (
+      transactionStatus === "settlement"
+    ) {
+
+      paymentStatus = "success";
+    }
+
+    else if (
+      transactionStatus === "pending"
+    ) {
+
+      paymentStatus = "cancel";
+    }
+
+    else if (
+      transactionStatus === "expire"
+    ) {
+
+      paymentStatus = "expired";
+    }
+
+    else if (
+      transactionStatus === "cancel"
+    ) {
+
+      paymentStatus = "cancel";
+    }
+
+    else if (
+      transactionStatus === "deny" ||
+      transactionStatus === "failure"
+    ) {
+
+      paymentStatus = "failed";
+    }
+
+    console.log("ORDER ID:", orderId);
+    console.log("TRANSACTION STATUS:", transactionStatus);
+    console.log("PAYMENT STATUS:", paymentStatus);
+
+
+
+    const sql = `
+      UPDATE payment
+      SET
+        status=?,
+        payment_method=?
+      WHERE order_id=?
+    `;
+
+    db.query(
+      sql,
+      [
+        paymentStatus,
+        paymentType,
+        orderId
+      ],
+      (err, result) => {
+
+        if (err) {
+
+          console.log("UPDATE ERROR:");
+          console.log(err);
+
+        } else {
+
+          console.log("UPDATE SUCCESS");
+          console.log(result);
+          console.log("AFFECTED ROWS:", result.affectedRows);
+        }
+      }
+    );
+
+    if(paymentStatus === "success"){
+      const[savemember] = await churnguard_con.query(`update users set member = "active" where email = ?`,[email_member])
+
+      return res.status(200).send("OK");
+    }
+  } catch (error) {
+
+    console.log("NOTIFICATION ERROR:");
+    console.log(error);
+
+    return res.status(500).send("Notification Error");
+  }
+});
+
+router.post("/cancel-payment", async (req, res) => {
+
+  try {
+
+    const { order_id } = req.body;
+
+    const sql = `
+      UPDATE payment
+      SET status = ?
+      WHERE order_id = ?
+    `;
+
+    await db.query(
+      sql,
+      [
+        "cancel",
+        order_id
+      ]
+    );
+
+    return res.json({
+      success: true,
+      message: "Payment cancelled"
+    });
+
+  } catch (error) {
+
+    console.log(error);
+
+    return res.status(500).json({
+      success: false
+    });
+  }
 });
 
 module.exports = router;

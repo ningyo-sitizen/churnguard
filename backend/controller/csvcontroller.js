@@ -7,6 +7,7 @@ const churnguard_con = require("../config/db");
 const iconv = require("iconv-lite");
 
 exports.validateCSV = async (req, res) => {
+  let filePath;
 
   if (!req.file) {
     return res.status(400).json({
@@ -15,7 +16,7 @@ exports.validateCSV = async (req, res) => {
     });
   }
 
-  const filePath = req.file.path;
+  filePath = req.file.path;
 
   const expected = [
     "AccountAge",
@@ -50,371 +51,226 @@ exports.validateCSV = async (req, res) => {
   let missingColumns = [];
   let orderMismatch = false;
 
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader) {
-    return res.status(401).json({
-      message: "No token"
-    });
-  }
-
-  const token = authHeader.split(" ")[1];
-
-  const decoded = jwt.verify(
-    token,
-    process.env.JWT_SECRET
-  );
-
-  const email = decoded.email;
-
   try {
+    // =========================
+    // AUTH
+    // =========================
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      fs.unlink(filePath, () => {});
+      return res.status(401).json({ message: "No token" });
+    }
 
-    const [rows] =
-      await churnguard_con.query(
-        `
-        SELECT *
-        FROM prediction_list
-        WHERE user_email = ?
-        AND status = ?
-        `,
-        [email, "active"]
-      );
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const email = decoded.email;
+
+    // =========================
+    // GET USER
+    // =========================
+    const [member] = await churnguard_con.query(
+      "SELECT * FROM users WHERE email = ?",
+      [email]
+    );
+
+    const member_status = member?.[0]?.member || "trial";
+
+    // =========================
+    // CHECK ACTIVE PREDICTION
+    // =========================
+    const [rows] = await churnguard_con.query(
+      `
+      SELECT *
+      FROM prediction_list
+      WHERE user_email = ?
+      AND status = ?
+      `,
+      [email, "active"]
+    );
 
     if (rows.length > 0) {
-
-      fs.unlink(filePath, () => { });
-
+      fs.unlink(filePath, () => {});
       return res.status(409).json({
-        message:
-          "anda masih memiliki prediction aktif"
+        message: "anda masih memiliki prediction aktif"
       });
-
     }
 
-    const raw =
-      fs.readFileSync(filePath);
-
+    // =========================
+    // READ FILE
+    // =========================
+    const raw = fs.readFileSync(filePath);
     let text;
 
-    if (
-      raw[0] === 0xFF &&
-      raw[1] === 0xFE
-    ) {
-
-      text = iconv.decode(
-        raw,
-        "utf16le"
-      );
-
-    }
-
-    else {
-
+    if (raw[0] === 0xff && raw[1] === 0xfe) {
+      text = iconv.decode(raw, "utf16le");
+    } else {
       text = raw.toString("utf8");
-
     }
 
-    const lines = text
-      .split(/\r?\n/)
-      .filter(line => line.trim());
+    const lines = text.split(/\r?\n/).filter((line) => line.trim());
 
     if (lines.length === 0) {
-
-      fs.unlink(filePath, () => { });
-
+      fs.unlink(filePath, () => {});
       return res.status(400).json({
         message: "CSV kosong"
       });
-
     }
-
-    actualHeaders = lines[0]
-      .split(",")
-      .map(h =>
-        h.trim()
-          .replace(/^\uFEFF/, "")
-      );
 
     // =========================
     // HEADER VALIDATION
     // =========================
+    actualHeaders = lines[0]
+      .split(",")
+      .map((h) => h.trim().replace(/^\uFEFF/, ""));
 
-    missingColumns =
-      expected.filter(
-        col =>
-          !actualHeaders.includes(col)
-      );
+    missingColumns = expected.filter(
+      (col) => !actualHeaders.includes(col)
+    );
 
     orderMismatch =
-      JSON.stringify(actualHeaders)
-      !== JSON.stringify(expected);
+      JSON.stringify(actualHeaders) !== JSON.stringify(expected);
 
     if (missingColumns.length > 0) {
-
       headerError = {
         type: "missing_columns",
         missing: missingColumns,
         expected,
         got: actualHeaders
       };
-
-    }
-
-    else if (orderMismatch) {
-
+    } else if (orderMismatch) {
       headerError = {
         type: "order_mismatch",
         expected,
         got: actualHeaders
       };
-
     }
 
     // =========================
     // INIT COLUMN STATS
     // =========================
-
-    actualHeaders.forEach(col => {
-
+    actualHeaders.forEach((col) => {
       columnStats[col] = {
         values: [],
         unique: new Set(),
         type: "unknown"
       };
-
     });
 
     let acceptedRows = 0;
 
-    // =========================
-    // VALIDATE ROWS
-    // =========================
+    const LIMITS = {
+      trial: 2,
+      active: 2000
+    };
 
-    for (
-      let i = 1;
-      i < lines.length;
-      i++
-    ) {
+    const rowLimit = LIMITS[member_status] || 100;
 
+    for (let i = 1; i < lines.length; i++) {
       const line = lines[i];
-
       if (!line.trim()) continue;
 
       rowNumber++;
 
-      if (rowNumber > 10000) {
-
-        fs.unlink(filePath, () => { });
-
+      if (rowNumber > rowLimit) {
+        fs.unlink(filePath, () => {});
         return res.status(400).json({
-          message:
-            "Maksimal 10.000 rows"
+          message: `Maksimal ${rowLimit} rows untuk akun ${member_status}`
         });
-
       }
 
       const values = line.split(",");
-
       let rowHasError = false;
 
-      actualHeaders.forEach(
-        (key, index) => {
+      actualHeaders.forEach((key, index) => {
+        const value = values[index]?.trim();
 
-          const value =
-            values[index]?.trim();
-
-          // =========================
-          // EMPTY VALIDATION
-          // =========================
-
-          if (
-            value === undefined ||
-            value === null ||
-            value === ""
-          ) {
-
-            rowHasError = true;
-
-            errors.push({
-              row: i + 1,
-              column: key,
-              message: `${key} kosong`
-            });
-
-          }
-
-          // =========================
-          // STATS
-          // =========================
-
-          if (columnStats[key]) {
-
-            if (
-              columnStats[key]
-                .values.length < 3
-            ) {
-
-              columnStats[key]
-                .values.push(value);
-
-            }
-
-            columnStats[key]
-              .unique.add(value);
-
-            if (
-              !isNaN(value) &&
-              value !== ""
-            ) {
-
-              columnStats[key]
-                .type = "number";
-
-            }
-
-            else if (
-              value === "true" ||
-              value === "false"
-            ) {
-
-              columnStats[key]
-                .type = "boolean";
-
-            }
-
-            else {
-
-              columnStats[key]
-                .type = "string";
-
-            }
-
-          }
-
+        if (!value) {
+          rowHasError = true;
+          errors.push({
+            row: i + 1,
+            column: key,
+            message: `${key} kosong`
+          });
         }
-      );
 
-      // =========================
-      // ACCEPTED ROW
-      // =========================
+        if (columnStats[key]) {
+          if (columnStats[key].values.length < 3) {
+            columnStats[key].values.push(value);
+          }
+
+          columnStats[key].unique.add(value);
+
+          if (!isNaN(value) && value !== "") {
+            columnStats[key].type = "number";
+          } else if (value === "true" || value === "false") {
+            columnStats[key].type = "boolean";
+          } else {
+            columnStats[key].type = "string";
+          }
+        }
+      });
 
       if (!rowHasError) {
         acceptedRows++;
       }
-
     }
 
     // =========================
     // SUMMARY
     // =========================
+    const columnSummary = expected.map((col) => {
+      const data = columnStats[col] || {
+        values: [],
+        unique: new Set(),
+        type: "-"
+      };
 
-    const columnSummary =
-      expected.map((col) => {
+      let status = "✅ data valid";
 
-        const data =
-          columnStats[col] || {
-            values: [],
-            unique: new Set(),
-            type: "-"
-          };
+      if (missingColumns.includes(col)) {
+        status = "❌ column missing";
+      } else if (
+        orderMismatch &&
+        actualHeaders.indexOf(col) !== expected.indexOf(col)
+      ) {
+        status = "⚠ order mismatch";
+      } else if (errors.some((e) => e.column === col)) {
+        status = "❌ missing value";
+      }
 
-        let status =
-          "✅ data valid";
+      return {
+        column: col,
+        type: data.type,
+        uniqueCount: data.unique.size,
+        sample: data.values,
+        status
+      };
+    });
 
-        if (
-          missingColumns.includes(col)
-        ) {
-
-          status =
-            "❌ column missing";
-
-        }
-
-        else if (
-          orderMismatch &&
-          actualHeaders.indexOf(col)
-          !== expected.indexOf(col)
-        ) {
-
-          status =
-            "⚠ order mismatch";
-
-        }
-
-        else if (
-          errors.some(
-            e => e.column === col
-          )
-        ) {
-
-          status =
-            "❌ missing value";
-
-        }
-
-        return {
-          column: col,
-          type: data.type,
-          uniqueCount:
-            data.unique.size,
-          sample: data.values,
-          status
-        };
-
-      });
-
-    fs.unlink(filePath, () => { });
+    fs.unlink(filePath, () => {});
 
     return res.json({
       status: "success",
-
-      // TOTAL CSV ROW
       totalRows: rowNumber,
-
-      // ROW VALID
       acceptedRows,
-
-      // TOTAL ERROR
       totalError: errors.length,
-
-      // HEADER ERROR
       headerError,
-
-      // DETAIL ERROR
       missingData: errors,
-
-      // SUMMARY
       columnSummary
     });
 
-  }
+  } catch (err) {
+    console.error("ERROR:", err.message);
 
-  catch (err) {
-
-    console.error(
-      "ERROR:",
-      err.message
-    );
-
-    if (
-      filePath &&
-      fs.existsSync(filePath)
-    ) {
-
-      fs.unlink(
-        filePath,
-        () => { }
-      );
-
+    if (filePath && fs.existsSync(filePath)) {
+      fs.unlink(filePath, () => {});
     }
 
     return res.status(500).json({
       status: "error",
       message: err.message
     });
-
   }
-
 };
 
 

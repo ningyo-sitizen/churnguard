@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from "axios";
 import { useAuth } from "../utils/auth";
 import Sidebar from './SideBar';
+import { useNotif } from './NotificationContext';
 
 const UploadDataFull = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -17,6 +18,7 @@ const UploadDataFull = () => {
     const fileInputRef = useRef(null);
     const navigate = useNavigate();
     const handleBrowseClick = () => fileInputRef.current.click();
+    const { showNotif } = useNotif();
 
     const user = useAuth()
 
@@ -55,7 +57,8 @@ const UploadDataFull = () => {
                     }
                 }
             );
-
+            console.log(res.data)
+            showNotif("error", res.data.message)
             navigate("/validasiProses", {
                 state: {
                     file: selectedFile,
@@ -64,9 +67,10 @@ const UploadDataFull = () => {
             });
 
         } catch (err) {
-
-            console.log(err);
-
+            showNotif(
+                "error",
+                err.response?.data?.message || "Terjadi kesalahan"
+            );
         }
 
     };
@@ -83,7 +87,7 @@ const UploadDataFull = () => {
         <div className="flex min-h-screen bg-[#F9FAFB] text-[#111827]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
 
             {/* --- SIDEBAR --- */}
-        <Sidebar></Sidebar>
+            <Sidebar></Sidebar>
             {/* --- MAIN SECTION --- */}
             <main className="flex-1 overflow-x-hidden">
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Crown, ChevronDown, UserCircle, LogOut, AlertCircle, X } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -6,6 +6,7 @@ const Header = ({ formData, profileImg }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [showLogoutModal, setShowLogoutModal] = useState(false);
     const navigate = useNavigate();
+    const [memberTo, setMemberTo] = useState("");
 
     const handleLogout = () => {
         localStorage.removeItem("token");
@@ -14,6 +15,14 @@ const Header = ({ formData, profileImg }) => {
         setShowLogoutModal(false);
     };
 
+    useEffect(() => {
+        if (formData?.member === 'active') {
+            setMemberTo("profile");
+        } else {
+            setMemberTo("member");
+        }
+    }, [formData]);
+
 
     return (
         <>
@@ -21,9 +30,9 @@ const Header = ({ formData, profileImg }) => {
 
                 {/* Sisi Kanan - Actions (Tetap sesuai design asli kamu) */}
                 <div className="flex items-center gap-4">
-                    <Link to="/member" className="relative group mr-2">
+                    <Link to={`/` + memberTo} className="relative group mr-2">
                         <div className="p-2.5 bg-amber-50/50 text-amber-500 rounded-[4px] cursor-pointer hover:bg-amber-100 transition-all border border-transparent hover:border-amber-400 flex items-center justify-center">
-                            <Crown size={16} strokeWidth={2} />
+                            <Crown size={16} strokeWidth={2} />{" member status : " + formData?.member}
                         </div>
                     </Link>
 

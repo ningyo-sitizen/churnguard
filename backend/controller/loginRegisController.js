@@ -187,6 +187,7 @@ exports.get_user_data = async (req, res) => {
       nama_app: existing[0].nama_app,
       link_app: existing[0].link_app,
       avatar: existing[0].avatar_url,
+      member: existing[0].member,
       email: existing[0].email
     };
 
