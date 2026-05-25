@@ -24,7 +24,12 @@ app.use("/email", require("./routes/emailRoutes.js"));
 app.use("/feedback", require("./routes/feedback.js"));
 app.use("/api/payment", require("./routes/paymentroutes.js"));
 app.use("/test", require("./routes/testRoutes.js"));
-
+app.get("/ping", (req, res) => {
+  res.json({
+    status: "success",
+    message: "pong"
+  });
+});
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
