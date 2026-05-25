@@ -16,20 +16,20 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(passport.initialize());
 
-app.use("/auth", googlelogin);
-app.use("/auth", auth_normal);
+//app.use("/auth", googlelogin);
+//app.use("/auth", auth_normal);
 // app.use("/csv", require("./routes/csvroutes"));
 // app.use("/prediction", require("./routes/predictRoutes.js"));
 // app.use("/email", require("./routes/emailRoutes.js"));
 // app.use("/feedback", require("./routes/feedback.js"));
 // app.use("/api/payment", require("./routes/paymentroutes.js"));
-app.use("/test", require("./routes/testRoutes.js"));
-app.get("/ping", (req, res) => {
-  res.json({
-    status: "success",
-    message: "pong"
-  });
-});
+//app.use("/test", require("./routes/testRoutes.js"));
+//app.get("/ping", (req, res) => {
+//  res.json({
+//    status: "success",
+//    message: "pong"
+//  });
+//});
 app.get("/", (req, res) => {
   res.status(200).send("OK BACKEND");
 });
