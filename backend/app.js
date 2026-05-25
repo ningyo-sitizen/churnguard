@@ -21,7 +21,7 @@ app.get("/ping", (req, res) => {
 });
 
 // ROUTES
-app.use("/csv", require("./routes/csvRoutes.js"));
+app.use("/csv", require("./routes/csvroutes.js"));
 app.use("/auth", require("./routes/googleRoutes.js"));
 app.use("/auth", require("./routes/authRoutes.js"));
 app.use("/prediction", require("./routes/predictRoutes.js"));
