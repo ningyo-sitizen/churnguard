@@ -37,4 +37,5 @@ const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
   console.log(`Server jalan di port ${PORT}`);
+  console.log(process.env.JWT_SECRET)
 });
