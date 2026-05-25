@@ -30,6 +30,9 @@ app.get("/ping", (req, res) => {
     message: "pong"
   });
 });
+app.get("/", (req, res) => {
+  res.status(200).send("OK BACKEND");
+});
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
