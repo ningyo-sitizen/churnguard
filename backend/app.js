@@ -29,7 +29,23 @@ db.getConnection()
     console.log("MYSQL ERROR");
     console.log(err);
   });
+app.get("/db-test", async (req, res) => {
+  try {
+    const [rows] = await db.query("SELECT 1 + 1 AS result");
 
+    res.json({
+      success: true,
+      data: rows
+    });
+
+  } catch (err) {
+
+    res.status(500).json({
+      success: false,
+      error: err.message
+    });
+  }
+});
 // ROUTES
 app.use("/csv", require("./routes/csvroutes.js"));
 app.use("/auth", require("./routes/googleRoutes.js"));
