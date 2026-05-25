@@ -2,7 +2,7 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
-
+const db = require("./config/db"); 
 const passport = require("./config/passport.js");
 
 const googlelogin = require("./routes/googleRoutes.js");
