@@ -3,6 +3,7 @@ const churnguard_con = require("../config/db");
 
 
 exports.googleCallback = async (req, res) => {
+  console.log("register kepanggil")
   const mode = req.query.state;
 
   if (!req.user) {
