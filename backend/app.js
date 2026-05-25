@@ -1,5 +1,5 @@
 require("dotenv").config();
-
+const db = require("./config/db");
 const express = require("express");
 const cors = require("cors");
 
@@ -19,6 +19,16 @@ app.get("/ping", (req, res) => {
     message: "pong"
   });
 });
+
+db.getConnection()
+  .then(conn => {
+    console.log("MYSQL CONNECTED");
+    conn.release();
+  })
+  .catch(err => {
+    console.log("MYSQL ERROR");
+    console.log(err);
+  });
 
 // ROUTES
 app.use("/csv", require("./routes/csvroutes.js"));
