@@ -81,10 +81,8 @@ async def test_upload(file: UploadFile = File(...),email: str = Form(...),filena
         pred = (proba >= threshold).astype(int)
 
         cluster_features = [
-            "AccountAge",
-            "AverageViewingDuration",
-            "SupportTicketsPerMonth",
-            "TotalCharges"
+   'ViewingHoursPerWeek',
+  'user_engagement'
         ]
 
         X_cluster = df[cluster_features]
@@ -101,12 +99,12 @@ async def test_upload(file: UploadFile = File(...),email: str = Form(...),filena
         )
         centers = pd.DataFrame(kmeans.cluster_centers_, columns=cluster_features)
 
-        cluster_order = centers["TotalCharges"].argsort().values
+        cluster_order = centers["user_engagement"].argsort().values
 
         cluster_map = {
-            cluster_order[0]: "Basic user",
-            cluster_order[1]: "Basic Frustrated user",
-            cluster_order[2]: "Experienced user"
+            cluster_order[0]: "Low Engagement Users",
+            cluster_order[1]: "Moderate Engagement Users",
+            cluster_order[2]: "High Engagement Users"
         }
 
         result_df = df_full.copy()

@@ -58,7 +58,7 @@ const RiwayatPrediksi = () => {
             const token = localStorage.getItem("token");
 
             const response = await axios.post(
-                "http://localhost:5000/prediction/delete",
+                `${import.meta.env.VITE_BACKEND_URL}/prediction/delete`,
                 {
                     id: selectedId
                 },
@@ -95,7 +95,7 @@ const RiwayatPrediksi = () => {
             const token = localStorage.getItem("token");
 
             const res = await axios.get(
-                "http://localhost:5000/prediction/history",
+                `${import.meta.env.VITE_BACKEND_URL}/prediction/history`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`

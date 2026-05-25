@@ -57,7 +57,7 @@ exports.validateCSV = async (req, res) => {
     // =========================
     const authHeader = req.headers.authorization;
     if (!authHeader) {
-      fs.unlink(filePath, () => {});
+      fs.unlink(filePath, () => { });
       return res.status(401).json({ message: "No token" });
     }
 
@@ -73,7 +73,7 @@ exports.validateCSV = async (req, res) => {
       [email]
     );
 
-    const member_status = member?.[0]?.member || "trial";
+    const member_status = member?.[0]?.member || "free";
 
     // =========================
     // CHECK ACTIVE PREDICTION
@@ -89,7 +89,7 @@ exports.validateCSV = async (req, res) => {
     );
 
     if (rows.length > 0) {
-      fs.unlink(filePath, () => {});
+      fs.unlink(filePath, () => { });
       return res.status(409).json({
         message: "anda masih memiliki prediction aktif"
       });
@@ -110,7 +110,7 @@ exports.validateCSV = async (req, res) => {
     const lines = text.split(/\r?\n/).filter((line) => line.trim());
 
     if (lines.length === 0) {
-      fs.unlink(filePath, () => {});
+      fs.unlink(filePath, () => { });
       return res.status(400).json({
         message: "CSV kosong"
       });
@@ -159,7 +159,7 @@ exports.validateCSV = async (req, res) => {
     let acceptedRows = 0;
 
     const LIMITS = {
-      trial: 2,
+      free: 2,
       active: 2000
     };
 
@@ -172,7 +172,7 @@ exports.validateCSV = async (req, res) => {
       rowNumber++;
 
       if (rowNumber > rowLimit) {
-        fs.unlink(filePath, () => {});
+        fs.unlink(filePath, () => { });
         return res.status(400).json({
           message: `Maksimal ${rowLimit} rows untuk akun ${member_status}`
         });
@@ -247,7 +247,7 @@ exports.validateCSV = async (req, res) => {
       };
     });
 
-    fs.unlink(filePath, () => {});
+    fs.unlink(filePath, () => { });
 
     return res.json({
       status: "success",
@@ -263,7 +263,7 @@ exports.validateCSV = async (req, res) => {
     console.error("ERROR:", err.message);
 
     if (filePath && fs.existsSync(filePath)) {
-      fs.unlink(filePath, () => {});
+      fs.unlink(filePath, () => { });
     }
 
     return res.status(500).json({
@@ -288,14 +288,14 @@ exports.sendToPython = async (req, res) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const email = decoded.email;
 
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+
     const [rows] = await churnguard_con.query("SELECT * FROM prediction_list where user_email = ? AND status = ?", [email, "active"])
 
     if (rows.length > 0) {
       return res.status(409).json({ message: "anda masih memiliki prediction mohon save atau tidak untuk membuat prediction baru" })
-    }
-
-    if (!req.file) {
-      return res.status(400).json({ message: "No file uploaded" });
     }
 
     filePath = req.file.path;
@@ -314,10 +314,17 @@ exports.sendToPython = async (req, res) => {
 
     fs.unlink(filePath, () => { });
 
+    const [logger] = await churnguard_con.query(
+      `INSERT INTO logger(user_email, event_name, action, value) 
+       VALUES (?, ?, ?, ?)`,
+      [email, "prediction", "user membuat prediction", 1]
+    );
+
     return res.json({
       message: "Kirim ke Python berhasil",
       python: pyRes.data
     });
+
 
   } catch (err) {
     console.error("ERROR:", err.message);

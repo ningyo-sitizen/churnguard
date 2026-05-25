@@ -26,10 +26,12 @@ import DashboarHistory from "./DashboardHistory.jsx";
 import ProfilePage from "./ProfilePage.jsx";
 import SentimenAnalysis from "./SentimenAnalysis.jsx";
 import ForgetPass from "./ForgetPass.jsx";
+import HistoryPayment from "./HistoryPayment.jsx";
 export default function App() {
   return (
     <NotificationProvider>
       <Routes>
+        <Route path="/historyPayment" element={<HistoryPayment />} />
         <Route path="/forgetpass" element={<ForgetPass />} />
         <Route path="/sentimenAnalysis" element={<SentimenAnalysis />} />
         <Route path="/profile" element={<ProfilePage />} />

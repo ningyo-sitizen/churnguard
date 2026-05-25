@@ -48,7 +48,7 @@ const UploadDataFull = () => {
             const token = localStorage.getItem("token");
 
             const res = await axios.post(
-                "http://localhost:5000/csv/upload-csv",
+                `${import.meta.env.VITE_BACKEND_URL}/csv/upload-csv`,
                 formData,
                 {
                     headers: {

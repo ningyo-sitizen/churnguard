@@ -81,7 +81,7 @@ const MemberPayment = () => {
       console.log("START REQUEST");
 
       const response = await axios.post(
-        "http://localhost:5000/api/payment/create-transaction",
+        `${import.meta.env.VITE_BACKEND_URL}/api/payment/create-transaction`,
         {
           name: user?.name,
           email: user?.email,
@@ -129,7 +129,7 @@ const MemberPayment = () => {
           try {
 
             await axios.post(
-              "http://localhost:5000/api/payment/cancel-payment",
+              `${import.meta.env.VITE_BACKEND_URL}/api/payment/cancel-payment`,
               {
                 order_id: response.data.order_id
               }

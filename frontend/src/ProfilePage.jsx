@@ -23,9 +23,12 @@ import { useAuth } from '../utils/auth.js';
 import Sidebar from './SideBar.jsx';
 import Footer from './footer';
 import axios from 'axios';
+import { useNavigate } from "react-router-dom";
 
 const ProfilePage = () => {
 
+
+  const navigate = useNavigate();
   const [selectedFile, setSelectedFile] = useState(null);
 
   const [uploading, setUploading] = useState(false);
@@ -107,7 +110,7 @@ const ProfilePage = () => {
       }
 
       await axios.put(
-        "http://localhost:5000/auth/update-profile",
+        `${import.meta.env.VITE_BACKEND_URL}/auth/update-profile`,
         form,
         {
           headers: {
@@ -495,14 +498,14 @@ const ProfilePage = () => {
                 </div>
 
                 <p className="text-xl font-black mb-1 uppercase">
-                  Growth Strategist
+                  {user?.member_plan}
                 </p>
 
                 <p className="text-gray-400 text-xs">
-                  Aktif s/d Mei 2026
+                  Aktif s/d {new Date(user?.member_until).toLocaleDateString("id-ID")}
                 </p>
 
-                <button className="w-full mt-8 py-3.5 bg-white text-[#1a1a1a] font-semibold text-sm rounded-sm hover:bg-gray-100 flex items-center justify-center gap-2">
+                <button onClick={() => navigate("/historyPayment")} className="w-full mt-8 py-3.5 bg-white text-[#1a1a1a] font-semibold text-sm rounded-sm hover:bg-gray-100 flex items-center justify-center gap-2">
 
                   <CreditCard size={14} />
 

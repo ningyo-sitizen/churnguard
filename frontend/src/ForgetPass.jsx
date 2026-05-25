@@ -7,6 +7,7 @@ import imgpnj from "./assets/logo_pnj.jpg";
 import { IconEye, IconEyeOff } from "@tabler/icons-react";
 
 function ForgetPass() {
+    const [confirmPassword, setConfirmPassword] = useState("");
     const { showNotif } = useNotif();
     const [name, setName] = useState("");
     const [isSignup, setIsSignup] = useState(true);
@@ -27,7 +28,7 @@ function ForgetPass() {
     const handleForgetPassEmailCheck = async () => {
         try {
 
-            const res = await fetch("http://localhost:5000/auth/forgetpass/check-email", {
+            const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/auth/forgetpass/check-email`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: name })
@@ -43,14 +44,134 @@ function ForgetPass() {
             }
 
             showNotif("success", data.message);
+            handleOtpGet()
             setStep(2);
+
 
         } catch (err) {
             console.log("Register failed:", err);
             showNotif("error", "Server error");
         }
     };
+    const handleOtpGet = async () => {
+        try {
+            const res = await fetch(
+                `${import.meta.env.VITE_BACKEND_URL}/auth/register/get-otp?email=${name}`
+            );
+            showNotif(res.data.status, res.data.message)
+        } catch (err) {
+            console.log("Register failed:", err);
+        }
+    }
+    const handleOtpNewGet = async () => {
 
+        try {
+
+            const res = await fetch(
+                `${import.meta.env.VITE_BACKEND_URL}/auth/register/new-otp?email=${email}`
+            );
+
+            const data = await res.json();
+
+            if (!res.ok) {
+
+                return showNotif(
+                    "error",
+                    data.message
+                );
+            }
+
+            setTimer(120);
+
+            showNotif(
+                "success",
+                data.message
+            );
+
+        } catch (err) {
+
+            console.log("Register failed:", err);
+
+            showNotif(
+                "error",
+                "Server error"
+            );
+        }
+    }
+
+    const handleOtpCheck = async () => {
+        const otpCode = otp.join("");
+
+        if (!otpCode.trim()) {
+            showNotif("error", "Tolong isi kode OTP");
+            return;
+        }
+
+        if (otpCode.length < 6) {
+            showNotif("error", "OTP harus 6 digit");
+            return;
+        }
+
+        try {
+            const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/auth/register/check-otp`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    email: name,
+                    otp: otpCode
+                }),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                showNotif("error", data.message || "OTP salah");
+                return;
+            }
+
+            showNotif("success", "OTP berhasil diverifikasi");
+            console.log("OTP benar");
+
+            setStep(3);
+
+        } catch (err) {
+            console.log("OTP check failed:", err);
+            showNotif("error", "Terjadi kesalahan saat verifikasi OTP");
+        }
+    };
+    const handleResetPassword = async (e) => {
+
+        e.preventDefault();
+
+        try {
+
+            const res = await fetch(
+                `${import.meta.env.VITE_BACKEND_URL}/auth/forget_pass/password`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        email: name,
+                        password: confirmPassword
+                    }),
+                }
+            );
+
+            const data = await res.json();
+
+            showNotif(data.status, data.message);
+
+        } catch (err) {
+
+            console.log(err);
+
+            showNotif("error", "Server error");
+        }
+    }
     const handleNext = (e) => {
         e.preventDefault();
 
@@ -66,7 +187,7 @@ function ForgetPass() {
         }
     };
     const handleChange = (e, index) => {
-        const val = e.target.value.replace(/[^0-9]/g, "") // cuma angka
+        const val = e.target.value.replace(/[^0-9]/g, "")
         const newOtp = [...otp]
         newOtp[index] = val
         setOtp(newOtp)
@@ -319,6 +440,7 @@ function ForgetPass() {
                                         </div>
                                     </div>
                                     <button
+                                        onClick={handleOtpCheck}
                                         type="submit"
                                         className="bg-[#000000] text-white w-full h-12 rounded-lg hover:bg-[#667790] transition duration-200 font-semibold"
                                     >
@@ -345,148 +467,217 @@ function ForgetPass() {
                                 </>
                             )}
                             {step === 3 && (
-                                <>
-                                    <form className="relative text-sm items-centerp-3 w-full mb-6"
-                                        onSubmit={handleLogin}>
-                                        {/* fungsi hanya placeholder */}
-                                        <div className="relative w-full text-sm text-left">
-                                            <p className="font-medium text-base py-2">Otentikasi langkah ke tiga</p>
-                                            <p className="font-extralight text-sm text-[#616161]">Buat kata sandi yang kuat untuk melindungi data pelanggan Anda di dashboard ChurnGuard.</p>
-                                        </div>
-
-                                        {/* Password */}
-                                        <div className="relative text-left mt-4">
-                                            <p className="text-regular">Password</p>
-                                            <div className="flex text-sm items-center border border-gray-300 rounded-lg p-3 w-full focus-within:ring-2 focus-within:ring-[#023048] mb-3">
-                                                <svg xmlns="http://www.w3.org/2000/svg"
-                                                    width="20" height="20" viewBox="0 0 24 24" fill="none"
-                                                    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                                                    className="text-gray-400 mr-2">
-                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                                    <path d="M5 13a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-6z" />
-                                                    <path d="M11 16a1 1 0 1 0 2 0a1 1 0 0 0 -2 0" />
-                                                    <path d="M8 11v-4a4 4 0 1 1 8 0v4" />
-                                                </svg>
-
-                                                <div className="relative w-full">
-                                                    <input
-                                                        type={showPassword ? "text" : "password"}
-                                                        placeholder="Password"
-                                                        value={password}
-                                                        onChange={(e) => setPassword(e.target.value)}
-                                                        className="outline-none w-full pr-8"
-                                                    />
-                                                    {showPassword ? (
-                                                        <IconEyeOff
-                                                            size={18}
-                                                            className="absolute top-1/2 right-2 -translate-y-1/2 text-gray-400 cursor-pointer"
-                                                            onClick={togglePasswordVisibility}
-                                                        />
-                                                    ) : (
-                                                        <IconEye
-                                                            size={18}
-                                                            className="absolute top-1/2 right-2 -translate-y-1/2 text-gray-400 cursor-pointer"
-                                                            onClick={togglePasswordVisibility}
-                                                        />
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="mt-4 text-left text-xs">
-                                            <p className="mb-2 text-black">Kata sandi Anda harus memiliki:</p>
-
-                                            <div className="flex gap-8">
-
-                                                {/* LEFT */}
-                                                <div className="flex flex-col gap-2">
-                                                    <div className="flex items-start gap-2">
-                                                        <CheckIcon ok={checks.length} />
-                                                        <span className={checks.length ? "text-[#4ABC4C]" : "text-[#616161]"}>
-                                                            Minimal 8 karakter
-                                                        </span>
-                                                    </div>
-                                                    <div className="flex items-start gap-2">
-                                                        <CheckIcon ok={checks.letter} />
-                                                        <span className={checks.letter ? "text-[#4ABC4C]" : "text-[#616161]"}>
-                                                            Huruf besar & kecil
-                                                        </span>
-                                                    </div>
-                                                </div>
-
-                                                {/* RIGHT */}
-                                                <div className="flex flex-col gap-2">
-                                                    <div className="flex items-start gap-2">
-                                                        <CheckIcon ok={checks.number} />
-                                                        <span className={checks.number ? "text-[#4ABC4C]" : "text-[#616161]"}>
-                                                            Minimal 1 angka
-                                                        </span>
-                                                    </div>
-
-                                                    <div className="flex items-start gap-2">
-                                                        <CheckIcon ok={checks.special} />
-                                                        <span className={checks.special ? "text-[#4ABC4C]" : "text-[#616161]"}>
-                                                            1 karakter khusus
-                                                        </span>
-                                                    </div>
-                                                </div>
-
-                                            </div>
-                                        </div>
-                                        {/* Remember */}
-                                        <div className="w-full h-[3px] bg-[#EDEDED] mt-4">
-                                            <div
-                                                className="h-[3px] transition-all"
-                                                style={{
-                                                    width: `${(strength / 4) * 100}%`,
-                                                    backgroundColor: strengthColor,
-                                                }}
-                                            />
-                                        </div>
-
-                                        <p className="text-xs mt-2 text-[#929191]">
-                                            Kekuatan kata sandi: <span style={{ color: strengthColor }}>{strengthText}</span>
+                                <div className="relative text-sm items-center p-3 w-full mb-6">
+                                    <div className="relative w-full text-sm text-left">
+                                        <p className="font-medium text-base py-2">
+                                            Otentikasi langkah ke tiga
                                         </p>
-                                        <button
-                                            type="submit"
-                                            className="bg-[#000000] text-white w-full h-10 rounded-lg hover:bg-[#667790] transition duration-200 font-semibold"
-                                        >
-                                            Selanjutnya
-                                        </button>
-                                        <div className="flex items-center w-full text-[#616161] text-sm py-4">
-                                            <div className="flex-1 border-t border-[#BFC0C0]"></div>
 
-                                            <span className="px-4 text-center">
-                                                Atau
-                                            </span>
+                                        <p className="font-extralight text-sm text-[#616161]">
+                                            Buat kata sandi yang kuat untuk melindungi data pelanggan Anda di dashboard ChurnGuard.
+                                        </p>
+                                    </div>
 
-                                            <div className="flex-1 border-t border-[#BFC0C0]"></div>
-                                        </div>
-                                        <button
-                                            type="button"
-                                            className="flex items-center justify-center gap-3 h-10 w-full border border-gray-300 rounded-lg p-3 text-[#616161] hover:bg-gray-50 transition"
-                                        >
+                                    {/* PASSWORD */}
+                                    <div className="relative text-left mt-4">
+                                        <p className="text-regular">Password Baru</p>
 
-                                            <span
-                                                onClick={() => navigate("/login")}
-                                                className="text-sm font-medium">
-                                                Kembali
-                                            </span>
-                                        </button>
+                                        <div className="flex text-sm items-center border border-gray-300 rounded-lg p-3 w-full focus-within:ring-2 focus-within:ring-[#023048] mb-3">
 
-                                        <p className="text-sm text-center mt-4">
-                                            <span className="text-black">
-                                                Sudah punya akun?{" "}
-                                            </span>
-
-                                            <span
-                                                onClick={() => navigate("/login")}
-                                                className="text-[#FF1515] cursor-pointer font-medium hover:underline"
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                width="20"
+                                                height="20"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                className="text-gray-400 mr-2"
                                             >
-                                                Masuk di sini
-                                            </span>
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                <path d="M5 13a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-6z" />
+                                                <path d="M11 16a1 1 0 1 0 2 0a1 1 0 0 0 -2 0" />
+                                                <path d="M8 11v-4a4 4 0 1 1 8 0v4" />
+                                            </svg>
+
+                                            <div className="relative w-full">
+                                                <input
+                                                    type={showPassword ? "text" : "password"}
+                                                    placeholder="Masukkan password baru"
+                                                    value={password}
+                                                    onChange={(e) => setPassword(e.target.value)}
+                                                    className="outline-none w-full pr-8"
+                                                />
+
+                                                {showPassword ? (
+                                                    <IconEyeOff
+                                                        size={18}
+                                                        className="absolute top-1/2 right-2 -translate-y-1/2 text-gray-400 cursor-pointer"
+                                                        onClick={togglePasswordVisibility}
+                                                    />
+                                                ) : (
+                                                    <IconEye
+                                                        size={18}
+                                                        className="absolute top-1/2 right-2 -translate-y-1/2 text-gray-400 cursor-pointer"
+                                                        onClick={togglePasswordVisibility}
+                                                    />
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* KONFIRMASI PASSWORD */}
+                                    <div className="relative text-left mt-4">
+                                        <p className="text-regular">Konfirmasi Password</p>
+
+                                        <div className="flex text-sm items-center border border-gray-300 rounded-lg p-3 w-full focus-within:ring-2 focus-within:ring-[#023048] mb-3">
+
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                width="20"
+                                                height="20"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                className="text-gray-400 mr-2"
+                                            >
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                <path d="M5 13a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-6z" />
+                                                <path d="M11 16a1 1 0 1 0 2 0a1 1 0 0 0 -2 0" />
+                                                <path d="M8 11v-4a4 4 0 1 1 8 0v4" />
+                                            </svg>
+
+                                            <div className="relative w-full">
+                                                <input
+                                                    type={showPassword ? "text" : "password"}
+                                                    placeholder="Konfirmasi password"
+                                                    value={confirmPassword}
+                                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                                    className="outline-none w-full pr-8"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {/* VALIDASI */}
+                                        {confirmPassword.length > 0 && (
+                                            <p
+                                                className={`text-xs mt-1 ${password === confirmPassword
+                                                    ? "text-[#4ABC4C]"
+                                                    : "text-[#FF1515]"
+                                                    }`}
+                                            >
+                                                {password === confirmPassword
+                                                    ? "Password cocok"
+                                                    : "Password tidak cocok"}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    {/* PASSWORD CHECK */}
+                                    <div className="mt-4 text-left text-xs">
+                                        <p className="mb-2 text-black">
+                                            Kata sandi Anda harus memiliki:
                                         </p>
-                                    </form>
-                                </>
+
+                                        <div className="flex gap-8">
+
+                                            <div className="flex flex-col gap-2">
+
+                                                <div className="flex items-start gap-2">
+                                                    <CheckIcon ok={checks.length} />
+
+                                                    <span
+                                                        className={
+                                                            checks.length
+                                                                ? "text-[#4ABC4C]"
+                                                                : "text-[#616161]"
+                                                        }
+                                                    >
+                                                        Minimal 8 karakter
+                                                    </span>
+                                                </div>
+
+                                                <div className="flex items-start gap-2">
+                                                    <CheckIcon ok={checks.letter} />
+
+                                                    <span
+                                                        className={
+                                                            checks.letter
+                                                                ? "text-[#4ABC4C]"
+                                                                : "text-[#616161]"
+                                                        }
+                                                    >
+                                                        Huruf besar & kecil
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex flex-col gap-2">
+
+                                                <div className="flex items-start gap-2">
+                                                    <CheckIcon ok={checks.number} />
+
+                                                    <span
+                                                        className={
+                                                            checks.number
+                                                                ? "text-[#4ABC4C]"
+                                                                : "text-[#616161]"
+                                                        }
+                                                    >
+                                                        Minimal 1 angka
+                                                    </span>
+                                                </div>
+
+                                                <div className="flex items-start gap-2">
+                                                    <CheckIcon ok={checks.special} />
+
+                                                    <span
+                                                        className={
+                                                            checks.special
+                                                                ? "text-[#4ABC4C]"
+                                                                : "text-[#616161]"
+                                                        }
+                                                    >
+                                                        1 karakter khusus
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* STRENGTH BAR */}
+                                    <div className="w-full h-[3px] bg-[#EDEDED] mt-4">
+                                        <div
+                                            className="h-[3px] transition-all"
+                                            style={{
+                                                width: `${(strength / 4) * 100}%`,
+                                                backgroundColor: strengthColor,
+                                            }}
+                                        />
+                                    </div>
+
+                                    <p className="text-xs mt-2 text-[#929191]">
+                                        Kekuatan kata sandi:
+                                        <span style={{ color: strengthColor }}>
+                                            {" "} {strengthText}
+                                        </span>
+                                    </p>
+
+                                    <button
+                                        type="button"
+                                        onClick={handleResetPassword}
+                                        disabled={password !== confirmPassword}
+                                        className="bg-[#000000] text-white w-full h-10 rounded-lg hover:bg-[#667790] transition duration-200 font-semibold disabled:bg-gray-400 disabled:cursor-not-allowed mt-4"
+                                    >
+                                        Simpan Password Baru
+                                    </button>
+
+                                </div>
                             )}
 
                         </form>

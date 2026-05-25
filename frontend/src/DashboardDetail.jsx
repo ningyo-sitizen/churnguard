@@ -68,7 +68,7 @@ export default function CostumerDetail() {
         try {
 
             const response = await axios.post(
-                `http://localhost:5000/email/generate`,
+                `${import.meta.env.VITE_BACKEND_URL}/email/generate`,
                 {
                     promo_name: promoName,
                     promo_discount: promoDiscount,
@@ -100,7 +100,7 @@ export default function CostumerDetail() {
             try {
 
                 const response = await axios.get(
-                    `http://localhost:5000/prediction/costumer-detail?customerid=${CustomerID}&predictionid=${prediction_id}`,
+                    `${import.meta.env.VITE_BACKEND_URL}/prediction/costumer-detail?customerid=${CustomerID}&predictionid=${prediction_id}`,
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,
@@ -133,7 +133,7 @@ export default function CostumerDetail() {
         try {
             const token = localStorage.getItem('token')
             await axios.post(
-                `http://localhost:5000/email/send`,
+                `${import.meta.env.VITE_BACKEND_URL}/email/send`,
                 {
                     html: chatMessage,
                     email: detail.email,

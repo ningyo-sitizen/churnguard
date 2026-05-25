@@ -563,7 +563,7 @@ exports.bulkSend = async (req, res) => {
                 value: promo_ALL_R_H_S_value,
                 expired: promo_ALL_R_H_S_expired,
                 risk: "High-Medium-Low",
-                segment: "Basic Frustrated user"
+                segment: "Low Engagement Users"
             },
 
             {
@@ -571,7 +571,7 @@ exports.bulkSend = async (req, res) => {
                 value: promo_H_M_R_L_S_value,
                 expired: promo_H_M_R_L_S_expired,
                 risk: "High-Medium",
-                segment: "Experienced user"
+                segment: "High Engagement Users"
             },
 
             {
@@ -579,7 +579,7 @@ exports.bulkSend = async (req, res) => {
                 value: promo_M_H_R_M_S_value,
                 expired: promo_M_H_R_M_S_expired,
                 risk: "Medium-High",
-                segment: "Basic user"
+                segment: "Moderate Engagement Users"
             },
 
             {
@@ -587,7 +587,7 @@ exports.bulkSend = async (req, res) => {
                 value: promo_L_R_M_L_S_value,
                 expired: promo_L_R_M_L_S_expired,
                 risk: "Low",
-                segment: "Basic user-Experienced user"
+                segment: "Moderate Engagement Users-Engagement Users"
             }
 
         ];

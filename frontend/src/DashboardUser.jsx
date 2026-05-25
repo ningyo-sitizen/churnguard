@@ -79,7 +79,7 @@ const DashboardUser = () => {
             const token = localStorage.getItem("token");
 
             const response = await fetch(
-                `http://localhost:5000/prediction/prediction-data?page=${currentPage}&limit=${limit}`,
+                `${import.meta.env.VITE_BACKEND_URL}/prediction/prediction-data?page=${currentPage}&limit=${limit}`,
                 {
                     method: "GET",
                     headers: {
@@ -124,7 +124,7 @@ const DashboardUser = () => {
             const token = localStorage.getItem("token")
             console.log(promo_ALL_R_H_S)
             const response = await axios.post(
-                "http://localhost:5000/email/bulk-send",
+                `${import.meta.env.VITE_BACKEND_URL}/email/bulk-send`,
                 {
                     promo_ALL_R_H_S: promo_ALL_R_H_S,
                     promo_ALL_R_H_S_value: promo_ALL_R_H_S_value,
@@ -162,7 +162,7 @@ const DashboardUser = () => {
             const token = localStorage.getItem("token");
 
             const response = await axios.post(
-                "http://localhost:5000/prediction/no-save",
+                `${import.meta.env.VITE_BACKEND_URL}/prediction/no-save`,
                 {},
                 {
                     headers: {
@@ -192,7 +192,7 @@ const DashboardUser = () => {
             const token = localStorage.getItem("token");
 
             const response = await axios.post(
-                "http://localhost:5000/prediction/yes-save",
+                `${import.meta.env.VITE_BACKEND_URL}/prediction/yes-save`,
                 {},
                 {
                     headers: {
@@ -723,7 +723,7 @@ const DashboardUser = () => {
                                                     </td>
 
                                                     <td className="p-3 text-sm">
-                                                        Basic Frustrated User
+                                                        Low Engagement Users
                                                     </td>
 
                                                     <td className="p-3 text-xs text-[#757575]">
@@ -781,7 +781,7 @@ const DashboardUser = () => {
                                                     </td>
 
                                                     <td className="p-3 text-sm">
-                                                        Experienced User
+                                                        High Engagement Users
                                                     </td>
 
                                                     <td className="p-3 text-xs text-[#757575]">
@@ -839,7 +839,7 @@ const DashboardUser = () => {
                                                     </td>
 
                                                     <td className="p-3 text-sm">
-                                                        Basic User
+                                                        Moderate Engagement Users
                                                     </td>
 
                                                     <td className="p-3 text-xs text-[#757575]">
@@ -897,7 +897,7 @@ const DashboardUser = () => {
                                                     </td>
 
                                                     <td className="p-3 text-sm">
-                                                        Basic User - Experienced User
+                                                        Moderate Engagement Users - High Engagement Users
                                                     </td>
 
                                                     <td className="p-3 text-xs text-[#757575]">

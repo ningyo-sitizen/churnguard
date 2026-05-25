@@ -49,7 +49,7 @@ const AnalisisUlasan = () => {
             setLoading(true);
             const token = localStorage.getItem("token");
             const response = await fetch(
-                "http://localhost:5000/prediction/analytics",
+                `${import.meta.env.VITE_BACKEND_URL}/prediction/analytics`,
                 {
                     method: "GET",
                     headers: {
@@ -389,7 +389,7 @@ const AnalisisUlasan = () => {
 
                                     {/* 4. Avg Watch Hours */}
                                     <div className="sm:w-1/4">
-                                        <span className="text-xs text-gray-400 block mb-1">Avg watch hours</span>
+                                        <span className="text-xs text-gray-400 block mb-1">Avg weekly watch hours</span>
                                         <span className="text-xs font-semibold text-gray-800">{item.avgView}h</span>
                                     </div>
                                 </div>

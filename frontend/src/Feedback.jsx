@@ -56,7 +56,7 @@ const Feedback = () => {
     try {
 
       const response = await axios.post(
-        'http://localhost:5000/feedback/sendFeed',
+        `${import.meta.env.VITE_BACKEND_URL}/feedback/sendFeed`,
         {
           topik: feedbackData.topik,
           subjek: feedbackData.subjek,

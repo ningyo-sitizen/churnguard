@@ -30,9 +30,22 @@ const Header = ({ formData, profileImg }) => {
 
                 {/* Sisi Kanan - Actions (Tetap sesuai design asli kamu) */}
                 <div className="flex items-center gap-4">
-                    <Link to={`/` + memberTo} className="relative group mr-2">
-                        <div className="p-2.5 bg-amber-50/50 text-amber-500 rounded-[4px] cursor-pointer hover:bg-amber-100 transition-all border border-transparent hover:border-amber-400 flex items-center justify-center">
-                            <Crown size={16} strokeWidth={2} />{" member status : " + formData?.member}
+                    <Link to={`/` + memberTo} className="relative group block mr-2">
+                        <div className="flex items-center gap-2.5 px-3 py-1.5 bg-gradient-to-r from-amber-50 to-orange-50/50 rounded-[4px] border border-amber-200/60 hover:border-amber-400 hover:shadow-sm transition-all duration-300">
+                            {/* Lingkaran Ikon Mahkota */}
+                            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-amber-500 text-white shadow-sm group-hover:scale-105 transition-transform">
+                                <Crown size={12} strokeWidth={2.5} fill="currentColor" />
+                            </div>
+
+                            {/* Detail Status */}
+                            <div className="flex flex-col text-left">
+                                <span className="text-[10px] font-medium text-amber-600 leading-none">
+                                    Member Status
+                                </span>
+                                <span className="text-xs font-semibold text-amber-900 capitalize mt-0.5">
+                                    {formData?.member || "Regular"}
+                                </span>
+                            </div>
                         </div>
                     </Link>
 

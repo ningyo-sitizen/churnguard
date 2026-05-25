@@ -6,6 +6,30 @@ const fs = require("fs")
 
 
 
+exports.ChurnGuardChagepass = async (req,res) => {
+  const { email, password } = req.body;
+
+  try {
+    const hashed = await bcrypt.hash(password, 10);
+
+    const [update] = await churnguard_con.query('update users set password = ? where email = ?',[hashed,email])
+
+    return res.status(200).json({
+      status: "success",
+      message: "Password berhasil diubah"
+    });
+
+  } catch(err){
+
+    console.log(err);
+
+    return res.status(500).json({
+      status: "error",
+      message: "Server error"
+    });
+  }
+}
+
 exports.update_user_profile =
   async (req, res) => {
 
@@ -170,6 +194,24 @@ exports.get_user_data = async (req, res) => {
 
   try {
 
+    const [checking] = await churnguard_con.query(
+      "SELECT * FROM users WHERE email = ?",
+      [email]
+    );
+    const now = new Date();
+
+    const memberUntil = new Date(checking[0].member_until);
+
+    if (memberUntil < now) {
+      try {
+        const [change] = await churnguard_con.query(`
+          update users set member = ?,member_plan = ?, member_until = ? where email = ?`,["free","Paket free","9999-12-31",email]
+        )
+      } catch (err) {
+        console.log(err)
+      }
+    }
+
     const [existing] = await churnguard_con.query(
       "SELECT * FROM users WHERE email = ?",
       [email]
@@ -181,6 +223,7 @@ exports.get_user_data = async (req, res) => {
       });
     }
 
+
     const user_detail = {
       name: existing[0].name,
       nama_perusahaan: existing[0].nama_perusahaan,
@@ -188,7 +231,9 @@ exports.get_user_data = async (req, res) => {
       link_app: existing[0].link_app,
       avatar: existing[0].avatar_url,
       member: existing[0].member,
-      email: existing[0].email
+      email: existing[0].email,
+      member_until: existing[0].member_until,
+      member_plan: existing[0].member_plan
     };
 
     return res.status(200).json(user_detail);
@@ -292,7 +337,7 @@ exports.ChurnGuardLogin = async (req, res) => {
 
     const userLogin = existing[0];
 
-    if(userLogin.role === "admin"){
+    if (userLogin.role === "admin") {
       return res.status(401).json({ message: 'invalid email or password' });
     }
 
@@ -333,7 +378,6 @@ exports.ChurnGuardLogin = async (req, res) => {
 exports.ChurnGuardEmailCheckForget = async (req, res) => {
 
   try {
-
     const { email } = req.body;
 
     if (!email) {
@@ -370,9 +414,6 @@ exports.ChurnGuardEmailCheckForget = async (req, res) => {
         message: "Email tidak terdaftar"
       });
     }
-
-
-
     return res.status(200).json({
       status: "success",
       message: "Email ditemukan",
@@ -389,3 +430,37 @@ exports.ChurnGuardEmailCheckForget = async (req, res) => {
     });
   }
 };
+
+exports.ChurnGuardPaymentHistory = async (req, res) => {
+  const email = req.user.email;
+  try {
+    const [data] = await churnguard_con.query('select * from payment where email = ?', [email])
+    const [success] = await churnguard_con.query(
+      'SELECT * FROM payment WHERE email = ? AND status = "success"',
+      [email]
+    );
+
+    const [sum] = await churnguard_con.query(
+      'SELECT SUM(price) AS total_price FROM payment WHERE email = ? AND status = "success"',
+      [email]
+    );
+
+    const jumlah_sukses = success.length;
+    const total = sum[0].total_price || 0;
+
+    if (data.length === 0) {
+      return res.status(200).json({
+        message:
+          "belum ada data payment"
+      });
+    }
+    return res.json({
+      status: "success",
+      data: data,
+      sum: total,
+      success: jumlah_sukses
+    });
+  } catch (err) {
+    console.log(err)
+  }
+}

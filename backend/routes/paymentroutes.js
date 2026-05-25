@@ -170,6 +170,7 @@ router.post("/notification", async (req, res) => {
 
     const [email_buyer] = await churnguard_con.query('select * from payment where order_id = ?',[orderId])
     const email_member= email_buyer[0]?.email
+    const member_plan = email_buyer[0]?.plan
 
     const transactionStatus =
       statusResponse.transaction_status;
@@ -236,7 +237,6 @@ router.post("/notification", async (req, res) => {
     console.log("PAYMENT STATUS:", paymentStatus);
 
 
-
     const sql = `
       UPDATE payment
       SET
@@ -268,10 +268,23 @@ router.post("/notification", async (req, res) => {
       }
     );
 
-    if(paymentStatus === "success"){
-      const[savemember] = await churnguard_con.query(`update users set member = "active" where email = ?`,[email_member])
+if (paymentStatus === "success") {
+  console.log("payment berhasil" + orderId)
+  const now = new Date();
 
-      return res.status(200).send("OK");
+  now.setMonth(now.getMonth() + 1);
+
+  const member_until = now;
+
+  const [savemember] = await churnguard_con.query(
+    `UPDATE users 
+     SET member = "active", member_until = ?, member_plan = ?
+     WHERE email = ?`,
+    [member_until,member_plan,email_member]
+  );
+
+  console.log(member_plan,member_until,email_member)
+    return res.status(200).send("OK");
     }
   } catch (error) {
 

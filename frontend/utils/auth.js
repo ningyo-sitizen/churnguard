@@ -47,7 +47,7 @@ export const useAuth = (options = {}) => {
         if (validateServer) {
 
           await axios.get(
-            "http://localhost:5000/test/ping",
+            `${import.meta.env.VITE_BACKEND_URL}/test/ping`,
             {
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -57,7 +57,7 @@ export const useAuth = (options = {}) => {
 
         }
          const res = await axios.get(
-          "http://localhost:5000/auth/me",
+          `${import.meta.env.VITE_BACKEND_URL}/auth/me`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

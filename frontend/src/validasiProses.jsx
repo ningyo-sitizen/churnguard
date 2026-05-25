@@ -81,7 +81,7 @@ const ValidasiProses = () => {
             jwtDecode(token);
 
             await axios.post(
-                "http://localhost:5000/csv/upload-csv-py",
+                `${import.meta.env.VITE_BACKEND_URL}/csv/upload-csv-py`,
                 formData,
                 {
                     headers: {

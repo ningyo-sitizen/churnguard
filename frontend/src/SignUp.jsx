@@ -36,7 +36,7 @@ function SignUp() {
 
     };
     const makeNewAcc = async () => {
-        const res = await fetch("http://localhost:5000/auth/register/newAcc", {
+        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/auth/register/newAcc`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ name: name, email: email, password: password }),
@@ -52,7 +52,7 @@ function SignUp() {
 
             const token = localStorage.getItem("token");
 
-            const res = await fetch("http://localhost:5000/auth/login", {
+            const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/auth/login`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: emailLogin, pass: password }),
@@ -84,7 +84,7 @@ function SignUp() {
         }
 
         try {
-            const res = await fetch("http://localhost:5000/auth/register/check-otp", {
+            const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/auth/register/check-otp`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -115,7 +115,7 @@ function SignUp() {
     const handleOtpGet = async () => {
         try {
             const res = await fetch(
-                `http://localhost:5000/auth/register/get-otp?email=${email}`
+                `${import.meta.env.VITE_BACKEND_URL}/auth/register/get-otp?email=${email}`
             );
             showNotif(res.data.status, res.data.message)
         } catch (err) {
@@ -127,7 +127,7 @@ function SignUp() {
         try {
 
             const res = await fetch(
-                `http://localhost:5000/auth/register/new-otp?email=${email}`
+                `${import.meta.env.VITE_BACKEND_URL}/auth/register/new-otp?email=${email}`
             );
 
             const data = await res.json();
@@ -160,7 +160,7 @@ function SignUp() {
 
     const handleRegister = async () => {
         try {
-            const res = await fetch("http://localhost:5000/auth/register/check-email", {
+            const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/auth/register/check-email`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: email }),
@@ -467,7 +467,7 @@ function SignUp() {
                                     </div>
                                     <button
                                         type="button"
-                                        onClick={() => openPopup("http://localhost:5000/auth/google/register")}
+                                        onClick={() => openPopup(`${import.meta.env.VITE_BACKEND_URL}/auth/google/register`)}
                                         className="flex items-center justify-center gap-3 w-full border border-gray-300 rounded-lg p-3 text-[#616161] hover:bg-gray-50 transition"
                                     >
                                         <svg

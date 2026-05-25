@@ -80,7 +80,7 @@ const DashboarHistory = () => {
             const token = localStorage.getItem("token");
 
             const response = await fetch(
-                `http://localhost:5000/prediction/prediction-history?page=${currentPage}&limit=${limit}&prediction_id=${prediction_id}`,
+                `${import.meta.env.VITE_BACKEND_URL}/prediction/prediction-history?page=${currentPage}&limit=${limit}&prediction_id=${prediction_id}`,
                 {
                     method: "GET",
                     headers: {
@@ -123,7 +123,7 @@ const DashboarHistory = () => {
             const token = localStorage.getItem("token")
             console.log(promo_ALL_R_H_S)
             const response = await axios.post(
-                "http://localhost:5000/email/bulk-send",
+                `${import.meta.env.VITE_BACKEND_URL}/email/bulk-send`,
                 {
                     promo_ALL_R_H_S: promo_ALL_R_H_S,
                     promo_ALL_R_H_S_value: promo_ALL_R_H_S_value,
@@ -161,7 +161,7 @@ const DashboarHistory = () => {
             const token = localStorage.getItem("token");
 
             const response = await axios.post(
-                "http://localhost:5000/prediction/no-save",
+                `${import.meta.env.VITE_BACKEND_URL}/prediction/no-save`,
                 {},
                 {
                     headers: {
@@ -191,7 +191,7 @@ const DashboarHistory = () => {
             const token = localStorage.getItem("token");
 
             const response = await axios.post(
-                "http://localhost:5000/prediction/yes-save",
+                `${import.meta.env.VITE_BACKEND_URL}/prediction/yes-save`,
                 {},
                 {
                     headers: {
@@ -254,363 +254,240 @@ const DashboarHistory = () => {
 
                     </div>
 
-                    {/* STAT CARD */}
-                    <div className="bg-white rounded-[4px] border p-7 mb-10">
+                    {/* STAT CARD */}<div className="bg-white rounded-[4px] border border-[#EDEDED] shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-7 mb-12">
+                        {/* Container Utama: Menggunakan flex untuk layout horizontal presisi lengkap dengan garis pembatas */}
+                        <div className="flex flex-wrap md:flex-nowrap items-center justify-between gap-4">
 
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-
-                            <div className="flex items-center gap-4">
-
-                                <div className="w-12 h-12 rounded bg-[#F6EAEC] flex items-center justify-center">
-                                    <i className="ti ti-users text-[#D82F5A]"></i>
+                            {/* 1. Tingkat Pengunduran Diri (Ungu) */}
+                            <div className="flex items-center gap-5 flex-1 min-w-[200px] px-4">
+                                <div className="w-10 h-10 rounded-[4px] flex items-center justify-center text-2xl text-[#BE78E3] bg-[#F1EDF8]">
+                                    <i className="ti ti-arrow-big-down-lines"></i>
                                 </div>
-
-                                <div>
-
-                                    <p className="text-xs text-gray-400">
-                                        Total Customer
+                                <div className="flex flex-col">
+                                    <p className="text-xs text-gray-400">Tingkat Pengunduran Diri</p>
+                                    <p className="text-base font-semibold text-gray-800">
+                                        {churnCustomer}%
                                     </p>
-
-                                    <h2 className="text-xl font-bold">
-                                        {totalData}
-                                    </h2>
-
                                 </div>
-
                             </div>
 
-                            <div className="flex items-center gap-4">
+                            {/* Divider Vertikal */}
+                            <div className="hidden md:block w-[1px] h-12 bg-[#EDEDED]"></div>
 
-                                <div className="w-12 h-12 rounded bg-red-50 flex items-center justify-center">
-                                    <i className="ti ti-alert-triangle text-red-500"></i>
+                            {/* 2. Total Pelanggan (Pink) */}
+                            <div className="flex items-center gap-5 flex-1 min-w-[200px] px-4">
+                                <div className="w-10 h-10 rounded-[4px] flex items-center justify-center text-2xl text-[#DE869D] bg-[#F6EAEC]">
+                                    <i className="ti ti-users"></i>
                                 </div>
-
-                                <div>
-
-                                    <p className="text-xs text-gray-400">
-                                        High Risk
+                                <div className="flex flex-col">
+                                    <p className="text-xs text-gray-400">Total Pelanggan</p>
+                                    <p className="text-base font-semibold text-gray-800">
+                                        {totalData} Orang
                                     </p>
-
-                                    <h2 className="text-xl font-bold">
-                                        {highRisk}
-                                    </h2>
-
                                 </div>
-
                             </div>
 
-                            <div className="flex items-center gap-4">
+                            {/* Divider Vertikal */}
+                            <div className="hidden md:block w-[1px] h-12 bg-[#EDEDED]"></div>
 
-                                <div className="w-12 h-12 rounded bg-yellow-50 flex items-center justify-center">
-                                    <i className="ti ti-chart-line text-yellow-500"></i>
+                            {/* 3. Berisiko Tinggi (Orange) */}
+                            <div className="flex items-center gap-5 flex-1 min-w-[200px] px-4">
+                                <div className="w-10 h-10 rounded-[4px] flex items-center justify-center text-2xl text-[#EAAD62] bg-[#FDF0ED]">
+                                    <i className="ti ti-trending-up"></i>
                                 </div>
-
-                                <div>
-
-                                    <p className="text-xs text-gray-400">
-                                        Churn Customer
+                                <div className="flex flex-col">
+                                    <p className="text-xs text-gray-400">Berisiko Tinggi</p>
+                                    <p className="text-base font-semibold text-gray-800">
+                                        {highRisk}%
                                     </p>
-
-                                    <h2 className="text-xl font-bold">
-                                        {churnCustomer}
-                                    </h2>
-
                                 </div>
-
                             </div>
 
-                            <div className="flex items-center gap-4">
+                            {/* Divider Vertikal */}
+                            <div className="hidden md:block w-[1px] h-12 bg-[#EDEDED]"></div>
 
-                                <div className="w-12 h-12 rounded bg-green-50 flex items-center justify-center">
-                                    <i className="ti ti-database text-green-500"></i>
+                            {/* 4. Total Pages (Hijau) */}
+                            <div className="flex items-center gap-5 flex-1 min-w-[200px] px-4">
+                                <div className="w-10 h-10 rounded-[4px] flex items-center justify-center text-2xl text-[#C6CE56] bg-[#F6F7E6]">
+                                    <i className="ti ti-database"></i>
                                 </div>
-
-                                <div>
-
-                                    <p className="text-xs text-gray-400">
-                                        Total Pages
-                                    </p>
-
-                                    <h2 className="text-xl font-bold">
+                                <div className="flex flex-col">
+                                    <p className="text-xs text-gray-400">Total Pages</p>
+                                    <p className="text-base font-semibold text-gray-800">
                                         {totalPages}
-                                    </h2>
-
+                                    </p>
                                 </div>
-
                             </div>
 
                         </div>
-
                     </div>
 
                     {/* TABLE */}
                     <div className="bg-white rounded-[4px] border overflow-hidden">
 
-                        <div className="p-6 flex justify-between items-center border-b">
-
+                        {/* HEADER SECTION (Tanpa Garis Bawah / border-b) */}
+                        <div className="p-6 flex justify-between items-center">
                             <div>
-
                                 <h2 className="text-xl font-semibold">
                                     Data Pelanggan & Prediksi Churn
                                 </h2>
-
                                 <p className="text-xs text-gray-400 mt-1">
                                     Daftar pelanggan berdasarkan hasil prediksi
                                 </p>
-
                             </div>
 
-                            {
-                                predictionData.length > 0 && (
+                            {predictionData.length > 0 && (
+                                <div className="flex gap-3">
+                                    <button
+                                        onClick={() => setShowBulkPopup(true)}
+                                        disabled={disableButton}
+                                        className={`
+            flex items-center gap-2 px-4 py-2.5 rounded-[4px] text-white text-xs font-semibold transition-all
+            ${disableButton
+                                                ? "bg-gray-400 cursor-not-allowed"
+                                                : "bg-[#D82F5A] hover:bg-[#bb244a]"
+                                            }
+          `}
+                                    >
+                                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                        </svg>
+                                        Bulk Email
+                                    </button>
 
-                                    <div className="flex gap-3">
-                                        <button
-                                            onClick={() => setShowBulkPopup(true)}
-                                            disabled={disableButton}
-                                            className={`
-                                            px-5 py-3 rounded-[4px] text-white transition-all
-                                            ${disableButton
-                                                    ? "bg-gray-400 cursor-not-allowed"
-                                                    : "bg-green-500 hover:bg-green-600"
-                                                }
-    `}
-                                        >
-                                            Bulk Email
-                                        </button>
-
-                                        <button
-                                            onClick={() => setShowBulkPopup(true)}
-                                            disabled={disableButton}
-                                            className={`
-                                            px-5 py-3 rounded-[4px] text-white transition-all
-                                            ${disableButton
-                                                    ? "bg-gray-400 cursor-not-allowed"
-                                                    : "bg-green-500 hover:bg-green-600"
-                                                }
-    `}
-                                        >
-                                            Bulk Email
-                                        </button>
-
-                                    </div>
-
-                                )
-                            }
-
+                                    
+                                </div>
+                            )}
                         </div>
 
-                        <div className="p-6">
+                        <div className="px-6 pb-6">
+                            {loading ? (
+                                <div className="text-center py-20">Loading...</div>
+                            ) : predictionData.length === 0 ? (
+                                <div className="py-24 flex flex-col items-center">
+                                    <img src={unggahdata} className="w-40 mb-4" alt="" />
+                                    <h2 className="text-2xl font-semibold mb-2">Belum Ada Data</h2>
+                                    <p className="text-gray-500 text-sm mb-6">Upload data pelanggan terlebih dahulu</p>
+                                    <button onClick={() => navigate('/uploadData')} className="bg-[#D82F5A] text-white px-8 py-3 rounded-[4px]">Upload Data</button>
+                                </div>
+                            ) : (
+                                <>
+                                    {/* TABLE SECTION */}
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full border-collapse">
+                                            <thead>
+                                                <tr className="bg-[#D82F5A] text-white">
+                                                    <th className="p-4 text-xs font-semibold text-center whitespace-nowrap">Customer ID</th>
+                                                    <th className="p-4 text-xs font-semibold text-center whitespace-nowrap">Account Age</th>
+                                                    <th className="p-4 text-xs font-semibold text-center whitespace-nowrap">Monthly Charges</th>
+                                                    <th className="p-4 text-xs font-semibold text-center whitespace-nowrap">Total Charges</th>
+                                                    <th className="p-4 text-xs font-semibold text-center whitespace-nowrap">Score</th>
+                                                    <th className="p-4 text-xs font-semibold text-center whitespace-nowrap">Risk</th>
+                                                    <th className="p-4 text-xs font-semibold text-center whitespace-nowrap">Prediction</th>
+                                                    <th className="p-4 text-xs font-semibold text-center whitespace-nowrap">Segment</th>
+                                                    <th className="p-4 text-xs font-semibold text-center whitespace-nowrap">Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-gray-100">
+                                                {predictionData.map((item, index) => (
+                                                    <tr key={index} className="hover:bg-gray-50/40 transition-colors">
+                                                        <td className="p-4 text-center text-xs text-gray-700 tracking-tight">{item.CustomerID}</td>
+                                                        <td className="p-4 text-center text-xs text-gray-600">{item.AccountAge}</td>
+                                                        <td className="p-4 text-center text-xs text-gray-700 tracking-tight">${item.MonthlyCharges}</td>
+                                                        <td className="p-4 text-center text-xs text-gray-700 tracking-tight">${item.TotalCharges}</td>
+                                                        <td className="p-4 text-center text-xs font-semibold text-gray-900">{item.Score}</td>
 
-                            {
-                                loading ? (
+                                                        {/* RISK BADGE PASTEL BULAT SEMIBOLD */}
+                                                        <td className="p-4 text-center">
+                                                            <span className={`px-4 py-1 rounded-full text-[11px] font-semibold inline-block min-w-[75px] text-center ${item.Risk === "High" ? "bg-[#FFEBEB] text-[#FF4D4D]" :
+                                                                    item.Risk === "Medium" ? "bg-[#FDF6E2] text-[#B27B12]" :
+                                                                        "bg-[#F3E8FF] text-[#A855F7]"
+                                                                }`}>{item.Risk}</span>
+                                                        </td>
 
-                                    <div className="text-center py-20">
-                                        Loading...
-                                    </div>
+                                                        <td className="p-4 text-center text-xs">
+                                                            <span className={`font-semibold ${item.Prediction === 1 ? "text-[#E11D48]" : "text-[#16A34A]"}`}>
+                                                                {item.Prediction === 1 ? "Churn" : "Non-Churn"}
+                                                            </span>
+                                                        </td>
 
-                                ) : predictionData.length === 0 ? (
+                                                        <td className="p-4 text-center text-xs text-gray-600">{item.Segment}</td>
 
-                                    <div className="py-24 flex flex-col items-center">
-
-                                        <img
-                                            src={unggahdata}
-                                            className="w-40 mb-4"
-                                            alt=""
-                                        />
-
-                                        <h2 className="text-2xl font-bold mb-2">
-                                            Belum Ada Data
-                                        </h2>
-
-                                        <p className="text-gray-500 text-sm mb-6">
-                                            Upload data pelanggan terlebih dahulu
-                                        </p>
-
-                                        <button
-                                            onClick={() => navigate('/uploadData')}
-                                            className="bg-[#D82F5A] text-white px-8 py-3 rounded-[4px]"
-                                        >
-                                            Upload Data
-                                        </button>
-
-                                    </div>
-
-                                ) : (
-
-                                    <>
-                                        <div className="overflow-x-auto">
-
-                                            <table className="w-full">
-
-                                                <thead>
-
-                                                    <tr className="bg-[#D82F5A] text-white">
-
-                                                        <th className="p-4 text-xs">
-                                                            Customer ID
-                                                        </th>
-
-                                                        <th className="p-4 text-xs">
-                                                            Account Age
-                                                        </th>
-
-                                                        <th className="p-4 text-xs">
-                                                            Monthly Charges
-                                                        </th>
-
-                                                        <th className="p-4 text-xs">
-                                                            Total Charges
-                                                        </th>
-
-                                                        <th className="p-4 text-xs">
-                                                            Score
-                                                        </th>
-
-                                                        <th className="p-4 text-xs">
-                                                            Risk
-                                                        </th>
-
-                                                        <th className="p-4 text-xs">
-                                                            Prediction
-                                                        </th>
-
-                                                        <th className="p-4 text-xs">
-                                                            Segment
-                                                        </th>
-
-                                                        <th className="p-4 text-xs">
-                                                            Action
-                                                        </th>
-
-                                                    </tr>
-
-                                                </thead>
-
-                                                <tbody>
-
-                                                    {
-                                                        predictionData.map((item, index) => (
-
-                                                            <tr
-                                                                key={index}
-                                                                className="border-b hover:bg-gray-50"
+                                                        {/* ACTION DENGAN KONDISI ASLI LU TANPA DIUBAH */}
+                                                        <td className="p-4 text-center relative group">
+                                                            {/* Tooltip Box saat hover */}
+                                                            <span className="absolute -top-7 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 px-2 py-1 bg-black/80 text-white text-[10px] font-semibold rounded-[4px] whitespace-nowrap z-10 transition-all origin-bottom">
+                                                                Detail
+                                                            </span>
+                                                            <button
+                                                                onClick={() =>
+                                                                    item.Prediction === 1
+                                                                        ? navigate(
+                                                                            `/DashboardDetail?prediction_id=${item.prediction_id}&CustomerID=${item.CustomerID}`
+                                                                        )
+                                                                        : navigate(
+                                                                            `/DashboardDetailNon?prediction_id=${item.prediction_id}&CustomerID=${item.CustomerID}`
+                                                                        )
+                                                                }
+                                                                className="text-[#D82F5A] hover:text-[#bb244a] p-1 inline-flex justify-center items-center transition-colors"
                                                             >
+                                                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                                                                </svg>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
 
-                                                                <td className="p-4 text-center text-xs">
-                                                                    {item.CustomerID}
-                                                                </td>
+                                    {/* PAGINATION SECTION (Sebelumnya / Bulat Angka / Selanjutnya) */}
+                                    <div className="flex justify-center items-center gap-2 mt-8 text-xs font-semibold">
+                                        <button
+                                            disabled={page === 1}
+                                            onClick={() => setPage(page - 1)}
+                                            className={`flex items-center gap-1 px-2 py-1.5 transition-colors ${page === 1 ? "text-gray-300 cursor-not-allowed" : "text-gray-400 hover:text-gray-600"
+                                                }`}
+                                        >
+                                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                                            </svg>
+                                            <span>Sebelumnya</span>
+                                        </button>
 
-                                                                <td className="p-4 text-center text-xs">
-                                                                    {item.AccountAge}
-                                                                </td>
-
-                                                                <td className="p-4 text-center text-xs">
-                                                                    ${item.MonthlyCharges}
-                                                                </td>
-
-                                                                <td className="p-4 text-center text-xs">
-                                                                    ${item.TotalCharges}
-                                                                </td>
-
-                                                                <td className="p-4 text-center text-xs font-semibold">
-                                                                    {item.Score}
-                                                                </td>
-
-                                                                <td className="p-4 text-center">
-
-                                                                    <span className={`
-                                                                        px-4 py-1 rounded text-white text-xs
-                                                                        ${item.Risk === "High"
-                                                                            ? "bg-red-500"
-                                                                            : item.Risk === "Medium"
-                                                                                ? "bg-yellow-500"
-                                                                                : "bg-green-500"
-                                                                        }
-                                                                    `}>
-                                                                        {item.Risk}
-                                                                    </span>
-
-                                                                </td>
-
-                                                                <td className="p-4 text-center text-xs">
-
-                                                                    {
-                                                                        item.Prediction === 1
-                                                                            ? (
-                                                                                <span className="text-red-500 font-bold">
-                                                                                    Churn
-                                                                                </span>
-                                                                            )
-                                                                            : (
-                                                                                <span className="text-green-500 font-bold">
-                                                                                    Non-Churn
-                                                                                </span>
-                                                                            )
-                                                                    }
-
-                                                                </td>
-
-                                                                <td className="p-4 text-center text-xs">
-                                                                    {item.Segment}
-                                                                </td>
-
-                                                                <td className="p-4 text-center">
-
-                                                                    <button
-                                                                        onClick={() =>
-                                                                            navigate(
-                                                                                `/DashboardDetail?prediction_id=${item.prediction_id}&CustomerID=${item.CustomerID}`
-                                                                            )
-                                                                        }
-                                                                        className="bg-[#D82F5A] hover:bg-[#bb244a] text-white px-4 py-2 rounded-[4px] text-xs"
-                                                                    >
-                                                                        Detail
-                                                                    </button>
-
-                                                                </td>
-
-                                                            </tr>
-
-                                                        ))
-                                                    }
-
-                                                </tbody>
-
-                                            </table>
-
+                                        <div className="flex items-center gap-1">
+                                            {[...Array(totalPages)].map((_, index) => {
+                                                const pageNum = index + 1;
+                                                const isActive = page === pageNum;
+                                                return (
+                                                    <button
+                                                        key={pageNum}
+                                                        onClick={() => setPage(pageNum)}
+                                                        className={`w-8 h-8 flex items-center justify-center rounded-[4px] text-xs font-semibold transition-all ${isActive ? "bg-[#FDF2F4] text-[#D82F5A] border border-[#F1C2CD]" : "text-gray-500 hover:bg-gray-50"
+                                                            }`}
+                                                    >
+                                                        {pageNum}
+                                                    </button>
+                                                );
+                                            })}
                                         </div>
 
-                                        {/* PAGINATION */}
-                                        <div className="flex justify-center items-center gap-4 mt-6">
-
-                                            <button
-                                                disabled={page === 1}
-                                                onClick={() => setPage(page - 1)}
-                                                className="px-5 py-2 rounded bg-gray-300"
-                                            >
-                                                Prev
-                                            </button>
-
-                                            <span>
-                                                {page} / {totalPages}
-                                            </span>
-
-                                            <button
-                                                disabled={page === totalPages}
-                                                onClick={() => setPage(page + 1)}
-                                                className="px-5 py-2 rounded bg-[#D82F5A] text-white"
-                                            >
-                                                Next
-                                            </button>
-
-                                        </div>
-
-                                    </>
-                                )
-                            }
-
+                                        <button
+                                            disabled={page === totalPages}
+                                            onClick={() => setPage(page + 1)}
+                                            className={`flex items-center gap-1 px-2 py-1.5 transition-colors ${page === totalPages ? "text-gray-300 cursor-not-allowed" : "text-gray-400 hover:text-gray-600"
+                                                }`}
+                                        >
+                                            <span>Selanjutnya</span>
+                                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </>
+                            )}
                         </div>
-
                     </div>
                     {
                         showBulkPopup && (
@@ -926,47 +803,7 @@ const DashboarHistory = () => {
                         )
                     }
 
-                    {/* NEW PREDICTION POPUP */}
-                    {
-                        showPredictionPopup && (
-
-                            <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
-
-                                <div className="bg-white rounded-2xl p-6 w-[450px] shadow-2xl">
-
-                                    <h2 className="text-2xl font-bold mb-4">
-                                        buat prediksi baru
-                                    </h2>
-
-                                    <p className="text-gray-700 mb-6">
-                                        kamu akan membuat prediksi baru, apakah kamu mau save prediksi sekarang?
-                                    </p>
-
-                                    <div className="flex gap-3">
-
-                                        <button
-                                            onClick={handleNOsave}
-                                            className="w-full bg-gray-400 hover:bg-gray-500 text-white py-3 rounded-lg font-semibold"
-                                        >
-                                            No
-                                        </button>
-
-                                        <button
-                                            onClick={handleYESsave}
-                                            className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg font-semibold"
-                                        >
-                                            Yes
-                                        </button>
-
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-                        )
-                    }
-
+                   
                 </div>
                 <Footer></Footer>
             </main>

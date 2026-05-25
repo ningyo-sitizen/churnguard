@@ -48,7 +48,7 @@ function Login() {
     }
 
     try {
-      const res = await fetch("http://localhost:5000/auth/login", {
+      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -341,7 +341,7 @@ function Login() {
                 type="button"
                 onClick={() =>
                   openPopup(
-                    "http://localhost:5000/auth/google/login"
+                    `${import.meta.env.VITE_BACKEND_URL}/auth/google/login`
                   )
                 }
                 className="flex items-center justify-center gap-3 w-full border border-gray-300 rounded-lg p-3 text-[#616161] hover:bg-gray-50 transition"
