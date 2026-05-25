@@ -20,12 +20,21 @@ app.use("/csv", require("./routes/csvroutes"));
 app.use("/auth", googlelogin);
 app.use("/auth", auth_normal);
 app.use("/prediction", require("./routes/predictRoutes.js"))
-app.use("/email",require("./routes/emailRoutes.js"))
-app.use("/feedback",require("./routes/feedback.js"))
+app.use("/email", require("./routes/emailRoutes.js"))
+app.use("/feedback", require("./routes/feedback.js"))
 app.use("/api/payment", require("./routes/paymentroutes.js"));
 
 app.get("/", (req, res) => {
   res.send("Backend jalan");
+});
+
+app.get("/db-test", async (req, res) => {
+  try {
+    const [rows] = await db.query("SELECT 1 + 1 AS result");
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.use("/test", require("./routes/testRoutes.js"));
