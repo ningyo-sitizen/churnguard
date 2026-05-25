@@ -76,10 +76,12 @@ exports.googleCallback = async (req, res) => {
     
     sessionVersion = 1;
 
+    console.log("saving data")
     await churnguard_con.query(
       "INSERT INTO users (email, name, google_id, avatar_url, session_version) VALUES (?, ?, ?, ?, ?)",
       [profile.email, profile.displayName, profile.id, avatar, sessionVersion]
     );
+    console.log("data ke save")
   }
     const [rows] = await churnguard_con.query(
       "SELECT * FROM users WHERE email = ?",
