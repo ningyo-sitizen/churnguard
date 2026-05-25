@@ -10,7 +10,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => {
-  res.send("OK BACKEND");
+  res.send("OK BACKEND KIANKIANKIANAKIANAKIANA");
 });
 
 app.get("/ping", (req, res) => {
