@@ -31,6 +31,7 @@ export default function CostumerDetail() {
     const [promoName, setPromoName] = useState("");
     const [promoDiscount, setPromoDiscount] = useState("");
     const [expiredDate, setExpiredDate] = useState("");
+    const [loadingPromo, setLoadingPromo] = useState(false);
 
     const getRetentionRecommendation = () => {
 
@@ -64,9 +65,10 @@ export default function CostumerDetail() {
     };
 
     const handleGenerateEmail = async () => {
+        // 1. Nyalakan loading tepat pas tombol diklik
+        setLoadingPromo(true);
 
         try {
-
             const response = await axios.post(
                 `${import.meta.env.VITE_BACKEND_URL}/email/generate`,
                 {
@@ -81,16 +83,16 @@ export default function CostumerDetail() {
             );
 
             setEmailMessage(response.data.html);
-            setChatMessage(response.data.html)
             setShowPopup(false);
 
         } catch (err) {
-
             console.log(err);
-
+            // Opsional: lo bisa tambah alert/toast error di sini biar user tau kalau gagal
+        } finally {
+            // 2. Matikan loading secara otomatis, baik prosesnya berhasil maupun error
+            setLoadingPromo(false);
         }
     };
-
     useEffect(() => {
 
         const fetchDataUserDetail = async () => {
@@ -131,18 +133,12 @@ export default function CostumerDetail() {
     const handleSendChat = async () => {
 
         try {
-            const token = localStorage.getItem('token')
+
             await axios.post(
                 `${import.meta.env.VITE_BACKEND_URL}/email/send`,
                 {
                     html: chatMessage,
-                    email: detail.email,
-                    id: detail.CustomerID
-                },
-                {
-                    headers: {
-                        Authorization:`Bearer ${token}`
-                    }
+                    email: detail.email
                 }
             );
 
@@ -298,7 +294,7 @@ export default function CostumerDetail() {
 
                         <div>
 
-                            <h1 className="text-2xl font-semibold">
+                            <h1 className="text-xl font-semibold">
                                 Detail Customer Insight
                             </h1>
 
@@ -461,7 +457,7 @@ export default function CostumerDetail() {
                                 </div>
 
                                 <div>
-                                    <h2 className="font-semibold text-base">
+                                    <h2 className="font-semibold text-sm">
                                         Communication Center
                                     </h2>
 
@@ -493,7 +489,7 @@ export default function CostumerDetail() {
                                             disabled={disableButton}
                                             onClick={handleSendChat}
                                             className={`
-      flex-1 py-3 rounded-[4px] text-sm font-medium text-white transition-all duration-200
+      flex-1 py-2.5 rounded-[4px] text-xs font-medium text-white transition-all duration-200
       ${disableButton
                                                     ? "bg-gray-300 cursor-not-allowed"
                                                     : "bg-[#D82F5A] hover:bg-[#bb244a] active:scale-[0.98]"
@@ -509,7 +505,7 @@ export default function CostumerDetail() {
                                                 previewWindow.document.write(chatMessage);
                                                 previewWindow.document.close();
                                             }}
-                                            className="flex-1 bg-[#1A1A1A] hover:bg-black text-white text-sm font-medium py-3 rounded-[4px] transition-all duration-200 active:scale-[0.98]"
+                                            className="flex-1 bg-[#1A1A1A] hover:bg-black text-white text-xs font-medium py-2.5 rounded-[4px] transition-all duration-200 active:scale-[0.98]"
                                         >
                                             Lihat pesan
                                         </button>
@@ -555,7 +551,7 @@ export default function CostumerDetail() {
                                             disabled={disableButton}
                                             onClick={() => setShowPopup(true)}
                                             className={`
-                                            w-full py-3 rounded-[4px] text-sm text-white transition-all
+                                            w-full py-2.5 rounded-[4px] text-xs text-white transition-all
                                             ${disableButton
                                                     ? "bg-gray-400 cursor-not-allowed"
                                                     : "bg-[#D82F5A] hover:bg-[#bb244a]"
@@ -577,7 +573,7 @@ export default function CostumerDetail() {
 
                                             }}
                                             className={`
-                                            w-full py-3 rounded-[4px] text-sm text-white transition-all
+                                            w-full py-2 rounded-[4px] text-xs text-white transition-all
                                             ${disableButton
                                                     ? "bg-gray-400 cursor-not-allowed"
                                                     : "bg-black hover:bg-[#bb244a]"
@@ -698,20 +694,45 @@ export default function CostumerDetail() {
                             </div>
 
                             {/* FOOTER - Button Sejajar & Clean */}
-                            <div className="p-6 bg-white border-t flex gap-3">
+                            {/* CONTAINER TOMBOL */}
+                            <div className="p-6 bg-white border-t flex gap-3 font-['Plus_Jakarta_Sans',sans-serif]">
                                 <button
+                                    type="button"
+                                    disabled={loadingPromo}
                                     onClick={() => setShowPopup(false)}
-                                    className="flex-1 py-3 border border-gray-200 text-gray-600 font-medium rounded-[4px] text-sm hover:bg-gray-50 transition-all active:scale-[0.98]"
+                                    className="flex-1 py-3 border border-gray-200 text-gray-600 font-medium rounded-[4px] text-sm hover:bg-gray-50 transition-all active:scale-[0.98] disabled:opacity-50"
                                 >
                                     Batal
                                 </button>
+
                                 <button
+                                    type="button"
+                                    disabled={loadingPromo}
                                     onClick={handleGenerateEmail}
-                                    className="flex-1 py-3 bg-[#1A1A1A] hover:bg-black text-white font-medium rounded-[4px] text-sm transition-all active:scale-[0.98] shadow-md"
+                                    className="flex-1 py-3 bg-[#1A1A1A] hover:bg-black text-white font-medium rounded-[4px] text-sm transition-all active:scale-[0.98] shadow-md disabled:bg-zinc-700"
                                 >
                                     Buat pesan promo
                                 </button>
                             </div>
+
+                            {/* CUKUP POP-UP LOADING INI AJA */}
+                            {loadingPromo && (
+                                <div className="fixed inset-0 bg-slate-900/40 z-[9999] flex items-center justify-center animate-in fade-in duration-300 backdrop-blur-sm">
+                                    <div className="bg-white p-6 rounded-[4px] shadow-[0_20px_50px_rgba(0,0,0,0.1)] flex flex-col items-center gap-3 max-w-xs w-full text-center border border-slate-50 scale-100 animate-in zoom-in-95 duration-300">
+                                        {/* Spinner Bulat Pink Tua */}
+                                        <div className="animate-spin h-8 w-8 border-4 border-[#D82F5A] border-t-transparent rounded-full"></div>
+
+                                        <div className="space-y-1">
+                                            <p className="text-sm font-bold text-slate-800 font-['Plus_Jakarta_Sans',sans-serif]">
+                                                Menulis Pesan Promo
+                                            </p>
+                                            <p className="text-xs text-slate-400 font-medium font-['Plus_Jakarta_Sans',sans-serif] leading-relaxed">
+                                                AI sedang menyusun penawaran terbaik berdasarkan preferensi pelanggan...
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
 
                         </div>
                     </div>

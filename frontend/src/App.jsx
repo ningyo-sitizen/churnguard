@@ -41,7 +41,7 @@ export default function App() {
   return (
     <NotificationProvider>
       <Routes>
-        <Route path="/" element={<Login />} />
+        <Route path="/" element={<LandingPage />} />
         <Route path="/ProfilePageSA" element={<ProfilePageSA />} />
         <Route path="/history-sa" element={<History />} />
         <Route path="/pengaturan-tier" element={<PengaturanTier/>}/>

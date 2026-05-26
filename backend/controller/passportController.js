@@ -28,7 +28,7 @@ exports.googleCallback = async (req, res) => {
         <script>
           window.opener.postMessage(
             { error: "User belum terdaftar" },
-            "http://localhost:5173"
+            "${process.env.FRONTEND_URL}"
           );
           window.close();
         </script>
@@ -41,7 +41,7 @@ exports.googleCallback = async (req, res) => {
         <script>
           window.opener.postMessage(
             { error: "akun ini tidak dibuat menggunakan via google login" },
-            "http://localhost:5173"
+            "${process.env.FRONTEND_URL}"
           );
           window.close();
         </script>
@@ -67,7 +67,7 @@ exports.googleCallback = async (req, res) => {
         <script>
           window.opener.postMessage(
             { error: "User sudah ada, silakan login" },
-            "http://localhost:5173"
+            "${process.env.FRONTEND_URL}"
           );
           window.close();
         </script>
@@ -102,7 +102,7 @@ exports.googleCallback = async (req, res) => {
     <script>
       window.opener.postMessage(
         { token: "${token}" },
-        "http://localhost:5173"
+        "${process.env.FRONTEND_URL}"
       );
       window.close();
     </script>

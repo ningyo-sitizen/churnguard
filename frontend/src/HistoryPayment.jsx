@@ -38,10 +38,7 @@ const HistoryPayment = () => {
 
             console.log(data);
         } catch (err) {
-
             console.log(err);
-
-
         }
     }
     useEffect(() => {
@@ -55,14 +52,19 @@ const HistoryPayment = () => {
         <div className="flex min-h-screen bg-[#F9FAFB] font-['Plus_Jakarta_Sans',sans-serif] text-[#111827]">
             <Sidebar />
 
-            <div className="flex-1 flex flex-col">
-                <Header formData={user} profileImg={user?.avatar} />
+            {/* KONTROLLER UTAMA: Menjaga fleksibilitas ruang sisa layar */}
+            <div className="flex-1 flex flex-col min-w-0">
+                
+                {/* FIX HEADER ANTI-MEPET: w-0 min-w-full mengunci lebar, relative mengamankan posisi dropdown absolut */}
+                <div className="relative w-0 min-w-full shrink-0 pr-4">
+                    <Header formData={user} profileImg={user?.avatar} />
+                </div>
 
                 <main className="p-8 flex-1">
 
                     {/* Main Header Section */}
                     <div className="mb-8">
-                        <h1 className="text-2xl font-semibold tracking-tight">History Pembayaran</h1>
+                        <h1 className="text-xl font-semibold tracking-tight">History Pembayaran</h1>
                         <div className="flex items-center gap-2 mt-1 transition-all">
                             {/* Link Dashboard - Bisa di klik */}
                             <span
@@ -82,13 +84,13 @@ const HistoryPayment = () => {
                         </div>
                     </div>
 
-                    {/* Statistik Ringkas Area */}
+                    {/* Statistik Ringkas Area - SETIAP CARD WARNA BEDA & TETEP ROUNDED 4PX */}
                     <div className="grid grid-cols-4 gap-6 mb-10">
                         {[
                             { label: "Total Pengeluaran", value: sum, color: "bg-[#111827]", text: "text-white" },
-                            { label: "Transaksi Berhasil", value: success, color: "bg-white", text: "text-[#111827]" },
-                            { label: "Status Langganan", value: user?.member, color: "bg-[#FEF5F6]", text: "text-[#D82F5A]" },
-                            { label: "Paket Langganan", value: user?.member_plan, color: "bg-[#FEF5F6]", text: "text-[#D82F5A]" },
+                            { label: "Transaksi Berhasil", value: success, color: "bg-[#F0FDF4] border-emerald-100", text: "text-emerald-800" },
+                            { label: "Status Langganan", value: user?.member, color: "bg-[#FFFBEB] border-amber-100", text: "text-amber-800" },
+                            { label: "Paket Langganan", value: user?.member_plan, color: "bg-[#FEF5F6] border-rose-100", text: "text-[#D82F5A]" },
                         ].map((stat, i) => (
                             <div key={i} className={`${stat.color} border border-gray-100 p-6 rounded-[4px] shadow-sm relative`}>
                                 <p className={`text-[11px] font-medium uppercase tracking-wider mb-2 ${stat.text} opacity-70`}>{stat.label}</p>
@@ -97,23 +99,15 @@ const HistoryPayment = () => {
                         ))}
                     </div>
 
-                    {/* Kontrol Tabel Header */}
+                    {/* Kontrol Tabel Header - EXPORT DAN FILTER SUDAH DIAPUS */}
                     <div className="flex justify-between items-center mb-4">
                         <div className="flex items-center gap-4">
                             <h2 className="text-[15px] font-semibold">Daftar Transaksi</h2>
                             <span className="bg-gray-100 text-gray-500 text-[10px] px-2 py-0.5 rounded-[2px] font-medium uppercase tracking-tight">3 Berkas</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <button className="p-2 border border-gray-200 rounded-[4px] hover:bg-gray-50 text-gray-500">
-                                <Filter size={16} />
-                            </button>
-                            <button className="flex items-center gap-2 bg-[#D82F5A] text-white px-4 py-2 rounded-[4px] text-[12px] font-semibold hover:bg-[#b0264a] transition-all shadow-sm">
-                                <Download size={14} /> Unduh Laporan
-                            </button>
-                        </div>
                     </div>
 
-                    {/* Table Container */}
+                    {/* Table Container - STRUKTUR 100% ASLI & ROUNDED 4PX */}
                     <div className="bg-white border border-gray-100 rounded-[4px] shadow-sm overflow-hidden">
                         <table className="w-full text-left">
                             <thead>
@@ -162,7 +156,7 @@ const HistoryPayment = () => {
                     </div>
                 </main>
 
-                {/* MODAL INVOICE */}
+                {/* MODAL INVOICE - ASLI & ROUNDED 4PX */}
                 {selectedInvoice && (
                     <div className="fixed inset-0 bg-[#111827]/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                         <div className="bg-white w-full max-w-[380px] rounded-[4px] shadow-2xl overflow-hidden border border-gray-100">

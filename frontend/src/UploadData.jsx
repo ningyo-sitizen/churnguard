@@ -2,14 +2,14 @@ import React, { useState, useRef } from 'react';
 import logochurn from './assets/logo churn.png';
 import unggahdata from './assets/unggahdata.png';
 import { IconBrandMyOppo } from '@tabler/icons-react';
+import Sidebar from './SideBar.jsx';
 import { IconUserCircle } from '@tabler/icons-react';
 import { IconLogout2 } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom';
 import axios from "axios";
 import { useAuth } from "../utils/auth";
-import Sidebar from './SideBar';
-import { useNotif } from './NotificationContext';
-import Header from './header';
+import Header from './Header';
+import Footer from './footer';
 
 const UploadDataFull = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -19,7 +19,6 @@ const UploadDataFull = () => {
     const fileInputRef = useRef(null);
     const navigate = useNavigate();
     const handleBrowseClick = () => fileInputRef.current.click();
-    const { showNotif } = useNotif();
 
     const user = useAuth()
 
@@ -49,7 +48,7 @@ const UploadDataFull = () => {
             const token = localStorage.getItem("token");
 
             const res = await axios.post(
-                `${import.meta.env.VITE_BACKEND_URL}/csv/upload-csv`,
+                "http://localhost:5000/csv/upload-csv",
                 formData,
                 {
                     headers: {
@@ -58,8 +57,7 @@ const UploadDataFull = () => {
                     }
                 }
             );
-            console.log(res.data)
-            showNotif("error", res.data.message)
+
             navigate("/validasiProses", {
                 state: {
                     file: selectedFile,
@@ -68,10 +66,9 @@ const UploadDataFull = () => {
             });
 
         } catch (err) {
-            showNotif(
-                "error",
-                err.response?.data?.message || "Terjadi kesalahan"
-            );
+
+            console.log(err);
+
         }
 
     };
@@ -88,17 +85,18 @@ const UploadDataFull = () => {
         <div className="flex min-h-screen bg-[#F9FAFB] text-[#111827]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
 
             {/* --- SIDEBAR --- */}
-            <Sidebar></Sidebar>
+            <Sidebar />
             {/* --- MAIN SECTION --- */}
             <main className="flex-1 overflow-x-hidden">
 
                 {/* TOPBAR */}
-                <Header formData={user} profileImg={user?.avatar} />            {/* --- CONTENT AREA --- */}
+                <Header formData={user} profileImg={user?.profileImg} />
+
                 <div className="p-8 w-full">
                     <div className="mb-8">
                         {/* --- BREADCRUMB --- */}
                         <div className="mb-10">
-                            <h1 className="text-2xl font-semibold text-[#111827]">Dashboard</h1>
+                            <h1 className="text-xl font-semibold text-[#111827]">Dashboard</h1>
                             <div className="flex items-center gap-2 mt-1 transition-all">
                                 {/* Link Dashboard - Bisa di klik */}
                                 <span
@@ -155,7 +153,88 @@ const UploadDataFull = () => {
 
                     </div>
 
-                    <div className="grid grid-cols-12 gap-10 mt-5">
+                    {/* USER GUIDE SECTION */}
+                    <div className="mb-5 w-full">
+                        <div className="bg-white border border-[#EDEDED] p-5 rounded-[4px] shadow-[0_2px_8px_rgba(0,0,0,0.01)] space-y-4">
+
+                            {/* Bagian Utama (Info & Tombol) */}
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
+                                <div className="flex items-start gap-3.5">
+                                    <div className="p-2.5 bg-rose-50 text-[#D82F5A] rounded-[4px] shrink-0 flex items-center justify-center">
+                                        <i className="ti ti-info-circle text-lg leading-none"></i>
+                                    </div>
+
+                                    <div className="space-y-1.5">
+                                        <h4 className="text-xs font-semibold text-slate-900">
+                                            Panduan Format File Data & Deskripsi Kolom
+                                        </h4>
+                                        <p className="text-[11px] text-slate-400 leading-relaxed max-w-2xl">
+                                            Pastikan file berformat <span className="font-semibold text-slate-600 bg-slate-50 px-1 py-0.5 rounded-[4px] border border-slate-100">.csv (Comma Separated)</span>. Di bawah ini adalah 4 kolom wajib yang harus ada di dalam file Anda:
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Tombol Unduh */}
+                                <div className="shrink-0 self-start md:self-center">
+                                    <a
+                                        href="/data_descriptions.csv"
+                                        download="data_descriptions.csv"
+                                        className="inline-flex items-center gap-2 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 text-[11px] font-semibold px-3 py-2 rounded-[4px] shadow-sm transition-all no-underline"
+                                    >
+                                        <i className="ti ti-download text-xs text-[#D82F5A]"></i>
+                                        Unduh Template .CSV
+                                    </a>
+                                </div>
+                            </div>
+
+                            {/* Detail Tiap Kolom Tanpa Garis Pembatas & Naik Sedikit */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1.5 mt-1.5">
+
+                                {/* Kolom 1 */}
+                                <div className="bg-slate-50/60 p-3 border border-slate-100 rounded-[4px] space-y-1">
+                                    <span className="font-mono bg-white border border-slate-200 px-1.5 py-0.5 rounded-[4px] text-[10px] text-slate-700 font-semibold inline-block">
+                                        Column_name
+                                    </span>
+                                    <p className="text-[11px] text-slate-500 leading-relaxed">
+                                        Nama teknis kolom data Anda di database. <span className="text-slate-400 italic">(Contoh: customer_id, tenure)</span>.
+                                    </p>
+                                </div>
+
+                                {/* Kolom 2 */}
+                                <div className="bg-slate-50/60 p-3 border border-slate-100 rounded-[4px] space-y-1">
+                                    <span className="font-mono bg-white border border-slate-200 px-1.5 py-0.5 rounded-[4px] text-[10px] text-slate-700 font-semibold inline-block">
+                                        Column_type
+                                    </span>
+                                    <p className="text-[11px] text-slate-500 leading-relaxed">
+                                        Kategori peran kolom. Diisi antara: <span className="text-slate-600 font-medium">Dimension</span> (kategori) atau <span className="text-slate-600 font-medium">Metric</span> (angka).
+                                    </p>
+                                </div>
+
+                                {/* Kolom 3 */}
+                                <div className="bg-slate-50/60 p-3 border border-slate-100 rounded-[4px] space-y-1">
+                                    <span className="font-mono bg-white border border-slate-200 px-1.5 py-0.5 rounded-[4px] text-[10px] text-slate-700 font-semibold inline-block">
+                                        Data_type
+                                    </span>
+                                    <p className="text-[11px] text-slate-500 leading-relaxed">
+                                        Tipe format data. Biasa diisi dengan: <span className="text-slate-600 font-medium">string, integer, float, boolean,</span> atau <span className="text-slate-600 font-medium">date</span>.
+                                    </p>
+                                </div>
+
+                                {/* Kolom 4 */}
+                                <div className="bg-slate-50/60 p-3 border border-slate-100 rounded-[4px] space-y-1">
+                                    <span className="font-mono bg-white border border-slate-200 px-1.5 py-0.5 rounded-[4px] text-[10px] text-slate-700 font-semibold inline-block">
+                                        Description
+                                    </span>
+                                    <p className="text-[11px] text-slate-500 leading-relaxed">
+                                        Penjelasan singkat mengenai arti kolom tersebut agar AI tidak salah membaca konteks data Anda.
+                                    </p>
+                                </div>
+
+                            </div>
+
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-12 gap-10 mt-8">
                         {/* Area Upload */}
                         <div className="col-span-7">
                             <h3 className="text-sm font-medium mb-4 text-black">Unggah file</h3>
@@ -244,130 +323,36 @@ const UploadDataFull = () => {
                         </div>
 
                         {/* Metode & Footer Actions */}
-                        <div className="col-span-12 mt-8">
-                            <h3 className="text-sm font-medium text-[#111827] mb-5">Metode Upload</h3>
+                        <div className="col-span-12 mt-2">
+                            {/* SELECTION METHOD SECTION */}
 
-                            {/* Pembungkus ini harus flex dan items-end */}
                             <div className="flex flex-row items-end gap-5">
-
                                 {/* Opsi 1 */}
-                                <div
-                                    onClick={() => setUploadMethod('new')}
-                                    className={`max-w-[320px] flex-1 p-4 rounded-[4px] border-2 cursor-pointer transition-all duration-300 flex items-start gap-4 ${uploadMethod === 'new' ? 'border-[#D82F5A] bg-[#FEF5F6]' : 'border-gray-100 bg-[#F9F9F9]'
-                                        }`}
-                                >
-                                    <div className={`mt-1 w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all ${uploadMethod === 'new' ? 'border-[#D82F5A]' : 'border-gray-300'
-                                        }`}>
-                                        {uploadMethod === 'new' && <div className="w-2.5 h-2.5 bg-[#D82F5A] rounded-full"></div>}
-                                    </div>
-                                    <div className="flex-1">
-                                        <p className={`text-sm font-semibold ${uploadMethod === 'new' ? 'text-[#111827]' : 'text-gray-700'}`}>Analisis Baru</p>
-                                        <p className="text-xs text-gray-400 mt-1 leading-relaxed">Memproses data pelanggan sebagai analisis baru untuk insight terbaru.</p>
-                                    </div>
-                                </div>
 
-                                {/* Opsi 2 */}
-                                <div
-                                    onClick={() => setUploadMethod('update')}
-                                    className={`max-w-[320px] flex-1 p-4 rounded-[4px] border-2 cursor-pointer transition-all duration-300 flex items-start gap-4 ${uploadMethod === 'update' ? 'border-[#D82F5A] bg-[#FEF5F6]' : 'border-gray-100 bg-[#F9F9F9]'
-                                        }`}
-                                >
-                                    <div className={`mt-1 w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all ${uploadMethod === 'update' ? 'border-[#D82F5A]' : 'border-gray-300'
-                                        }`}>
-                                        {uploadMethod === 'update' && <div className="w-2.5 h-2.5 bg-[#D82F5A] rounded-full"></div>}
-                                    </div>
-                                    <div className="flex-1">
-                                        <p className={`text-sm font-semibold ${uploadMethod === 'update' ? 'text-[#111827]' : 'text-gray-700'}`}>Update Data Lama</p>
-                                        <p className="text-xs text-gray-400 mt-1 leading-relaxed">Memperbarui data yang sudah ada tanpa menghapus hasil sebelumnya.</p>
-                                    </div>
-                                </div>
 
-                                {/* Tombol Selanjutnya - SEJAJAR SEBELAH KANAN */}
+
+                                {/* Tombol Selanjutnya */}
                                 <div className="flex-none ml-auto">
                                     <button
                                         disabled={!selectedFile}
                                         onClick={handleUpload}
-                                        className={`flex items-center gap-3 px-10 py-3 rounded-[4px] text-sm transition-all duration-300 active:scale-95 ${selectedFile
-                                            ? 'bg-[#111827] text-white hover:bg-black'
+                                        className={`flex items-center gap-2 px-5 py-3 rounded-[4px] text-xs font-medium transition-all duration-300 active:scale-95 ${selectedFile
+                                            ? 'bg-[#111827] text-white hover:bg-black shadow-md'
                                             : 'bg-gray-100 text-gray-300 cursor-not-allowed'
                                             }`}
                                     >
-                                        <span>Selanjutnya</span>
+                                        <span>Mulai Analisis</span>
                                         <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                             <path d="M9 6l6 6l-6 6" />
                                         </svg>
                                     </button>
                                 </div>
-
                             </div>
-                        </div>
-                    </div>
+                        </div>                    </div>
                 </div >
 
                 {/* --- FOOTER --- */}
-                <footer className="bg-white border-t border-gray-100 pt-16 px-10">
-                    <div className="max-w-[1200px] mx-auto grid md:grid-cols-4 gap-12 border-b border-gray-100 pb-20">
-
-                        {/* BRAND SECTION & SOCIALS */}
-                        <div className="space-y-8 text-left">
-                            <div className="space-y-6">
-                                <h3 className="text-xl tracking-tight font-semibold ">
-                                    ChurnGuard <span className="text-[#D82F5A]">CRM</span>
-                                </h3>
-                                <p className="text-[#616161] text-sm leading-relaxed">
-                                    solusi cerdas menjaga loyalitas pelanggan anda. jangan biarkan mereka pergi tanpa perjuangan.
-                                </p>
-                            </div>
-
-                            {/* Social Media Icons */}
-                            <div className="flex gap-4">
-                                {['brand-instagram', 'brand-x', 'brand-youtube'].map(s => (
-                                    <div key={s} className="w-10 h-10 border border-[#D82F5A]/20 rounded-[4px] flex items-center justify-center text-[#D82F5A] hover:bg-[#D82F5A] hover:text-white hover:-translate-y-1 transition-all duration-300 cursor-pointer shadow-sm">
-                                        <i className={`ti ti-${s} text-lg`}></i>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* ADDRESS */}
-                        <div>
-                            <h4 className="text-sm font-medium mb-6 flex items-center gap-2 text-[#111827]">
-                                <i className="ti ti-map-pin text-[#D82F5A]"></i> Alamat
-                            </h4>
-                            <p className="text-[#616161] text-[13px] leading-relaxed">
-                                Universitas indonesia, gedung perpustakaan, politeknik negeri jakarta, beji, depok.
-                            </p>
-                        </div>
-
-                        {/* PHONE */}
-                        <div>
-                            <h4 className="text-sm font-medium mb-6 flex items-center gap-2 text-[#111827]">
-                                <i className="ti ti-phone text-[#D82F5A]"></i> Kontak
-                            </h4>
-                            <p className="text-[#616161] text-[13px] leading-relaxed">
-                                021-7270036 ext 303
-                            </p>
-                        </div>
-
-                        {/* EMAIL */}
-                        <div>
-                            <h4 className="text-sm font-medium mb-6 flex items-center gap-2 text-[#111827]">
-                                <i className="ti ti-mail text-[#D82F5A]"></i> Email
-                            </h4>
-                            <p className="text-[#616161] text-[13px] underline underline-offset-8 decoration-[#D82F5A]/30 hover:text-[#D82F5A] transition-colors cursor-pointer">
-                                perpustakaan@pnj.ac.id
-                            </p>
-                        </div>
-
-                    </div>
-
-                    {/* COPYRIGHT SECTION - BACKGROUND BLACK */}
-                    <div className="bg-[#111827] py-4 -mx-10">
-                        <p className="text-center text-white text-xs opacity-80">
-                            © 2026 CHURNGUARD CRM. Hak Cipta Dilindungi Undang-Undang.
-                        </p>
-                    </div>
-                </footer>
+                <Footer />
             </main >
         </div >
     );

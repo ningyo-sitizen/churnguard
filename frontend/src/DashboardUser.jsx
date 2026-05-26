@@ -19,7 +19,6 @@ import { useNotif } from "./NotificationContext";
 
 const DashboardUser = () => {
 
-
     const navigate = useNavigate();
     const { showNotif } = useNotif();
     const user = useAuth();
@@ -68,7 +67,6 @@ const DashboardUser = () => {
             fetchPredictionData(page);
         }
 
-
     }, [user, page]);
 
     const fetchPredictionData = async (currentPage = 1) => {
@@ -94,8 +92,6 @@ const DashboardUser = () => {
 
             if (data.status === "success") {
 
-                showNotif("success", "data berhasil diambil")
-
                 setPredictionData(data.data || []);
                 setPage(data.page || 1);
                 setTotalPages(data.totalPages || 1);
@@ -106,7 +102,6 @@ const DashboardUser = () => {
                 setPredictionData([]);
 
             }
-
 
         } catch (err) {
 
@@ -121,6 +116,7 @@ const DashboardUser = () => {
 
     };
     const handleBulkEmail = async () => {
+        console.log("1")
         try {
             const token = localStorage.getItem("token")
             console.log(promo_ALL_R_H_S)
@@ -156,18 +152,6 @@ const DashboardUser = () => {
         }
     }
 
-    const makeprediction = async () => {
-        if (
-            (!user?.nama_perusahaan || user?.nama_perusahaan === "unknown") &&
-            (!user?.nama_app || user?.nama_app === "unknown") &&
-            (!user?.link_app || user?.link_app === "unknown")
-        ) {
-            showNotif('error', 'tolong lengkapi dulu informasi anda');
-        }else{
-            navigate('/uploadData')
-        }
-    }
-
     const handleNOsave = async () => {
 
         try {
@@ -198,6 +182,17 @@ const DashboardUser = () => {
 
     };
 
+    const makeprediction = async () => {
+        if (
+            (!user?.nama_perusahaan || user?.nama_perusahaan === "unknown") &&
+            (!user?.nama_app || user?.nama_app === "unknown") &&
+            (!user?.link_app || user?.link_app === "unknown")
+        ) {
+            showNotif('error', 'tolong lengkapi dulu informasi anda');
+        }else{
+            navigate('/uploadData')
+        }
+    }
     const handleYESsave = async () => {
 
         try {
@@ -237,25 +232,24 @@ const DashboardUser = () => {
     return (
 
         <div
-            className="flex min-h-screen bg-[#F9FAFB] text-[#111827]"
+            className="flex h-screen w-screen bg-[#F9FAFB] text-[#111827] overflow-hidden"
             style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
         >
 
             {/* SIDEBAR */}
             <Sidebar />
             {/* MAIN */}
-            <main className="flex-1 overflow-x-hidden">
+            <main className="flex-1 h-full overflow-y-auto overflow-x-hidden">
 
                 {/* TOPBAR */}
-                <Header formData={user} profileImg={user?.avatar} />
+                <Header formData={user} profileImg={user?.profileImg} />
 
                 {/* CONTENT */}
                 <div className="p-8">
 
                     {/* HEADER */}
                     <div className="mb-8">
-
-                        <h1 className="text-2xl font-semibold">
+                        <h1 className="text-xl font-semibold">
                             Dashboard
                         </h1>
 
@@ -324,16 +318,14 @@ const DashboardUser = () => {
                         {/* BOTTOM ROW: Analisis Note */}
                         <div className="flex items-center justify-between bg-gray-50/50 border border-[#DCDBDB] rounded-[4px] p-4 px-8 group cursor-pointer hover:bg-gray-50 transition-colors">
                             <div className="flex items-center gap-2 text-xs">
-                                <span className="text-[#D82F5A] font-semibold">cek grafik analitik</span>
+                                <span className="text-[#D82F5A] font-semibold">Naik 18,2%</span>
                                 <span className="text-gray-400 text-xs">|</span>
                                 <span className="text-gray-600 text-xs">
                                     Ini adalah hasil analisis data statistik di atas
                                 </span>
                             </div>
 
-                            <div
-                                onClick={() => navigate('/analisisUlasan')}
-                                className="flex items-center gap-2 text-gray-400 group-hover:text-[#D82F5A] transition-colors text-xs">
+                            <div className="flex items-center gap-2 text-gray-400 group-hover:text-[#D82F5A] transition-colors text-xs">
                                 <span>Lihat detail analitik</span>
                                 <i className="ti ti-arrow-right"></i>
                             </div>
@@ -347,7 +339,7 @@ const DashboardUser = () => {
 
                             <div>
 
-                                <h2 className="text-xl font-semibold">
+                                <h2 className="text-lg font-semibold">
                                     Data Pelanggan & Prediksi Churn
                                 </h2>
 
@@ -366,16 +358,16 @@ const DashboardUser = () => {
                                             {/* Tombol Bulk Email */}
                                             <button
                                                 onClick={() => setShowBulkPopup(true)}
-                                                className="bg-[#D82F5A] hover:bg-[#E48CA3] text-sm text-white px-5 py-2 rounded-[4px] flex items-center gap-2 transition-colors shadow-sm"
+                                                className="bg-[#D82F5A] hover:bg-[#E48CA3] text-xs text-white px-5 py-2 rounded-[4px] flex items-center gap-2 transition-colors shadow-sm"
                                             >
-                                                <i className="ti ti-mail-fast text-lg"></i>
+                                                <i className="ti ti-mail-fast text-base"></i>
                                                 Bulk Email
                                             </button>
 
                                             {/* Tombol Prediksi Baru */}
                                             <button
                                                 onClick={() => setShowPredictionPopup(true)}
-                                                className="bg-[#111827] hover:bg-gray-800 text-sm text-white px-5 py-2 rounded-[4px] flex items-center gap-2 transition-colors shadow-sm"
+                                                className="bg-[#111827] hover:bg-gray-800 text-xs text-white px-4 py-1 rounded-[4px] flex items-center gap-2 transition-colors shadow-sm"
                                             >
                                                 <i className="ti ti-plus text-lg"></i>
                                                 Prediksi Baru
@@ -581,86 +573,33 @@ const DashboardUser = () => {
 
                                         {/* PAGINATION */}
                                         <div className="flex justify-center items-center gap-2 mt-8 font-['Plus_Jakarta_Sans',_sans-serif]">
-
                                             {/* Tombol Sebelumnya */}
                                             <button
                                                 disabled={page === 1}
-                                                onClick={(e) => { e.preventDefault(); setPage(page - 1) }}
-                                                className={`flex items-center gap-2 px-3 py-1 text-sm transition-colors ${page === 1
-                                                    ? "text-[#B3B3B3] cursor-not-allowed"
-                                                    : "text-[#757575] hover:text-[#D82F5A]"
+                                                onClick={() => setPage(page - 1)}
+                                                className={`flex items-center gap-2 px-3 py-1 text-sm transition-colors ${page === 1 ? "text-[#B3B3B3] cursor-not-allowed" : "text-[#757575] hover:text-[#D82F5A]"
                                                     }`}
                                             >
-                                                <ChevronLeft
-                                                    size={18}
-                                                    strokeWidth={2.5}
-                                                    color={page === 1 ? "#B3B3B3" : "#D82F5A"}
-                                                />
-
-                                                <span className="font-medium">
-                                                    Sebelumnya
-                                                </span>
+                                                <ChevronLeft size={18} strokeWidth={2.5} color={page === 1 ? "#B3B3B3" : "#D82F5A"} />
+                                                <span className="font-medium">Sebelumnya</span>
                                             </button>
 
                                             {/* Render Angka Halaman */}
                                             <div className="flex items-center gap-1.5">
-
-                                                {[
-
-                                                    1,
-
-                                                    ...(page > 4 ? ["..."] : []),
-
-                                                    ...Array.from(
-                                                        {
-                                                            length: Math.min(5, totalPages)
-                                                        },
-                                                        (_, i) => {
-
-                                                            let start = Math.max(
-                                                                2,
-                                                                Math.min(
-                                                                    page - 2,
-                                                                    totalPages - 4
-                                                                )
-                                                            );
-
-                                                            return start + i;
-                                                        }
-                                                    ).filter(
-                                                        p => p > 1 && p < totalPages
-                                                    ),
-
-                                                    ...(page < totalPages - 3 ? ["..."] : []),
-
-                                                    ...(totalPages > 1 ? [totalPages] : [])
-
-                                                ].map((item, index) => {
-
-                                                    if (item === "...") {
-
-                                                        return (
-                                                            <span
-                                                                key={index}
-                                                                className="px-2 text-gray-400 text-sm"
-                                                            >
-                                                                ...
-                                                            </span>
-                                                        );
-                                                    }
-
-                                                    const isActive = page === item;
+                                                {[...Array(totalPages)].map((_, index) => {
+                                                    const pageNum = index + 1;
+                                                    const isActive = page === pageNum;
 
                                                     return (
                                                         <button
-                                                            key={index}
-                                                            onClick={() => setPage(item)}
+                                                            key={pageNum}
+                                                            onClick={() => setPage(pageNum)}
                                                             className={`w-9 h-9 flex items-center justify-center rounded-xl text-sm transition-all ${isActive
                                                                 ? "bg-[#F6EAEC] text-[#D82F5A] border border-[#DE869D] font-bold shadow-sm"
                                                                 : "text-[#D82F5A] hover:bg-[#F6EAEC]/50 font-medium"
                                                                 }`}
                                                         >
-                                                            {item}
+                                                            {pageNum}
                                                         </button>
                                                     );
                                                 })}
@@ -669,25 +608,14 @@ const DashboardUser = () => {
                                             {/* Tombol Selanjutnya */}
                                             <button
                                                 disabled={page === totalPages}
-                                                onClick={(e) => {
-                                                    e.preventDefault(); setPage(page + 1)
-                                                }}
-                                                className={`flex items-center gap-2 px-3 py-1 text-sm transition-colors ${page === totalPages
-                                                    ? "text-[#B3B3B3] cursor-not-allowed"
-                                                    : "text-[#757575] hover:text-[#D82F5A]"
+                                                onClick={() => setPage(page + 1)}
+                                                className={`flex items-center gap-2 px-3 py-1 text-sm transition-colors ${page === totalPages ? "text-[#B3B3B3] cursor-not-allowed" : "text-[#757575] hover:text-[#D82F5A]"
                                                     }`}
                                             >
-                                                <span className="font-medium text-[#757575]">
-                                                    Selanjutnya
-                                                </span>
-
-                                                <ChevronRight
-                                                    size={18}
-                                                    strokeWidth={2.5}
-                                                    color={page === totalPages ? "#B3B3B3" : "#D82F5A"}
-                                                />
+                                                <span className="font-medium text-[#757575]">Selanjutnya</span>
+                                                <ChevronRight size={18} strokeWidth={2.5} color={page === totalPages ? "#B3B3B3" : "#D82F5A"} />
                                             </button>
-                                        </div>                                 </>
+                                        </div>                                    </>
                                 )
                             }
 
@@ -728,50 +656,30 @@ const DashboardUser = () => {
                                             </thead>
                                             <tbody className="divide-y divide-gray-100 text-[#1A1A1A]">
 
-                                                {/* HIGH - Basic Frustrated User */}
+                                                {/* BARIS 1 - HIGH */}
                                                 <tr className="hover:bg-gray-50 transition-colors font-medium">
                                                     <td className="p-3">
-                                                        <span className="inline-block px-3 py-1 rounded-full bg-[#FFE1E1] text-[#D82F5A] text-xs border border-[#DE869D]/20">
-                                                            High-Medium-Low
-                                                        </span>
+                                                        <span className="inline-block px-3 py-1 rounded-full bg-[#FFE1E1] text-[#D82F5A] text-xs border border-[#DE869D]/20">High</span>
                                                     </td>
-
-                                                    <td className="p-3 text-sm">
-                                                        Low Engagement Users
-                                                    </td>
-
-                                                    <td className="p-3 text-xs text-[#757575]">
-                                                        Diskon besar + rekomendasi film favorit customer untuk mencegah churn.
-                                                    </td>
-
+                                                    <td className="p-3 text-sm">Pengguna baru yang kecewa</td>
+                                                    <td className="p-3 text-xs text-[#757575]">Kasih genre favorit & film viral</td>
                                                     <td className="p-3">
                                                         <input
                                                             type="text"
                                                             value={promo_ALL_R_H_S}
                                                             onChange={(e) => setpromo_ALL_R_H_S(e.target.value)}
-                                                            placeholder="promo"
+                                                            placeholder="Contoh: Kangen nonton lagi"
                                                             className="w-full text-center border border-gray-200 rounded-[4px] p-2 text-sm focus:border-[#D82F5A] outline-none transition-all font-medium"
                                                         />
-
-                                                        <p className="text-[10px] text-gray-400 mt-1">
-                                                            Rekomendasi: Cashback Premium / Free 1 Month
-                                                        </p>
                                                     </td>
-
                                                     <td className="p-3">
                                                         <input
                                                             type="number"
                                                             value={promo_ALL_R_H_S_value}
                                                             onChange={(e) => setpromo_ALL_R_H_S_value(e.target.value)}
-                                                            placeholder="50"
                                                             className="w-full text-center border border-gray-200 rounded-[4px] p-2 text-sm outline-none focus:border-[#D82F5A] font-medium"
                                                         />
-
-                                                        <p className="text-[10px] text-gray-400 mt-1">
-                                                            Rekomendasi: 40% - 50%
-                                                        </p>
                                                     </td>
-
                                                     <td className="p-3">
                                                         <input
                                                             type="date"
@@ -779,57 +687,33 @@ const DashboardUser = () => {
                                                             onChange={(e) => setpromo_ALL_R_H_S_expired(e.target.value)}
                                                             className="w-full text-center border border-gray-200 rounded-[4px] p-2 text-xs outline-none focus:border-[#D82F5A] font-medium"
                                                         />
-
-                                                        <p className="text-[10px] text-gray-400 mt-1">
-                                                            Rekomendasi: 3 - 7 Hari
-                                                        </p>
                                                     </td>
                                                 </tr>
 
-                                                {/* HIGH-MEDIUM - Experienced User */}
+                                                {/* BARIS 2 - MEDIUM */}
                                                 <tr className="hover:bg-gray-50 transition-colors font-medium">
                                                     <td className="p-3">
-                                                        <span className="inline-block px-3 py-1 rounded-full bg-[#FFF4E5] text-[#EAAD62] text-xs border border-[#EAAD62]/20">
-                                                            High - Medium
-                                                        </span>
+                                                        <span className="inline-block px-3 py-1 rounded-full bg-[#F6F7E6] text-[#EAAD62] text-xs border border-[#EAAD62]/20">Medium</span>
                                                     </td>
-
-                                                    <td className="p-3 text-sm">
-                                                        High Engagement Users
-                                                    </td>
-
-                                                    <td className="p-3 text-xs text-[#757575]">
-                                                        medium offer + rekomendasi exclusive content premium.
-                                                    </td>
-
+                                                    <td className="p-3 text-sm">Pelanggan lama</td>
+                                                    <td className="p-3 text-xs text-[#757575]">Kasih film hits terbaru</td>
                                                     <td className="p-3">
                                                         <input
                                                             type="text"
                                                             value={promo_H_M_R_L_S}
                                                             onChange={(e) => setpromo_H_M_R_L_S(e.target.value)}
-                                                            placeholder="promo"
+                                                            placeholder="Contoh: Spesial buat kamu"
                                                             className="w-full text-center border border-gray-200 rounded-[4px] p-2 text-sm focus:border-[#D82F5A] outline-none transition-all font-medium"
                                                         />
-
-                                                        <p className="text-[10px] text-gray-400 mt-1">
-                                                            Rekomendasi: medium value promo
-                                                        </p>
                                                     </td>
-
                                                     <td className="p-3">
                                                         <input
                                                             type="number"
                                                             value={promo_H_M_R_L_S_value}
                                                             onChange={(e) => setpromo_H_M_R_L_S_value(e.target.value)}
-                                                            placeholder="30"
                                                             className="w-full text-center border border-gray-200 rounded-[4px] p-2 text-sm outline-none focus:border-[#D82F5A] font-medium"
                                                         />
-
-                                                        <p className="text-[10px] text-gray-400 mt-1">
-                                                            Rekomendasi: 20% - 35%
-                                                        </p>
                                                     </td>
-
                                                     <td className="p-3 text-center">
                                                         <input
                                                             type="date"
@@ -837,129 +721,8 @@ const DashboardUser = () => {
                                                             onChange={(e) => setpromo_H_M_R_L_S_expired(e.target.value)}
                                                             className="w-full text-center border border-gray-200 rounded-[4px] p-2 text-xs outline-none focus:border-[#D82F5A] font-medium"
                                                         />
-
-                                                        <p className="text-[10px] text-gray-400 mt-1">
-                                                            Rekomendasi: 7 - 14 Hari
-                                                        </p>
                                                     </td>
                                                 </tr>
-
-                                                {/* MEDIUM-HIGH - Basic User */}
-                                                <tr className="hover:bg-gray-50 transition-colors font-medium">
-                                                    <td className="p-3">
-                                                        <span className="inline-block px-3 py-1 rounded-full bg-[#F6F7E6] text-[#C6CE56] text-xs border border-[#C6CE56]/20">
-                                                            Medium - High
-                                                        </span>
-                                                    </td>
-
-                                                    <td className="p-3 text-sm">
-                                                        Moderate Engagement Users
-                                                    </td>
-
-                                                    <td className="p-3 text-xs text-[#757575]">
-                                                        Promo subscription + rekomendasi content populer & trending.
-                                                    </td>
-
-                                                    <td className="p-3">
-                                                        <input
-                                                            type="text"
-                                                            value={promo_M_H_R_M_S}
-                                                            onChange={(e) => setpromo_M_H_R_M_S(e.target.value)}
-                                                            placeholder="promo"
-                                                            className="w-full text-center border border-gray-200 rounded-[4px] p-2 text-sm focus:border-[#D82F5A] outline-none transition-all font-medium"
-                                                        />
-
-                                                        <p className="text-[10px] text-gray-400 mt-1">
-                                                            Rekomendasi: Paket Hemat Streaming
-                                                        </p>
-                                                    </td>
-
-                                                    <td className="p-3">
-                                                        <input
-                                                            type="number"
-                                                            value={promo_M_H_R_M_S_value}
-                                                            onChange={(e) => setpromo_M_H_R_M_S_value(e.target.value)}
-                                                            placeholder="25"
-                                                            className="w-full text-center border border-gray-200 rounded-[4px] p-2 text-sm outline-none focus:border-[#D82F5A] font-medium"
-                                                        />
-
-                                                        <p className="text-[10px] text-gray-400 mt-1">
-                                                            Rekomendasi: 15% - 30%
-                                                        </p>
-                                                    </td>
-
-                                                    <td className="p-3">
-                                                        <input
-                                                            type="date"
-                                                            value={promo_M_H_R_M_S_expired}
-                                                            onChange={(e) => setpromo_M_H_R_M_S_expired(e.target.value)}
-                                                            className="w-full text-center border border-gray-200 rounded-[4px] p-2 text-xs outline-none focus:border-[#D82F5A] font-medium"
-                                                        />
-
-                                                        <p className="text-[10px] text-gray-400 mt-1">
-                                                            Rekomendasi: 7 Hari
-                                                        </p>
-                                                    </td>
-                                                </tr>
-
-                                                {/* LOW - Basic User / Experienced User */}
-                                                <tr className="hover:bg-gray-50 transition-colors font-medium">
-                                                    <td className="p-3">
-                                                        <span className="inline-block px-3 py-1 rounded-full bg-[#F5E4FF] text-[#BE78E3] text-xs border border-[#BE78E3]/20">
-                                                            Low
-                                                        </span>
-                                                    </td>
-
-                                                    <td className="p-3 text-sm">
-                                                        Moderate Engagement Users - High Engagement Users
-                                                    </td>
-
-                                                    <td className="p-3 text-xs text-[#757575]">
-                                                        Reward kecil + rekomendasi film populer untuk menjaga engagement.
-                                                    </td>
-
-                                                    <td className="p-3">
-                                                        <input
-                                                            type="text"
-                                                            value={promo_L_R_M_L_S}
-                                                            onChange={(e) => setpromo_L_R_M_L_S(e.target.value)}
-                                                            placeholder="promo"
-                                                            className="w-full text-center border border-gray-200 rounded-[4px] p-2 text-sm focus:border-[#D82F5A] outline-none transition-all font-medium"
-                                                        />
-
-                                                        <p className="text-[10px] text-gray-400 mt-1">
-                                                            Rekomendasi: Bonus Voucher
-                                                        </p>
-                                                    </td>
-
-                                                    <td className="p-3">
-                                                        <input
-                                                            type="number"
-                                                            value={promo_L_R_M_L_S_value}
-                                                            onChange={(e) => setpromo_L_R_M_L_S_value(e.target.value)}
-                                                            placeholder="10"
-                                                            className="w-full text-center border border-gray-200 rounded-[4px] p-2 text-sm outline-none focus:border-[#D82F5A] font-medium"
-                                                        />
-
-                                                        <p className="text-[10px] text-gray-400 mt-1">
-                                                            Rekomendasi: 5% - 15%
-                                                        </p>
-                                                    </td>
-
-                                                    <td className="p-3">
-                                                        <input
-                                                            type="date"
-                                                            value={promo_L_R_M_L_S_expired}
-                                                            onChange={(e) => setpromo_L_R_M_L_S_expired(e.target.value)}
-                                                            className="w-full text-center border border-gray-200 rounded-[4px] p-2 text-xs outline-none focus:border-[#D82F5A] font-medium"
-                                                        />
-
-                                                        <p className="text-[10px] text-gray-400 mt-1">
-                                                            Rekomendasi: 14 - 30 Hari
-                                                        </p>
-                                                    </td>
-                                                </tr>
-
                                             </tbody>
                                         </table>
                                     </div>

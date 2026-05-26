@@ -1,16 +1,22 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import coverLanding from './assets/coverlandingpage.png';
 import ayoBergabung from './assets/Group 1000002792.png';
 import churnrate from './assets/Group 1000002793.png';
 import kotachurn from './assets/kotachurn.png';
 import logochurn from './assets/logo churn.png';
+import Footer from './footer';
+import { useLocation } from 'react-router-dom';
+import { CheckCircle2, X } from 'lucide-react';
 
 const Counter = ({ target, duration = 2000 }) => {
   const [count, setCount] = useState(0);
+  
 
   useEffect(() => {
     const targetNumber = parseInt(target.replace(/[^0-9]/g, ""));
     const suffix = target.replace(/[0-9]/g, ""); // Simpan "+" atau "%" nya
+    
 
     let start = 0;
     const increment = targetNumber / (duration / 16); // 16ms per frame (60fps)
@@ -33,6 +39,18 @@ const Counter = ({ target, duration = 2000 }) => {
 
 function LandingPage() {
   const [faqOpen, setFaqOpen] = useState(5);
+  const navigate = useNavigate();
+  const [showToast, setShowToast] = useState(false);
+
+    useEffect(() => {
+        // Cek apakah user datang dari proses logout sukses
+        if (location.state?.loggedOut) {
+            setShowToast(true);
+            // Sembunyikan otomatis setelah 4 detik
+            const timer = setTimeout(() => setShowToast(false), 4000);
+            return () => clearTimeout(timer);
+        }
+    }, [location]);
 
   const faqs = [
     { id: 1, q: "Bagaimana ChurnGuard CRM memprediksi pelanggan yang akan berhenti?", a: "Sistem kami menggunakan algoritma cerdas untuk menganalisis pola perilaku dari data yang Anda unggah." },
@@ -43,6 +61,8 @@ function LandingPage() {
   ];
 
   return (
+    
+    
     <div className="bg-[#F9FAFB] text-[#111827] font-['Plus_Jakarta_Sans'] antialiased selection:bg-[#D82F5A]/10">
 
       {/* Tambahkan Style ini di file CSS global Anda (misal index.css) */}
@@ -51,6 +71,7 @@ function LandingPage() {
           scroll-behavior: smooth;
         }
       `}</style>
+      
 
       {/* ================= NAVBAR ================= */}
       <header className="fixed w-full bg-white/80 backdrop-blur-md z-[100] py-2 border-b border-[#EDEDED]">
@@ -79,7 +100,10 @@ function LandingPage() {
               </a>
             ))}
           </nav>
-          <button className="bg-black text-white px-8 py-2 rounded-[4px] text-[13px]  hover:bg-[#D82F5A] hover:shadow-lg hover:shadow-[#D82F5A]/20 transition-all duration-300 transform active:scale-95">
+          <button
+            onClick={() => navigate("/login")} // Ini yang mengarahkan ke page /login
+            className="bg-black text-white px-8 py-2 rounded-[4px] text-[13px] hover:bg-[#D82F5A] hover:shadow-lg hover:shadow-[#D82F5A]/20 transition-all duration-300 transform active:scale-95"
+          >
             Masuk
           </button>
         </div>
@@ -110,7 +134,9 @@ function LandingPage() {
           </p>
 
           {/* Button */}
-          <button className="bg-black text-white px-4 py-3 rounded-[4px] text-sm shadow-xl hover:bg-[#D82F5A] transition-all duration-300 mb-10">
+          <button
+           onClick={() => navigate("/login")}
+           className="bg-black text-white px-4 py-3 rounded-[4px] text-sm shadow-xl hover:bg-[#D82F5A] transition-all duration-300 mb-10">
             Coba Sekarang
             <i className="ti ti-chevron-right ml-2"></i>
           </button>
@@ -197,7 +223,9 @@ function LandingPage() {
             <p>ChurnGuard CRM bukan sekadar tempat penyimpanan database; ini adalah sistem pertahanan pendapatan bisnis Anda. Menggunakan mesin analitik cerdas, ChurnGuard memantau setiap sinyal penurunan aktivitas pelanggan secara real-time.</p>
             <p>Saat sistem mendeteksi pelanggan yang menunjukkan tanda-tanda akan berhenti (churn), ChurnGuard tidak hanya memberi peringatan, tapi juga menyajikan Automated Solution Playbook. Mulai dari pemberian diskon otomatis, pengiriman email personal, hingga pengingat untuk tim CS Anda untuk melakukan follow-up khusus. Bersama ChurnGuard, Anda tidak lagi hanya melihat angka yang hilang, tapi membangun hubungan yang bertahan lama.</p>
           </div>
-          <button className="mt-8 inline-flex items-center justify-center gap-2 text-sm bg-black text-white px-8 py-3 rounded-[4px] shadow-lg transition-all duration-300 hover:bg-[#D82F5A] hover:-translate-y-1">
+          <button 
+          onClick={() => navigate("/login")}
+          className="mt-8 inline-flex items-center justify-center gap-2 text-sm bg-black text-white px-8 py-3 rounded-[4px] shadow-lg transition-all duration-300 hover:bg-[#D82F5A] hover:-translate-y-1">
             <span>Coba Sekarang</span>
             <i className="ti ti-chevron-right"></i>
           </button>
@@ -275,69 +303,7 @@ function LandingPage() {
       </section>
 
       {/* ================= FOOTER ================= */}
-      <footer className="bg-white border-t border-gray-100 pt-12 px-10">
-        <div className="max-w-[1400px] mx-auto grid md:grid-cols-4 gap-12 border-b border-gray-100 pb-20">
-
-          {/* BRAND SECTION & SOCIALS */}
-          <div className="space-y-8 text-left">
-            <div className="space-y-6">
-              <h3 className="text-2xl tracking-tight font-semibold">
-                ChurnGuard <span className="text-[#D82F5A]">CRM</span>
-              </h3>
-              <p className="text-[#616161] text-sm leading-relaxed">
-                Solusi cerdas menjaga loyalitas dan memperkuat hubungan pelanggan Anda secara berkelanjutan.
-              </p>
-            </div>
-
-            {/* Social Media Icons moved here */}
-            <div className="flex gap-4">
-              {['brand-instagram', 'brand-x', 'brand-youtube'].map(s => (
-                <div key={s} className="w-10 h-10 border border-[#D82F5A]/20 rounded-[4px] flex items-center justify-center text-[#D82F5A] hover:bg-[#D82F5A] hover:text-white hover:-translate-y-1 transition-all duration-300 cursor-pointer shadow-sm">
-                  <i className={`ti ti-${s} text-lg`}></i>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* ADDRESS */}
-          <div>
-            <h4 className="text-sm mb-6 flex items-center gap-2 text-[#111827]">
-              <i className="ti ti-map-pin text-[#D82F5A]"></i> Alamat
-            </h4>
-            <p className="text-[#616161] text-[13px] leading-relaxed">
-              Gedung Perpustakaan PNJ, Beji, Depok, Jawa Barat 16425.
-            </p>
-          </div>
-
-          {/* PHONE */}
-          <div>
-            <h4 className="text-sm mb-6 flex items-center gap-2 text-[#111827]">
-              <i className="ti ti-phone text-[#D82F5A]"></i> No. Telepon
-            </h4>
-            <p className="text-[#616161] text-[13px] leading-relaxed">
-              +62 21 727 0036
-            </p>
-          </div>
-
-          {/* EMAIL */}
-          <div>
-            <h4 className="text-sm mb-6 flex items-center gap-2 text-[#111827]">
-              <i className="ti ti-mail text-[#D82F5A]"></i> Email
-            </h4>
-            <p className="text-[#616161] text-[13px] underline underline-offset-8 decoration-[#D82F5A]/30 hover:text-[#D82F5A] transition-colors cursor-pointer">
-              petisatukan@pnj.ac.id
-            </p>
-          </div>
-
-        </div>
-
-        {/* COPYRIGHT */}
-        <div className="bg-black py-6  -mx-10">
-          <p className="text-center text-white text-sm opacity-70">
-            © 2026 CHURNGUARD CRM. Hak Cipta Dilindungi Undang-Undang.
-          </p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
