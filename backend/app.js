@@ -7,6 +7,14 @@ const passport = require("./config/passport.js");
 
 const googlelogin = require("./routes/googleRoutes.js");
 const auth_normal = require("./routes/authRoutes.js");
+const dashboardRoutes = require("./routes/dashboardRoutes");
+const userManagementRoutes = require("./routes/userManagementRoutes");
+const feedbackRoutes = require("./routes/feedbackRoutes");
+const reportsRoutes = require("./routes/reportsRoutes");
+const paymentRoutesSA = require('./routes/paymentRoutesSA');
+const tierRoutes = require('./routes/tierRoutes');
+const loggerRoutes = require('./routes/loggerRoutes');
+
 
 const app = express();
 
@@ -23,6 +31,16 @@ app.use("/prediction", require("./routes/predictRoutes.js"))
 app.use("/email", require("./routes/emailRoutes.js"))
 app.use("/feedback", require("./routes/feedback.js"))
 app.use("/api/payment", require("./routes/paymentroutes.js"));
+
+
+app.use("/api/dashboard",  dashboardRoutes);
+app.use("/api/user-management", userManagementRoutes);
+app.use("/api/feedbackSA", feedbackRoutes);
+app.use("/api/reports",    reportsRoutes);
+app.use("/api/paymentSA",  paymentRoutesSA);
+app.use("/api/tier",       tierRoutes);
+app.use("/api/logger",     loggerRoutes);
+app.use("/api/profile",require("../backend/routes/UserInfoRoutes.js"))
 
 app.get("/", (req, res) => {
   res.send("Backend jalan");

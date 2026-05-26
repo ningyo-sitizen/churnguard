@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useNotif } from "./NotificationContext";
 import { IconEye, IconEyeOff } from "@tabler/icons-react";
+import { jwtDecode } from "jwt-decode";
+
 
 function Login() {
   const { showNotif } = useNotif();
@@ -78,7 +80,18 @@ function Login() {
 
       showNotif("success", "Login berhasil!");
 
-      navigate("/dashboardUser");
+
+      const decoded = jwtDecode(data.token);
+
+      console.log(decoded)
+    
+
+      if (decoded.role === "admin") {
+        navigate("/dashboardSa", { replace: true });
+      } else {
+        navigate("/dashboardUser", { replace: true });
+      }
+
     } catch (err) {
       console.log("Login failed:", err);
 
@@ -201,8 +214,8 @@ function Login() {
               <span
                 onClick={() => navigate("/Login")}
                 className={`w-1/2 text-center cursor-pointer transition-all duration-300 ${!isSignup
-                    ? "text-black font-medium"
-                    : "text-[#929191]"
+                  ? "text-black font-medium"
+                  : "text-[#929191]"
                   }`}
               >
                 Login
@@ -211,8 +224,8 @@ function Login() {
               <span
                 onClick={() => navigate("/SignUp")}
                 className={`w-1/2 text-center cursor-pointer transition-all duration-300 ${isSignup
-                    ? "text-black font-medium"
-                    : "text-[#929191]"
+                  ? "text-black font-medium"
+                  : "text-[#929191]"
                   }`}
               >
                 Sign Up

@@ -27,10 +27,32 @@ import ProfilePage from "./ProfilePage.jsx";
 import SentimenAnalysis from "./SentimenAnalysis.jsx";
 import ForgetPass from "./ForgetPass.jsx";
 import HistoryPayment from "./HistoryPayment.jsx";
+import DashboardSA from "./DashboardSA.jsx";
+import UserManagement from "./UserManagement.jsx";
+import TambahAdm from "./TambahAdm.jsx";
+import FeedBack from "./FeedbackSA.jsx";
+import Reports from "./Reports.jsx";
+import Rekappayment from "./Rekappayment.jsx";
+import PengaturanTier from "./PengaturanTier.jsx";
+import EditTier from "./EditTier.jsx";
+import History from "./HistorySA.jsx";
+import ProfilePageSA from "./ProfilePageSA.jsx";
 export default function App() {
   return (
     <NotificationProvider>
       <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/ProfilePageSA" element={<ProfilePageSA />} />
+        <Route path="/history-sa" element={<History />} />
+        <Route path="/pengaturan-tier" element={<PengaturanTier/>}/>
+        <Route path="/edit-tier" element={<EditTier/>}/>
+        <Route path="/edit-tier/:id" element={<EditTier />} />
+        <Route path="/rekap-payment" element={<Rekappayment/>}/>
+        <Route path="/reports" element={<Reports />}/>
+        <Route path="/feedbackSA" element={<FeedBack />}/>
+        <Route path="/TambahAdm" element={<TambahAdm />}/>
+        <Route path="/user-management" element={<UserManagement />} />
+        <Route path="/dashboardSA" element={<DashboardSA />} />
         <Route path="/historyPayment" element={<HistoryPayment />} />
         <Route path="/forgetpass" element={<ForgetPass />} />
         <Route path="/sentimenAnalysis" element={<SentimenAnalysis />} />

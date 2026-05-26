@@ -7,6 +7,7 @@ from io import BytesIO
 from config import DB_CONFIG
 import mysql.connector
 from fastapi import HTTPException
+from io import StringIO, BytesIO
 
 app = FastAPI()
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -29,9 +30,12 @@ async def test_upload(file: UploadFile = File(...),email: str = Form(...),filena
     conn = mysql.connector.connect(**DB_CONFIG)
     try:
         content = await file.read()
-        df = pd.read_csv(BytesIO(content))
+        df = pd.read_csv(
+        StringIO(content.decode("utf-8-sig").replace('"', '')),
+        sep=",")
         df = df.round(2)
         df_full = df.copy()
+        
         
         cursor = conn.cursor(dictionary=True)
         

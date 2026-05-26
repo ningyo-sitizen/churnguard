@@ -9,6 +9,7 @@ import axios from "axios";
 import { useAuth } from "../utils/auth";
 import Sidebar from './SideBar';
 import { useNotif } from './NotificationContext';
+import Header from './header';
 
 const UploadDataFull = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -92,89 +93,7 @@ const UploadDataFull = () => {
             <main className="flex-1 overflow-x-hidden">
 
                 {/* TOPBAR */}
-                <header className="h-20 bg-white border-b border-gray-100 flex items-center justify-end px-10 sticky top-0 z-50">
-
-                    <div className="relative">
-
-                        <div
-                            onClick={() => setIsOpen(!isOpen)}
-                            className="flex items-center gap-3 cursor-pointer"
-                        >
-
-                            <img
-                                src={`https://ui-avatars.com/api/?name=${user?.name}`}
-                                className="w-10 h-10 rounded-xl"
-                                alt="avatar"
-                            />
-
-                            <div>
-                                <p className="text-sm font-semibold">
-                                    {user?.name}
-                                </p>
-
-                                <p className="text-xs text-[#D82F5A]">
-                                    {user?.email}
-                                </p>
-                            </div>
-
-                        </div>
-
-                        {
-                            isOpen && (
-
-                                <div className="absolute right-0 mt-4 w-72 bg-white rounded-[4px] shadow-xl border z-50">
-
-                                    <div className="p-5 flex items-center gap-4">
-
-                                        <img
-                                            src={`https://ui-avatars.com/api/?name=${user?.name}`}
-                                            className="w-12 h-12 rounded-xl"
-                                            alt=""
-                                        />
-
-                                        <div>
-                                            <p className="font-semibold">
-                                                {user?.name}
-                                            </p>
-
-                                            <p className="text-xs text-[#D82F5A]">
-                                                User
-                                            </p>
-                                        </div>
-
-                                    </div>
-
-                                    <div className="border-t">
-
-                                        <div className="p-2">
-
-                                            <div className="flex items-center gap-4 px-4 py-3 hover:bg-gray-50 cursor-pointer">
-                                                <IconUserCircle stroke={1.5} />
-                                                <span>Profile</span>
-                                            </div>
-
-                                            <div className="flex items-center gap-4 px-4 py-3 hover:bg-gray-50 cursor-pointer">
-                                                <IconBrandMyOppo stroke={1.5} />
-                                                <span>Member</span>
-                                            </div>
-
-                                            <div className="flex items-center gap-4 px-4 py-3 hover:bg-gray-50 cursor-pointer">
-                                                <IconLogout2 stroke={1.5} />
-                                                <span>Logout</span>
-                                            </div>
-
-                                        </div>
-
-                                    </div>
-
-                                </div>
-
-                            )
-                        }
-
-                    </div>
-
-                </header>             {/* --- CONTENT AREA --- */}
+                <Header formData={user} profileImg={user?.avatar} />            {/* --- CONTENT AREA --- */}
                 <div className="p-8 w-full">
                     <div className="mb-8">
                         {/* --- BREADCRUMB --- */}

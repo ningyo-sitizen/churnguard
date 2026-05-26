@@ -115,13 +115,25 @@ exports.validateCSV = async (req, res) => {
         message: "CSV kosong"
       });
     }
+    const firstLine = lines[0];
+
+    const delimiter = firstLine.includes(";")
+      ? ";"
+      : firstLine.includes("|")
+        ? "|"
+        : ",";
+
+    console.log("DETECTED DELIMITER:", delimiter);
+    console.log("RAW HEADER:", lines[0]);
+    console.log("AFTER SPLIT:", lines[0].split(","));
 
     // =========================
     // HEADER VALIDATION
     // =========================
     actualHeaders = lines[0]
+      .replace(/"/g, "")
       .split(",")
-      .map((h) => h.trim().replace(/^\uFEFF/, ""));
+      .map(h => h.trim());
 
     missingColumns = expected.filter(
       (col) => !actualHeaders.includes(col)
@@ -159,8 +171,8 @@ exports.validateCSV = async (req, res) => {
     let acceptedRows = 0;
 
     const LIMITS = {
-      free: 2,
-      active: 2000
+      free: 5,
+      active: 10
     };
 
     const rowLimit = LIMITS[member_status] || 100;
@@ -178,7 +190,11 @@ exports.validateCSV = async (req, res) => {
         });
       }
 
-      const values = line.split(",");
+      const values = line
+        .replace(/"/g, "")
+        .split(",")
+        .map(v => v.trim());
+
       let rowHasError = false;
 
       actualHeaders.forEach((key, index) => {
@@ -305,6 +321,7 @@ exports.sendToPython = async (req, res) => {
     form.append("file", fs.createReadStream(filePath));
     form.append("email", email);
     form.append("filename", originalName);
+;
 
     const pyRes = await axios.post(
       "http://localhost:8000/test-upload",

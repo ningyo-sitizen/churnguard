@@ -68,6 +68,7 @@ const DashboardUser = () => {
             fetchPredictionData(page);
         }
 
+
     }, [user, page]);
 
     const fetchPredictionData = async (currentPage = 1) => {
@@ -152,6 +153,18 @@ const DashboardUser = () => {
             setShowBulkPopup(false)
         } catch (err) {
             console.log(err)
+        }
+    }
+
+    const makeprediction = async () => {
+        if (
+            (!user?.nama_perusahaan || user?.nama_perusahaan === "unknown") &&
+            (!user?.nama_app || user?.nama_app === "unknown") &&
+            (!user?.link_app || user?.link_app === "unknown")
+        ) {
+            showNotif('error', 'tolong lengkapi dulu informasi anda');
+        }else{
+            navigate('/uploadData')
         }
     }
 
@@ -318,9 +331,9 @@ const DashboardUser = () => {
                                 </span>
                             </div>
 
-                            <div 
-                            onClick={() => navigate('/analisisUlasan')}
-                            className="flex items-center gap-2 text-gray-400 group-hover:text-[#D82F5A] transition-colors text-xs">
+                            <div
+                                onClick={() => navigate('/analisisUlasan')}
+                                className="flex items-center gap-2 text-gray-400 group-hover:text-[#D82F5A] transition-colors text-xs">
                                 <span>Lihat detail analitik</span>
                                 <i className="ti ti-arrow-right"></i>
                             </div>
@@ -404,7 +417,7 @@ const DashboardUser = () => {
                                         </p>
 
                                         <button
-                                            onClick={() => navigate('/uploadData')}
+                                            onClick={makeprediction}
                                             className="bg-[#D82F5A] text-white text-sm px-4 py-3 rounded-[4px]"
                                         >
                                             Upload Data
@@ -656,7 +669,8 @@ const DashboardUser = () => {
                                             {/* Tombol Selanjutnya */}
                                             <button
                                                 disabled={page === totalPages}
-                                                onClick={(e) => {e.preventDefault(); setPage(page + 1)
+                                                onClick={(e) => {
+                                                    e.preventDefault(); setPage(page + 1)
                                                 }}
                                                 className={`flex items-center gap-2 px-3 py-1 text-sm transition-colors ${page === totalPages
                                                     ? "text-[#B3B3B3] cursor-not-allowed"
