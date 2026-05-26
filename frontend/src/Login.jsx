@@ -124,7 +124,7 @@ function Login() {
     const frontend_url = `${import.meta.env.VITE_BACKEND_URL}`
     const handleMessage = (event) => {
       if (
-        event.origin !== FRONTEND_URL &&
+        event.origin !== frontend_url &&
         !event.origin.includes("railway.app")
       ) {
         return;
