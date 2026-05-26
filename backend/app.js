@@ -40,7 +40,7 @@ app.use("/api/reports",    reportsRoutes);
 app.use("/api/paymentSA",  paymentRoutesSA);
 app.use("/api/tier",       tierRoutes);
 app.use("/api/logger",     loggerRoutes);
-app.use("/api/profile",require("../backend/routes/UserInfoRoutes.js"))
+app.use("/api/profile",require("./routes/UserInfoRoutes.js"))
 
 app.get("/", (req, res) => {
   res.send("Backend jalan");
