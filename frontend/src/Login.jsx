@@ -84,7 +84,7 @@ function Login() {
       const decoded = jwtDecode(data.token);
 
       console.log(decoded)
-    
+
 
       if (decoded.role === "admin") {
         navigate("/dashboardSa", { replace: true });
@@ -121,9 +121,14 @@ function Login() {
       console.log("User cancel login");
       window.close();
     }
-
+    const frontend_url = `${import.meta.env.VITE_BACKEND_URL}`
     const handleMessage = (event) => {
-      if (!event.origin.includes("localhost")) return;
+      if (
+        event.origin !== FRONTEND_URL &&
+        !event.origin.includes("railway.app")
+      ) {
+        return;
+      }
 
       const { token } = event.data;
 
