@@ -2,7 +2,7 @@ const sendOtp = require("../middleware/otpHelper");
 const churnguard_con = require("../config/db");
 
 exports.get_otp = async (req, res) => {
-
+  console.log("getting otp")
   const { email } = req.query;
 
   try {
@@ -124,7 +124,7 @@ exports.get_otp = async (req, res) => {
 
 
 exports.get_new_otp = async (req, res) => {
-
+  console.log("getting new otp")
   const { email } = req.query;
 
   try {
@@ -241,7 +241,7 @@ exports.get_new_otp = async (req, res) => {
 // =====================================================
 
 exports.check_otp = async (req, res) => {
-
+  console.log("checking otp")
   const { email, otp } = req.body;
 
   try {
