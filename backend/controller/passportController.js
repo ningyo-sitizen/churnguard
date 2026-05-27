@@ -9,7 +9,7 @@ exports.googleCallback = async (req, res) => {
   if (!req.user) {
     return res.status(500).send("User tidak ditemukan dari Google");
   }
-  
+
 
   const profile = req.user;
   const avatar = profile.photos?.[0]?.value || null;
@@ -21,6 +21,20 @@ exports.googleCallback = async (req, res) => {
       "SELECT * FROM users WHERE email = ?",
       [profile.email]
     );
+
+    const active = existing[0].is_active
+
+    if (active === 0) {
+      return res.send(`
+        <script>
+          window.opener.postMessage(
+            { error: "akun anda sudah diban" },
+            "${process.env.FRONTEND_URL}"
+          );
+          window.close();
+        </script>
+      `);
+    }
 
     if (existing.length === 0) {
       console.log("User belum terdaftar")
@@ -35,7 +49,7 @@ exports.googleCallback = async (req, res) => {
       `);
     }
 
-    if(existing.length > 0 && existing[0].google_id === null){
+    if (existing.length > 0 && existing[0].google_id === null) {
       console.log("akun ini tidak dibuat menggunakan via google login")
       return res.send(`
         <script>
@@ -49,7 +63,7 @@ exports.googleCallback = async (req, res) => {
     }
 
     sessionVersion = existing[0].session_version + 1;
-    
+
     await churnguard_con.query(
       "UPDATE users SET session_version = ? WHERE email = ?",
       [sessionVersion, profile.email]
@@ -73,7 +87,7 @@ exports.googleCallback = async (req, res) => {
         </script>
       `);
     }
-    
+
     sessionVersion = 1;
 
     console.log("saving data")
@@ -83,10 +97,10 @@ exports.googleCallback = async (req, res) => {
     );
     console.log("data ke save")
   }
-    const [rows] = await churnguard_con.query(
-      "SELECT * FROM users WHERE email = ?",
-      [profile.email]
-    );
+  const [rows] = await churnguard_con.query(
+    "SELECT * FROM users WHERE email = ?",
+    [profile.email]
+  );
 
   const user = {
     email: profile.email,

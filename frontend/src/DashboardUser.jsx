@@ -6,6 +6,7 @@ import Sidebar from './SideBar.jsx';
 import Header from './header.jsx';
 import { ChevronRight } from 'lucide-react';
 import { ChevronLeft } from 'lucide-react';
+import LoadingOverlay from './LoadingOverlay.jsx';
 
 import {
     IconBrandMyOppo,
@@ -29,7 +30,7 @@ const DashboardUser = () => {
 
     const [predictionData, setPredictionData] = useState([]);
     const [loading, setLoading] = useState(true);
-
+    const [isLoading, setisLoading] = useState(false);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalData, setTotalData] = useState(0);
@@ -118,6 +119,7 @@ const DashboardUser = () => {
     const handleBulkEmail = async () => {
         console.log("1")
         try {
+            setisLoading(true)
             const token = localStorage.getItem("token")
             console.log(promo_ALL_R_H_S)
             const response = await axios.post(
@@ -145,10 +147,14 @@ const DashboardUser = () => {
                     }
                 }
             )
-            showNotif('error', response.data.message)
+            showNotif('success', response.data.message)
+            setisLoading(false)
             setShowBulkPopup(false)
         } catch (err) {
+            showNotif('error', response.data.message)
             console.log(err)
+        }finally{
+            setisLoading(false)
         }
     }
 
@@ -175,7 +181,7 @@ const DashboardUser = () => {
             fetchPredictionData(page);
 
         } catch (err) {
-
+            showNotif("error", response.data.message);
             console.log(err);
 
         }
@@ -184,12 +190,12 @@ const DashboardUser = () => {
 
     const makeprediction = async () => {
         if (
-            (!user?.nama_perusahaan || user?.nama_perusahaan === "unknown") &&
-            (!user?.nama_app || user?.nama_app === "unknown") &&
-            (!user?.link_app || user?.link_app === "unknown")
+            (!user?.nama_perusahaan || user?.nama_perusahaan === "unkown") &&
+            (!user?.nama_app || user?.nama_app === "unkown") &&
+            (!user?.link_app || user?.link_app === "unkown")
         ) {
             showNotif('error', 'tolong lengkapi dulu informasi anda');
-        }else{
+        } else {
             navigate('/uploadData')
         }
     }
@@ -318,7 +324,7 @@ const DashboardUser = () => {
                         {/* BOTTOM ROW: Analisis Note */}
                         <div className="flex items-center justify-between bg-gray-50/50 border border-[#DCDBDB] rounded-[4px] p-4 px-8 group cursor-pointer hover:bg-gray-50 transition-colors">
                             <div className="flex items-center gap-2 text-xs">
-                                <span className="text-[#D82F5A] font-semibold">Naik 18,2%</span>
+                                <span className="text-[#D82F5A] font-semibold">statistik</span>
                                 <span className="text-gray-400 text-xs">|</span>
                                 <span className="text-gray-600 text-xs">
                                     Ini adalah hasil analisis data statistik di atas
@@ -326,7 +332,7 @@ const DashboardUser = () => {
                             </div>
 
                             <div className="flex items-center gap-2 text-gray-400 group-hover:text-[#D82F5A] transition-colors text-xs">
-                                <span>Lihat detail analitik</span>
+                                <span onClick={() => navigate('/analisisUlasan')}>Lihat detail analitik</span>
                                 <i className="ti ti-arrow-right"></i>
                             </div>
                         </div>
@@ -409,7 +415,9 @@ const DashboardUser = () => {
                                         </p>
 
                                         <button
-                                            onClick={makeprediction}
+                                            onClick={() => {
+                                                makeprediction();
+                                            }}             
                                             className="bg-[#D82F5A] text-white text-sm px-4 py-3 rounded-[4px]"
                                         >
                                             Upload Data
@@ -973,7 +981,7 @@ const DashboardUser = () => {
                 </div>
 
             </main>
-
+        {isLoading && <LoadingOverlay />}
         </div>
     );
 };

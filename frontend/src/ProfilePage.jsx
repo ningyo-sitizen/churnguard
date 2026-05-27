@@ -4,6 +4,8 @@ import React, {
   useEffect
 } from 'react';
 
+import LoadingOverlay from './LoadingOverlay.jsx';
+
 import {
   User,
   Building2,
@@ -26,8 +28,7 @@ import axios from 'axios';
 import { useNavigate } from "react-router-dom";
 
 const ProfilePage = () => {
-
-
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const [selectedFile, setSelectedFile] = useState(null);
 
@@ -56,7 +57,6 @@ const ProfilePage = () => {
   useEffect(() => {
 
     if (user) {
-
       setFormData({
         nama: user?.name || "",
         email: user?.email || "",
@@ -72,60 +72,40 @@ const ProfilePage = () => {
   }, [user]);
 
   const updateUserData = async () => {
-
-    const token =
-      localStorage.getItem("token");
+    const token = localStorage.getItem("token");
 
     try {
+      setIsLoading(true);
 
       const form = new FormData();
-
-      form.append(
-        "name",
-        formData.nama
-      );
-
-      form.append(
-        "nama_perusahaan",
-        formData.perusahaan
-      );
-
-      form.append(
-        "nama_app",
-        formData.nama_app
-      );
-
-      form.append(
-        "link_app",
-        formData.link_app
-      );
+      form.append("name", formData.nama);
+      form.append("nama_perusahaan", formData.perusahaan);
+      form.append("nama_app", formData.nama_app);
+      form.append("link_app", formData.link_app);
 
       if (selectedFile) {
-
-        form.append(
-          "avatar",
-          selectedFile
-        );
-
+        form.append("avatar", selectedFile);
       }
 
-      await axios.put(
+      const response = await axios.put(
         `${import.meta.env.VITE_BACKEND_URL}/auth/update-profile`,
         form,
         {
           headers: {
-            Authorization:
-              `Bearer ${token}`
+            Authorization: `Bearer ${token}`
           }
         }
       );
 
+      console.log(response.data);
+
+      setIsEditing(false);
+
     } catch (error) {
-
       console.log(error);
-
+    } finally {
+      setIsLoading(false);
     }
-
   };
 
   const handlePhotoClick = () => {
@@ -291,6 +271,7 @@ const ProfilePage = () => {
               <button
                 onClick={() =>
                   setIsEditing(true)
+
                 }
                 className="flex items-center gap-2 px-6 py-2.5 bg-[#1a1a1a] text-white text-sm font-medium rounded-[4px]"
               >
@@ -559,7 +540,7 @@ const ProfilePage = () => {
         <Footer />
 
       </main>
-
+      {isLoading && <LoadingOverlay />}
     </div>
 
   );

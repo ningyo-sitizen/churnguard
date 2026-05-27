@@ -13,6 +13,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from "../utils/auth";
 import Header from './header';
 import Footer from './footer';
+import LoadingOverlay from './LoadingOverlay';
+
 
 const MemberPayment = () => {
   const user = useAuth();
@@ -52,7 +54,7 @@ const MemberPayment = () => {
   // chosenPlan berisi: { id, title, price (string "Rp 499.000"), rawPrice (number), period, features, description, ... }
   const isFree = chosenPlan.rawPrice === 0;
   const [loading, setLoading] = useState(false);
-
+  const [isLoading, setisLoading] = useState(false);
   const handleConnect = (walletName) => {
 
     alert(`Menghubungkan ke ${walletName}...`);
@@ -67,7 +69,7 @@ const MemberPayment = () => {
     console.log("BUTTON CLICKED");
 
     try {
-
+      
       console.log("START REQUEST");
 
       const response = await axios.post(
@@ -94,6 +96,7 @@ const MemberPayment = () => {
           console.log(result);
 
           alert("Pembayaran berhasil!");
+          navigate("/profile")
         },
 
         onPending: function (result) {
@@ -326,6 +329,7 @@ const MemberPayment = () => {
       </main>
 
       <Footer />
+      {isLoading && <LoadingOverlay />}
     </div>
   );
 };

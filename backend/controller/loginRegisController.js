@@ -130,10 +130,8 @@ exports.update_user_profile =
         );
 
       return res.status(200).json({
-
         message:
           "profile berhasil diupdate",
-
         user: {
 
           name:
@@ -338,11 +336,19 @@ exports.ChurnGuardLogin = async (req, res) => {
 
     const userLogin = existing[0];
 
+    const active = existing[0].is_active
+
+    if (active === 0) {
+      return res.status(401).json({ message: 'your account have been ban' });
+    }
+
     const valid = await bcrypt.compare(pass, userLogin.password);
 
     if (!valid) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
+
+
 
     const sessionVersion = userLogin.session_version + 1;
 

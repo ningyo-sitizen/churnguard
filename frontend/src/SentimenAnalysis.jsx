@@ -21,8 +21,10 @@ import Sidebar from './SideBar.jsx';
 import Header from './header.jsx';
 import Footer from './footer';
 import AppSearchDropdown from './AppSearchDropdown.jsx';
+import { useAuth } from '../utils/auth.js';
 
 const SentimenAnalysis = () => {
+    const user = useAuth()
     const [activeTab, setActiveTab] = useState("positif");
     const [searchApp, setSearchApp] = useState("");
     const [selectedAppId, setSelectedAppId] = useState(null);
@@ -224,7 +226,7 @@ const SentimenAnalysis = () => {
 
                 {/* FIX FINAL: Pakai kombinasi w-0 min-w-full relative. Ini bakal maksa Header muat di layar tanpa menyembunyikan dropdown klik-an lu */}
                 <div className="relative w-0 min-w-full shrink-0 pr-4">
-                    <Header />
+                    <Header formData={user} profileImg={user?.avatar} />
                 </div>
 
                 {/* MAIN CONTAINER: Menghapus overflow-hidden bawaan sebelumnya agar komponen di bawahnya bisa manjang bebas ke bawah */}
