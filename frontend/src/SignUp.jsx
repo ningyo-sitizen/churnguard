@@ -249,23 +249,30 @@ function SignUp() {
             window.close();
         }
 
-        const handleMessage = (event) => {
-            if (!event.origin.includes("localhost")) return;
+    const frontend_url = `${import.meta.env.VITE_BACKEND_URL}`
+    const handleMessage = (event) => {
+      if (
+        event.origin !== frontend_url &&
+        !event.origin.includes("railway.app")
+      ) {
+        return;
+      }
 
-            const { token } = event.data;
+      const { token } = event.data;
 
-            if (token) {
-                localStorage.setItem("token", token);
+      if (token) {
+        localStorage.setItem("token", token);
 
-                console.log("Google Token:", token);
+        console.log("Google Token:", token);
 
-                navigate("/dashboardUser");
-            }
+        navigate("/dashboardUser");
+      }
 
-            if (event.data?.error) {
-                showNotif("error",event.data.error)
-            }
-        };
+      if (event.data?.error) {
+        showNotif("err", event.data.error)
+        console.log("Error:", event.data.error);
+      }
+    };
 
         window.addEventListener("message", handleMessage);
 
