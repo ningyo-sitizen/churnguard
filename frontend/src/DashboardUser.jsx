@@ -656,30 +656,50 @@ const DashboardUser = () => {
                                             </thead>
                                             <tbody className="divide-y divide-gray-100 text-[#1A1A1A]">
 
-                                                {/* BARIS 1 - HIGH */}
+                                                {/* HIGH - Basic Frustrated User */}
                                                 <tr className="hover:bg-gray-50 transition-colors font-medium">
                                                     <td className="p-3">
-                                                        <span className="inline-block px-3 py-1 rounded-full bg-[#FFE1E1] text-[#D82F5A] text-xs border border-[#DE869D]/20">High</span>
+                                                        <span className="inline-block px-3 py-1 rounded-full bg-[#FFE1E1] text-[#D82F5A] text-xs border border-[#DE869D]/20">
+                                                            High-Medium-Low
+                                                        </span>
                                                     </td>
-                                                    <td className="p-3 text-sm">Pengguna baru yang kecewa</td>
-                                                    <td className="p-3 text-xs text-[#757575]">Kasih genre favorit & film viral</td>
+
+                                                    <td className="p-3 text-sm">
+                                                        Low Engagement Users
+                                                    </td>
+
+                                                    <td className="p-3 text-xs text-[#757575]">
+                                                        Diskon besar + rekomendasi film favorit customer untuk mencegah churn.
+                                                    </td>
+
                                                     <td className="p-3">
                                                         <input
                                                             type="text"
                                                             value={promo_ALL_R_H_S}
                                                             onChange={(e) => setpromo_ALL_R_H_S(e.target.value)}
-                                                            placeholder="Contoh: Kangen nonton lagi"
+                                                            placeholder="promo"
                                                             className="w-full text-center border border-gray-200 rounded-[4px] p-2 text-sm focus:border-[#D82F5A] outline-none transition-all font-medium"
                                                         />
+
+                                                        <p className="text-[10px] text-gray-400 mt-1">
+                                                            Rekomendasi: Cashback Premium / Free 1 Month
+                                                        </p>
                                                     </td>
+
                                                     <td className="p-3">
                                                         <input
                                                             type="number"
                                                             value={promo_ALL_R_H_S_value}
                                                             onChange={(e) => setpromo_ALL_R_H_S_value(e.target.value)}
+                                                            placeholder="50"
                                                             className="w-full text-center border border-gray-200 rounded-[4px] p-2 text-sm outline-none focus:border-[#D82F5A] font-medium"
                                                         />
+
+                                                        <p className="text-[10px] text-gray-400 mt-1">
+                                                            Rekomendasi: 40% - 50%
+                                                        </p>
                                                     </td>
+
                                                     <td className="p-3">
                                                         <input
                                                             type="date"
@@ -687,33 +707,57 @@ const DashboardUser = () => {
                                                             onChange={(e) => setpromo_ALL_R_H_S_expired(e.target.value)}
                                                             className="w-full text-center border border-gray-200 rounded-[4px] p-2 text-xs outline-none focus:border-[#D82F5A] font-medium"
                                                         />
+
+                                                        <p className="text-[10px] text-gray-400 mt-1">
+                                                            Rekomendasi: 3 - 7 Hari
+                                                        </p>
                                                     </td>
                                                 </tr>
 
-                                                {/* BARIS 2 - MEDIUM */}
+                                                {/* HIGH-MEDIUM - Experienced User */}
                                                 <tr className="hover:bg-gray-50 transition-colors font-medium">
                                                     <td className="p-3">
-                                                        <span className="inline-block px-3 py-1 rounded-full bg-[#F6F7E6] text-[#EAAD62] text-xs border border-[#EAAD62]/20">Medium</span>
+                                                        <span className="inline-block px-3 py-1 rounded-full bg-[#FFF4E5] text-[#EAAD62] text-xs border border-[#EAAD62]/20">
+                                                            High - Medium
+                                                        </span>
                                                     </td>
-                                                    <td className="p-3 text-sm">Pelanggan lama</td>
-                                                    <td className="p-3 text-xs text-[#757575]">Kasih film hits terbaru</td>
+
+                                                    <td className="p-3 text-sm">
+                                                        High Engagement Users
+                                                    </td>
+
+                                                    <td className="p-3 text-xs text-[#757575]">
+                                                        medium offer + rekomendasi exclusive content premium.
+                                                    </td>
+
                                                     <td className="p-3">
                                                         <input
                                                             type="text"
                                                             value={promo_H_M_R_L_S}
                                                             onChange={(e) => setpromo_H_M_R_L_S(e.target.value)}
-                                                            placeholder="Contoh: Spesial buat kamu"
+                                                            placeholder="promo"
                                                             className="w-full text-center border border-gray-200 rounded-[4px] p-2 text-sm focus:border-[#D82F5A] outline-none transition-all font-medium"
                                                         />
+
+                                                        <p className="text-[10px] text-gray-400 mt-1">
+                                                            Rekomendasi: medium value promo
+                                                        </p>
                                                     </td>
+
                                                     <td className="p-3">
                                                         <input
                                                             type="number"
                                                             value={promo_H_M_R_L_S_value}
                                                             onChange={(e) => setpromo_H_M_R_L_S_value(e.target.value)}
+                                                            placeholder="30"
                                                             className="w-full text-center border border-gray-200 rounded-[4px] p-2 text-sm outline-none focus:border-[#D82F5A] font-medium"
                                                         />
+
+                                                        <p className="text-[10px] text-gray-400 mt-1">
+                                                            Rekomendasi: 20% - 35%
+                                                        </p>
                                                     </td>
+
                                                     <td className="p-3 text-center">
                                                         <input
                                                             type="date"
@@ -721,8 +765,129 @@ const DashboardUser = () => {
                                                             onChange={(e) => setpromo_H_M_R_L_S_expired(e.target.value)}
                                                             className="w-full text-center border border-gray-200 rounded-[4px] p-2 text-xs outline-none focus:border-[#D82F5A] font-medium"
                                                         />
+
+                                                        <p className="text-[10px] text-gray-400 mt-1">
+                                                            Rekomendasi: 7 - 14 Hari
+                                                        </p>
                                                     </td>
                                                 </tr>
+
+                                                {/* MEDIUM-HIGH - Basic User */}
+                                                <tr className="hover:bg-gray-50 transition-colors font-medium">
+                                                    <td className="p-3">
+                                                        <span className="inline-block px-3 py-1 rounded-full bg-[#F6F7E6] text-[#C6CE56] text-xs border border-[#C6CE56]/20">
+                                                            Medium - High
+                                                        </span>
+                                                    </td>
+
+                                                    <td className="p-3 text-sm">
+                                                        Moderate Engagement Users
+                                                    </td>
+
+                                                    <td className="p-3 text-xs text-[#757575]">
+                                                        Promo subscription + rekomendasi content populer & trending.
+                                                    </td>
+
+                                                    <td className="p-3">
+                                                        <input
+                                                            type="text"
+                                                            value={promo_M_H_R_M_S}
+                                                            onChange={(e) => setpromo_M_H_R_M_S(e.target.value)}
+                                                            placeholder="promo"
+                                                            className="w-full text-center border border-gray-200 rounded-[4px] p-2 text-sm focus:border-[#D82F5A] outline-none transition-all font-medium"
+                                                        />
+
+                                                        <p className="text-[10px] text-gray-400 mt-1">
+                                                            Rekomendasi: Paket Hemat Streaming
+                                                        </p>
+                                                    </td>
+
+                                                    <td className="p-3">
+                                                        <input
+                                                            type="number"
+                                                            value={promo_M_H_R_M_S_value}
+                                                            onChange={(e) => setpromo_M_H_R_M_S_value(e.target.value)}
+                                                            placeholder="25"
+                                                            className="w-full text-center border border-gray-200 rounded-[4px] p-2 text-sm outline-none focus:border-[#D82F5A] font-medium"
+                                                        />
+
+                                                        <p className="text-[10px] text-gray-400 mt-1">
+                                                            Rekomendasi: 15% - 30%
+                                                        </p>
+                                                    </td>
+
+                                                    <td className="p-3">
+                                                        <input
+                                                            type="date"
+                                                            value={promo_M_H_R_M_S_expired}
+                                                            onChange={(e) => setpromo_M_H_R_M_S_expired(e.target.value)}
+                                                            className="w-full text-center border border-gray-200 rounded-[4px] p-2 text-xs outline-none focus:border-[#D82F5A] font-medium"
+                                                        />
+
+                                                        <p className="text-[10px] text-gray-400 mt-1">
+                                                            Rekomendasi: 7 Hari
+                                                        </p>
+                                                    </td>
+                                                </tr>
+
+                                                {/* LOW - Basic User / Experienced User */}
+                                                <tr className="hover:bg-gray-50 transition-colors font-medium">
+                                                    <td className="p-3">
+                                                        <span className="inline-block px-3 py-1 rounded-full bg-[#F5E4FF] text-[#BE78E3] text-xs border border-[#BE78E3]/20">
+                                                            Low
+                                                        </span>
+                                                    </td>
+
+                                                    <td className="p-3 text-sm">
+                                                        Moderate Engagement Users - High Engagement Users
+                                                    </td>
+
+                                                    <td className="p-3 text-xs text-[#757575]">
+                                                        Reward kecil + rekomendasi film populer untuk menjaga engagement.
+                                                    </td>
+
+                                                    <td className="p-3">
+                                                        <input
+                                                            type="text"
+                                                            value={promo_L_R_M_L_S}
+                                                            onChange={(e) => setpromo_L_R_M_L_S(e.target.value)}
+                                                            placeholder="promo"
+                                                            className="w-full text-center border border-gray-200 rounded-[4px] p-2 text-sm focus:border-[#D82F5A] outline-none transition-all font-medium"
+                                                        />
+
+                                                        <p className="text-[10px] text-gray-400 mt-1">
+                                                            Rekomendasi: Bonus Voucher
+                                                        </p>
+                                                    </td>
+
+                                                    <td className="p-3">
+                                                        <input
+                                                            type="number"
+                                                            value={promo_L_R_M_L_S_value}
+                                                            onChange={(e) => setpromo_L_R_M_L_S_value(e.target.value)}
+                                                            placeholder="10"
+                                                            className="w-full text-center border border-gray-200 rounded-[4px] p-2 text-sm outline-none focus:border-[#D82F5A] font-medium"
+                                                        />
+
+                                                        <p className="text-[10px] text-gray-400 mt-1">
+                                                            Rekomendasi: 5% - 15%
+                                                        </p>
+                                                    </td>
+
+                                                    <td className="p-3">
+                                                        <input
+                                                            type="date"
+                                                            value={promo_L_R_M_L_S_expired}
+                                                            onChange={(e) => setpromo_L_R_M_L_S_expired(e.target.value)}
+                                                            className="w-full text-center border border-gray-200 rounded-[4px] p-2 text-xs outline-none focus:border-[#D82F5A] font-medium"
+                                                        />
+
+                                                        <p className="text-[10px] text-gray-400 mt-1">
+                                                            Rekomendasi: 14 - 30 Hari
+                                                        </p>
+                                                    </td>
+                                                </tr>
+
                                             </tbody>
                                         </table>
                                     </div>

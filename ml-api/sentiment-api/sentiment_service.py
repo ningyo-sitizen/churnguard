@@ -81,6 +81,7 @@ try:
     svm_model    = joblib.load(model_path)
     MODELS_LOADED = True
     logger.info("Models loaded successfully.")
+    
 except Exception as e:
     logger.error(f"Models error: {e}")
     MODELS_LOADED = False

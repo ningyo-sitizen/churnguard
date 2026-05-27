@@ -40,7 +40,7 @@ const AppSearchDropdown = ({ value, onChange, onSelect, disabled }) => {
                 formDetails.append('query', value);
                 formDetails.append('count', '8'); 
 
-                const response = await fetch("http://localhost:8002/search-apps", {
+                const response = await fetch("http://localhost:8000/sentimen/search-apps", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/x-www-form-urlencoded",
