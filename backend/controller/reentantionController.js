@@ -3,6 +3,7 @@ const churnguard_con = require("../config/db");
 const transporter = require("../config/malier");
 const axios = require("axios");
 const genremap = require("../config/genremap");
+const resend = require("../config/malier");
 
 async function getMovies() {
 
@@ -337,7 +338,6 @@ exports.getGeneratedEmail = async (req, res) => {
 };
 
 exports.sendEmail = async (req, res) => {
-
     const {
         email: customerEmail,
         html,
@@ -346,46 +346,35 @@ exports.sendEmail = async (req, res) => {
 
     try {
 
-        const authHeader =
-            req.headers.authorization;
+        const authHeader = req.headers.authorization;
 
         if (!authHeader) {
-
             return res.status(401).json({
                 message: "No token provided"
             });
-
         }
 
-        const token =
-            authHeader.split(" ")[1];
+        const token = authHeader.split(" ")[1];
 
-        const decoded =
-            jwt.verify(
-                token,
-                process.env.JWT_SECRET
-            );
+        const decoded = jwt.verify(
+            token,
+            process.env.JWT_SECRET
+        );
 
-        const userEmail =
-            decoded.email;
+        const userEmail = decoded.email;
 
         // SEND EMAIL
-        const info =
-            await transporter.sendMail({
+        const info = await resend.emails.send({
 
-                from:
-                    '"ChurnGuard CRM"',
+            from: "ChurnGuard <otp@mail.churnguard.com>",
 
-                to:
-                    customerEmail,
+            to: customerEmail,
 
-                subject:
-                    "🎬 Rekomendasi Spesial Untuk Kamu!",
+            subject: "🎬 Rekomendasi Spesial Untuk Kamu!",
 
-                html:
-                    html
+            html: html
 
-            });
+        });
 
         // AMBIL PREDICTION ACTIVE
         const [predid] =
@@ -402,8 +391,7 @@ exports.sendEmail = async (req, res) => {
         if (predid.length === 0) {
 
             return res.status(404).json({
-                message:
-                    "Prediction tidak ditemukan"
+                message: "Prediction tidak ditemukan"
             });
 
         }
@@ -427,11 +415,9 @@ exports.sendEmail = async (req, res) => {
 
             success: true,
 
-            message:
-                "Email berhasil dikirim",
+            message: "Email berhasil dikirim",
 
-            messageId:
-                info.messageId
+            data: info
 
         });
 
@@ -443,13 +429,11 @@ exports.sendEmail = async (req, res) => {
 
             success: false,
 
-            message:
-                "Server error"
+            message: "Server error"
 
         });
 
     }
-
 };
 
 async function sendRetentionEmail({
@@ -465,9 +449,9 @@ async function sendRetentionEmail({
 
         const genreId =
             genremap[
-            customer.GenrePreference
-                ?.toLowerCase()
-                ?.replace(/\s/g, "_")
+                customer.GenrePreference
+                    ?.toLowerCase()
+                    ?.replace(/\s/g, "_")
             ];
 
         const movies = await getMovies();
@@ -496,13 +480,17 @@ async function sendRetentionEmail({
             segment
         });
 
-        await transporter.sendMail({
-            from: '"ChurnGuard"',
-            to: customer.email,
-            subject: "🎬 Rekomendasi Spesial Untuk Kamu!",
-            html
-        });
+        await resend.emails.send({
 
+            from: "ChurnGuard <onboarding@resend.dev>",
+
+            to: customer.email,
+
+            subject: "🎬 Rekomendasi Spesial Untuk Kamu!",
+
+            html
+
+        });
 
         await churnguard_con.query(
             `UPDATE prediction_detail
@@ -520,7 +508,12 @@ async function sendRetentionEmail({
         );
 
     } catch (err) {
-        console.error("sendRetentionEmail error:", err.message);
+
+        console.error(
+            "sendRetentionEmail error:",
+            err
+        );
+
     }
 }
 
