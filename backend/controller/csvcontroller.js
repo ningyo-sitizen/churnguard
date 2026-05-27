@@ -324,7 +324,7 @@ exports.sendToPython = async (req, res) => {
 ;
 
     const pyRes = await axios.post(
-      "http://localhost:8000/churn/test-upload",
+      `${process.env.CHURN_API}/churn/test-upload`,
       form,
       { headers: form.getHeaders() }
     );
