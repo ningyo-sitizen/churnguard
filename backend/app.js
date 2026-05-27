@@ -21,7 +21,8 @@ const app = express();
 app.use(cors({
   origin: [
     "http://localhost:5173",
-    "https://inspiring-madeleine-55c663.netlify.app"
+    "https://inspiring-madeleine-55c663.netlify.app",
+    "https://prismatic-salamander-767dac.netlify.app"
   ],
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH"],
