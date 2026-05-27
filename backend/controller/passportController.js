@@ -22,13 +22,12 @@ exports.googleCallback = async (req, res) => {
       [profile.email]
     );
 
-    const active = existing[0].is_active
-
-    if (active === 0) {
+    if (existing.length === 0) {
+      console.log("User belum terdaftar")
       return res.send(`
         <script>
           window.opener.postMessage(
-            { error: "akun anda sudah diban" },
+            { error: "User belum terdaftar" },
             "${process.env.FRONTEND_URL}"
           );
           window.close();
@@ -36,12 +35,13 @@ exports.googleCallback = async (req, res) => {
       `);
     }
 
-    if (existing.length === 0) {
-      console.log("User belum terdaftar")
+        const active = existing[0].is_active
+
+    if (active === 0) {
       return res.send(`
         <script>
           window.opener.postMessage(
-            { error: "User belum terdaftar" },
+            { error: "akun anda sudah diban" },
             "${process.env.FRONTEND_URL}"
           );
           window.close();

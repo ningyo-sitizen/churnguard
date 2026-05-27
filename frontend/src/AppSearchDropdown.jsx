@@ -13,9 +13,11 @@ const AppSearchDropdown = ({ value, onChange, onSelect, disabled }) => {
 
     // Debounced search
     useEffect(() => {
+        console.log(import.meta.env.VITE_SENTIMEN_API);
         if (searchTimeoutRef.current) {
             clearTimeout(searchTimeoutRef.current);
         }
+
 
         if (value.trim().length < 2) {
             setSearchResults([]);
@@ -38,7 +40,7 @@ const AppSearchDropdown = ({ value, onChange, onSelect, disabled }) => {
                 // Menggunakan URLSearchParams agar terbaca sebagai Form oleh FastAPI
                 const formDetails = new URLSearchParams();
                 formDetails.append('query', value);
-                formDetails.append('count', '8'); 
+                formDetails.append('count', '8');
 
                 const response = await fetch(`${import.meta.env.VITE_SENTIMEN_API}/sentimen/search-apps`, {
                     method: "POST",
@@ -96,9 +98,9 @@ const AppSearchDropdown = ({ value, onChange, onSelect, disabled }) => {
             {/* Input - FIXED: Ditambahkan h-11, perbaikan border color slate-200 agar presisi setara boks tanggal */}
             <div className="flex items-center px-3 gap-2.5 border border-slate-200 rounded-[4px] bg-white h-11 focus-within:border-slate-300 transition-all w-full">
                 {selectedAppIcon ? (
-                    <img 
-                        src={selectedAppIcon} 
-                        alt="app" 
+                    <img
+                        src={selectedAppIcon}
+                        alt="app"
                         className="w-5 h-5 rounded flex-shrink-0 object-contain border border-slate-100"
                         onError={(e) => {
                             e.target.style.display = 'none';
@@ -146,15 +148,15 @@ const AppSearchDropdown = ({ value, onChange, onSelect, disabled }) => {
                                 className="w-full px-3 py-2.5 text-left hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-b-0 flex items-center gap-3 group"
                             >
                                 {/* Icon */}
-                                <img 
-                                    src={app.icon} 
+                                <img
+                                    src={app.icon}
                                     alt={app.title}
                                     className="w-8 h-8 rounded-[2px] flex-shrink-0 object-contain border border-slate-100 bg-white"
                                     onError={(e) => {
                                         e.target.src = 'https://via.placeholder.com/40?text=App';
                                     }}
                                 />
-                                
+
                                 {/* Info */}
                                 <div className="flex-1 min-w-0">
                                     <p className="text-xs font-semibold text-slate-700 group-hover:text-[#D82F5A] transition-colors truncate">

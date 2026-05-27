@@ -15,13 +15,11 @@ function UserManagement() {
     const user = useAuthAdmin()
     const goto = useNavigate();
 
-    // ── PROFILE ──────────────────────────────────
     const [showLogout,  setShowLogout]  = useState(false);
     const [loading,     setLoading]     = useState(true);
     const [profileData, setProfileData] = useState({ name: "Loading...", username: "Loading...", role: "Admin" });
     const [profileImg]                  = useState({ name: "Loading...", role: "Admin" });
 
-    // ── USER TABLE ────────────────────────────────
     const [banLoadingId,  setBanLoadingId]  = useState(null);
     const [data,          setData]          = useState([]);
     const [dataLoading,   setDataLoading]   = useState(true);
