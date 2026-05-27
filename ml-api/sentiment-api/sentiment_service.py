@@ -36,10 +36,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
+NLTK_RESOURCES  = ['stopwords', 'punkt', 'punkt_tab', 'wordnet', 'averaged_perceptron_tagger_eng','averaged_perceptron_tagger']
 # Download NLTK Resources
-for resource in ['stopwords', 'punkt', 'punkt_tab', 'wordnet', 'averaged_perceptron_tagger_eng']:
-    nltk.download(resource, quiet=True)
+for resource in NLTK_RESOURCES:
+    try:
+        nltk.data.find(resource)
+    except LookupError:
+        nltk.download(resource, quiet=True)
 
 stop_words = set(stopwords.words('english'))
 
