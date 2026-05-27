@@ -99,7 +99,7 @@ export default function Bepus() {
     const fetchData = useCallback(async () => {
         setLoading(true);
         try {
-            const res = await axios.get('http://localhost:8080/api/bepus/data', {
+            const res = await axios.get('http://localhost:8000/api/bepus/data', {
                 params: { page, limit, search }
             });
 
@@ -142,7 +142,7 @@ export default function Bepus() {
         if (!window.confirm(`Yakin ingin approve ${nama} (${nim})?`)) return;
 
         try {
-            await axios.post('http://localhost:8080/api/bepus/approve', {
+            await axios.post('http://localhost:8000/api/bepus/approve', {
                 nim,
                 nama
             });
@@ -166,7 +166,7 @@ export default function Bepus() {
             return;
 
         try {
-            await axios.post('http://localhost:8080/api/bepus/approve/bulk', {
+            await axios.post('http://localhost:8000/api/bepus/approve/bulk', {
                 data: selectedRows.map(d => ({ nim: d.nim, nama: d.nama }))
             });
 
@@ -254,10 +254,10 @@ export default function Bepus() {
 
                 {/* BUTTON GROUP */}
                 <div className="flex items-center justify-between mt-4">
-                    <button className="px-4 py-2 bg-emerald-800 text-white rounded" onClick={() => window.open('http://localhost:8080/api/bepus/export/pdf', '_blank')}>
+                    <button className="px-4 py-2 bg-emerald-800 text-white rounded" onClick={() => window.open('http://localhost:8000/api/bepus/export/pdf', '_blank')}>
                         Export PDF
                     </button>
-                    <button className="px-4 py-2 bg-emerald-800 text-white rounded" onClick={() => window.open('http://localhost:8080/api/bepus/export/excel', '_blank')}>
+                    <button className="px-4 py-2 bg-emerald-800 text-white rounded" onClick={() => window.open('http://localhost:8000/api/bepus/export/excel', '_blank')}>
                         Export Excel
                     </button>
                     <button className="px-4 py-2 bg-blue-600 text-white rounded" onClick={handleApproveBulk}>

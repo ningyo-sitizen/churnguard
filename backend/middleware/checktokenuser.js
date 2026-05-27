@@ -4,7 +4,6 @@ const churnguard_con = require("../config/db");
 const verifyToken = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
-    console.log("AUTH HEADER:", authHeader);
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       console.log("❌ NO TOKEN OR INVALID FORMAT");

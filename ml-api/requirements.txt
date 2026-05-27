@@ -1,0 +1,14 @@
+fastapi
+uvicorn[standard]
+pandas
+numpy
+scikit-learn
+mysql-connector-python
+joblib
+pickle-mixin
+python-dotenv
+nltk
+emoji
+deep-translator
+google-play-scraper
+keybert
