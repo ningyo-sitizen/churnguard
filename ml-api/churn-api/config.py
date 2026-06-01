@@ -8,5 +8,4 @@ DB_CONFIG = {
     "user": os.getenv("DB_USER_CHURNGUARD"),
     "password": os.getenv("DB_PASS_CHURNGUARD"),
     "database": os.getenv("DB_DATABASE_CHURNGUARD"),
-    "port": os.getenv("DB_PORT"),
 }
