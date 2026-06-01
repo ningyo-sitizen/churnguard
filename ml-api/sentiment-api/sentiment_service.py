@@ -10,6 +10,7 @@ from time import time
 import emoji
 from deep_translator import GoogleTranslator
 from fastapi import FastAPI, File, Form, UploadFile
+from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from google_play_scraper import Sort, reviews, search
 import joblib
@@ -37,7 +38,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 NLTK_RESOURCES  = ['stopwords', 'punkt', 'punkt_tab', 'wordnet', 'averaged_perceptron_tagger_eng','averaged_perceptron_tagger']
-# Download NLTK Resources
+
 for resource in NLTK_RESOURCES:
     try:
         nltk.data.find(resource)
@@ -84,7 +85,6 @@ try:
     svm_model    = joblib.load(model_path)
     MODELS_LOADED = True
     logger.info("Models loaded successfully.")
-    
 except Exception as e:
     logger.error(f"Models error: {e}")
     MODELS_LOADED = False
@@ -486,3 +486,110 @@ async def search_apps(query: str = Form(...), count: int = Form(5)):
     except Exception as e:
         logger.error(f"Error in search_apps: {e}", exc_info=True)
         return {"status": "error", "message": str(e)}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Request schema untuk endpoint analisis teks manual
+# ─────────────────────────────────────────────────────────────────────────────
+class TextRequest(BaseModel):
+    text: str
+
+
+@app.post("/analyze-text")
+async def analyze_text(payload: TextRequest):
+ 
+    try:
+        text = payload.text.strip()
+
+        # ── Validasi input ──────────────────────────────────────────────────
+        if not text:
+            return {
+                "status": "error",
+                "message": "Teks tidak boleh kosong."
+            }
+
+        if len(text) > 2000:
+            return {
+                "status": "error",
+                "message": "Teks terlalu panjang. Maksimal 2.000 karakter."
+            }
+
+        if not MODELS_LOADED:
+            return {
+                "status": "error",
+                "message": "Model ML tidak tersedia. Periksa file SVMCW.pkl dan vectorizer.pkl."
+            }
+
+        # ── 1. Translate (auto → en) ────────────────────────────────────────
+        # Gunakan _translate_single() langsung — tidak perlu ThreadPoolExecutor
+        # karena hanya satu teks, bukan batch.
+        logger.info(f"[analyze-text] Step 1 | Translating ({len(text)} chars)...")
+        translated = _translate_single(text)
+        translated = translated.replace("_", " ")
+
+        # ── 2. Preprocess ───────────────────────────────────────────────────
+        logger.info("[analyze-text] Step 2 | Preprocessing...")
+
+        # Demojize: ubah karakter emoji jadi deskripsi teks berunderscore,
+        # misal 😊 → " smiling_face "  agar makna emosi tidak hilang
+        demojized = emoji.demojize(translated, delimiters=(" ", " ")) if translated else translated
+
+        # Hapus semua karakter non-alfabet (kecuali underscore dari emoji),
+        # lowercase, normalisasi spasi berlebih
+        cleaned = _RE_NON_ALPHA.sub(' ', demojized)
+        cleaned = cleaned.lower()
+        cleaned = re.sub(r'\s+', ' ', cleaned).strip()
+
+        # Tokenisasi menjadi list kata
+        tokens = nltk.word_tokenize(cleaned)
+
+        # Filter stopwords — pertahankan negasi, intensifier, kontraksi
+        # yang ada di words_to_retain (misal: not, very, don't, but)
+        filtered_tokens = [
+            t for t in tokens
+            if t not in stop_words and '_' not in t
+        ]
+
+        # ── 3. POS-tag (averaged_perceptron_tagger_eng) ─────────────────────
+        # Gunakan nltk.pos_tag() untuk satu kalimat — lebih efisien daripada
+        # pos_tag_sents() yang dirancang untuk batch list-of-list
+        logger.info("[analyze-text] Step 3 | POS tagging...")
+        tagged = nltk.pos_tag(filtered_tokens)
+
+        # ── 4. Lemmatize (WordNetLemmatizer) ────────────────────────────────
+        # Petakan tag POS Penn Treebank → konstanta WordNet:
+        #   N→NOUN, V→VERB, J→ADJ, R→ADV; selain itu default NOUN
+        logger.info("[analyze-text] Step 4 | Lemmatizing...")
+        lemmatized_tokens = [
+            lemmatizer.lemmatize(word, wordnet_map.get(pos[0], wordnet.NOUN))
+            for word, pos in tagged
+        ]
+        lemmatized_text = ' '.join(lemmatized_tokens)
+
+        # ── 5. Vectorize (TF-IDF) ───────────────────────────────────────────
+        # transform() menerima iterable of strings — bungkus dalam list
+        # agar menghasilkan sparse matrix shape (1, n_features)
+        logger.info("[analyze-text] Step 5 | Vectorizing with TF-IDF...")
+        X_vector = tfidf_loaded.transform([lemmatized_text])
+
+        # ── 6. Predict (SVM) ────────────────────────────────────────────────
+        # predict() mengembalikan array — ambil elemen pertama [0]
+        logger.info("[analyze-text] Step 6 | Predicting with SVM...")
+        raw_prediction = svm_model.predict(X_vector)[0]
+
+        sentiment_map = {0: 'negatif', 1: 'netral', 2: 'positif'}
+        sentiment = sentiment_map.get(int(raw_prediction), str(raw_prediction))
+
+        logger.info(f"[analyze-text] Result | sentiment={sentiment}")
+
+        return {
+            "status":    "success",
+            "text":      text,
+            "sentiment": sentiment   # "positif" | "netral" | "negatif"
+        }
+
+    except Exception as e:
+        logger.error(f"Error in analyze_text: {e}", exc_info=True)
+        return {
+            "status":  "error",
+            "message": str(e)
+        }

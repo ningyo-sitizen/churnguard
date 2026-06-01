@@ -3,7 +3,7 @@ import axios from "axios";
 import logochurn from './assets/logo churn.png';
 import unggahdata from './assets/unggahdata.png';
 import Sidebar from './SideBar.jsx';
-import Header from './header.jsx';
+import Header from './Header.jsx';
 import { ChevronRight } from 'lucide-react';
 import { ChevronLeft } from 'lucide-react';
 import LoadingOverlay from './LoadingOverlay.jsx';
@@ -248,7 +248,7 @@ const DashboardUser = () => {
             <main className="flex-1 h-full overflow-y-auto overflow-x-hidden">
 
                 {/* TOPBAR */}
-                <Header formData={user} profileImg={user?.profileImg} />
+                <Header formData={user} profileImg={user?.avatar} />
 
                 {/* CONTENT */}
                 <div className="p-8">

@@ -3,7 +3,7 @@ const resend = require("../config/malier");
 const sendOtp = async (email, otp) => {
   try {
     const data = await resend.emails.send({
-      from: "ChurnGuard <onboarding@resend.dev>",
+      from: "No Reply <noreply@churnguard.online>",
       to: email,
       subject: "OTP Verification Code",
       html: `

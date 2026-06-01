@@ -363,10 +363,9 @@ exports.sendEmail = async (req, res) => {
 
         const userEmail = decoded.email;
 
-        // SEND EMAIL
         const info = await resend.emails.send({
 
-            from: "ChurnGuard <otp@mail.churnguard.com>",
+            from: "ChurnGuard <onboarding@resend.dev>",
 
             to: customerEmail,
 
@@ -376,7 +375,6 @@ exports.sendEmail = async (req, res) => {
 
         });
 
-        // AMBIL PREDICTION ACTIVE
         const [predid] =
             await churnguard_con.query(
                 `
@@ -396,7 +394,6 @@ exports.sendEmail = async (req, res) => {
 
         }
 
-        // UPDATE EMAIL SENT
         await churnguard_con.query(
             `
             UPDATE prediction_detail
