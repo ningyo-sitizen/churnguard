@@ -23,7 +23,7 @@ app.use(cors({
     "http://localhost:5173",
     "https://inspiring-madeleine-55c663.netlify.app",
     "https://prismatic-salamander-767dac.netlify.app",
-    "https://churnguard.online/"
+    "https://churnguard.online"
   ],
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH"],
@@ -74,10 +74,4 @@ const PORT = 5000;
 app.listen(PORT, () => {
   console.log(`Server jalan di port ${PORT}`);
 
-  console.log({
-  host: process.env.DB_HOST_CHURNGUARD,
-  user: process.env.DB_USER_CHURNGUARD,
-  database: process.env.DB_DATABASE_CHURNGUARD,
-  passLength: process.env.DB_PASS_CHURNGUARD?.length
-});
 });
