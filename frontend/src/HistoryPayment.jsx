@@ -4,13 +4,14 @@ import Sidebar from './SideBar.jsx';
 import Header from './Header.jsx';
 import Footer from './Footer';
 import { useAuth } from '../utils/auth.js';
+import { useLocation, useNavigate } from "react-router-dom";
 
 const HistoryPayment = () => {
 
     const [payment, setpayment] = useState([])
     const [sum, setsum] = useState()
     const [success, setsuccess] = useState()
-
+    const navigate = useNavigate();
     const user = useAuth()
     const [selectedInvoice, setSelectedInvoice] = useState(null);
     const fetchhistorypayment = async () => {
@@ -68,7 +69,7 @@ const HistoryPayment = () => {
                         <div className="flex items-center gap-2 mt-1 transition-all">
                             {/* Link Dashboard - Bisa di klik */}
                             <span
-                                onClick={() => window.location.href = '/profile'}
+                                onClick={() => navigate('/profile')}
                                 className="text-xs text-gray-400  cursor-pointer hover:text-[#D82F5A] transition-colors"
                             >
                                 Profile
@@ -103,7 +104,7 @@ const HistoryPayment = () => {
                     <div className="flex justify-between items-center mb-4">
                         <div className="flex items-center gap-4">
                             <h2 className="text-[15px] font-semibold">Daftar Transaksi</h2>
-                            <span className="bg-gray-100 text-gray-500 text-[10px] px-2 py-0.5 rounded-[2px] font-medium uppercase tracking-tight">3 Berkas</span>
+                            <span className="bg-gray-100 text-gray-500 text-[10px] px-2 py-0.5 rounded-[2px] font-medium uppercase tracking-tight"></span>
                         </div>
                     </div>
 
@@ -121,7 +122,7 @@ const HistoryPayment = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50">
-                                {payment.map((item, index) => (
+                                {payment?.map((item, index) => (
                                     <tr key={item.order_id} className="group hover:bg-[#FEF5F6]/20 transition-all">
                                         <td className="px-6 py-5 text-center text-[12px] text-gray-400 font-medium">
                                             {String(index + 1).padStart(2, '0')}
