@@ -1,0 +1,34 @@
+1. ('N', 'N', 'N') — Noun + Noun + Noun
+Mengapa dipakai? Untuk menangkap nama fitur aplikasi yang spesifik dan terdiri dari beberapa kata. Pengguna sering kali menyebutkan lokasi atau identitas masalah secara detail.
+
+Contoh nyata: facebook account issue, dark mode setting, data storage space.
+
+Jika tidak pakai pola ini: Kita tidak akan tahu fitur spesifik apa yang sedang bermasalah.
+
+2. ('J', 'N', 'N') — Adj + Noun + Noun
+Mengapa dipakai? Ini adalah pola paling maut untuk sentimen analisis. Pola ini menggabungkan penilaian kata sifat (Adjective) langsung dengan fitur aplikasinya.
+
+Contoh nyata: bad update problem, slow internet connection, wrong region setting (seperti contoh ulasan kamu sebelumnya).
+
+Jika tidak pakai pola ini: Kita akan kehilangan kata sifat penting seperti bad, slow, atau wrong yang menjadi kunci sentimen negatif.
+
+3. ('N', 'N', 'V') — Noun + Noun + Verb
+Mengapa dipakai? Pola ini menangkap efek atau kejadian yang menimpa suatu fitur (Fitur + Apa yang terjadi padanya).
+
+Contoh nyata: verification code expired, app screen freeze, login password fail.
+
+Jika tidak pakai pola ini: Kita hanya tahu fiturnya (verification code), tapi tidak tahu kalau kodenya itu hangus/kadaluwarsa (expired).
+
+4. ('V', 'N', 'N') — Verb + Noun + Noun
+Mengapa dipakai? Pola ini sangat bagus untuk menangkap permintaan (request) atau tindakan pengguna dan sistem terhadap suatu fitur.
+
+Contoh nyata: fix login error, disable account reason, download video button.
+
+Jika tidak pakai pola ini: Saran atau tuntutan user seperti kata kerja fix, update, atau repair di awal frasa tidak akan terekam.
+
+5. ('J', 'J', 'N') — Adj + Adj + Noun
+Mengapa dipakai? Pengguna sering kali sangat kesal atau sangat senang, sehingga mereka menggunakan dua kata sifat sekaligus untuk mempertegas kondisi suatu fitur.
+
+Contoh nyata: slow laggy interface, free premium feature, bad worst update.
+
+Jika tidak pakai pola ini: Penekanan emosi pengguna yang berlipat ganda tidak akan tertangkap dengan baik.
