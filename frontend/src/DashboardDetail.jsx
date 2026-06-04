@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import { useAuth } from "../utils/auth";
 
 import logochurn from './assets/logo churn.png';
 
@@ -12,6 +13,7 @@ import {
 import Sidebar from "./SideBar";
 import Header from "./Header";
 export default function CostumerDetail() {
+    const user = useAuth()
     const [disableButton, setDisableButton] = useState(false);
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
@@ -31,6 +33,7 @@ export default function CostumerDetail() {
     const [promoName, setPromoName] = useState("");
     const [promoDiscount, setPromoDiscount] = useState("");
     const [expiredDate, setExpiredDate] = useState("");
+    const [loadingPromo, setLoadingPromo] = useState(false);
 
     const getRetentionRecommendation = () => {
 
@@ -64,11 +67,12 @@ export default function CostumerDetail() {
     };
 
     const handleGenerateEmail = async () => {
+        // 1. Nyalakan loading tepat pas tombol diklik
+        setLoadingPromo(true);
 
         try {
-
             const response = await axios.post(
-                `http://localhost:5000/email/generate`,
+                `${import.meta.env.VITE_BACKEND_URL}/email/generate`,
                 {
                     promo_name: promoName,
                     promo_discount: promoDiscount,
@@ -81,16 +85,17 @@ export default function CostumerDetail() {
             );
 
             setEmailMessage(response.data.html);
-
+            setChatMessage(response.data.html)
             setShowPopup(false);
 
         } catch (err) {
-
             console.log(err);
-
+            // Opsional: lo bisa tambah alert/toast error di sini biar user tau kalau gagal
+        } finally {
+            // 2. Matikan loading secara otomatis, baik prosesnya berhasil maupun error
+            setLoadingPromo(false);
         }
     };
-
     useEffect(() => {
 
         const fetchDataUserDetail = async () => {
@@ -100,7 +105,7 @@ export default function CostumerDetail() {
             try {
 
                 const response = await axios.get(
-                    `http://localhost:5000/prediction/costumer-detail?customerid=${CustomerID}&predictionid=${prediction_id}`,
+                    `${import.meta.env.VITE_BACKEND_URL}/prediction/costumer-detail?customerid=${CustomerID}&predictionid=${prediction_id}`,
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,
@@ -129,14 +134,20 @@ export default function CostumerDetail() {
     }, []);
 
     const handleSendChat = async () => {
-
+        const token = localStorage.getItem('token')
+        console.log("kiana")
         try {
 
             await axios.post(
-                `http://localhost:5000/email/send`,
+                `${import.meta.env.VITE_BACKEND_URL}/email/send`,
                 {
                     html: chatMessage,
                     email: detail.email
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
                 }
             );
 
@@ -207,7 +218,7 @@ export default function CostumerDetail() {
             icon: 'ti-star'
         },
         {
-            label: 'Subscription',  
+            label: 'Subscription',
             value: detail.SubscriptionType,
             icon: 'ti-crown'
         },
@@ -218,71 +229,13 @@ export default function CostumerDetail() {
         <div className="flex min-h-screen bg-[#F9FAFB] font-['Plus_Jakarta_Sans',sans-serif] text-[#1F2937]">
 
             {/* SIDEBAR */}
-        <Sidebar></Sidebar>
+            <Sidebar></Sidebar>
 
             {/* MAIN */}
             <main className="flex-grow flex flex-col">
 
                 {/* HEADER */}
-                <header className="h-20 bg-white border-b border-gray-100 flex items-center justify-end px-10 gap-6 sticky top-0 z-50">
-
-                    <div className="relative">
-
-                        <div
-                            className="flex items-center gap-3 cursor-pointer"
-                            onClick={() => setIsOpen(!isOpen)}
-                        >
-
-                            <img
-                                src="https://ui-avatars.com/api/?name=User&background=D82F5A&color=fff"
-                                className="w-10 h-10 rounded-xl"
-                                alt=""
-                            />
-
-                            <div>
-                                <p className="text-sm font-semibold">
-                                    Customer Analyst
-                                </p>
-
-                                <p className="text-xs text-[#D82F5A]">
-                                    admin@gmail.com
-                                </p>
-                            </div>
-
-                        </div>
-
-                        {
-                            isOpen && (
-
-                                <div className="absolute right-0 mt-4 w-72 bg-white rounded-[4px] shadow-xl border z-50">
-
-                                    <div className="p-2">
-
-                                        <div className="flex items-center gap-4 px-4 py-3 hover:bg-[#FEF5F6] rounded-xl cursor-pointer">
-                                            <IconUserCircle stroke={1.5} />
-                                            <span>Profile</span>
-                                        </div>
-
-                                        <div className="flex items-center gap-4 px-4 py-3 hover:bg-[#FEF5F6] rounded-xl cursor-pointer">
-                                            <IconBrandMyOppo stroke={1.5} />
-                                            <span>Member</span>
-                                        </div>
-
-                                        <div className="flex items-center gap-4 px-4 py-3 hover:bg-[#FEF5F6] rounded-xl cursor-pointer">
-                                            <IconLogout2 stroke={1.5} />
-                                            <span>Logout</span>
-                                        </div>
-
-                                    </div>
-
-                                </div>
-
-                            )
-                        }
-
-                    </div>
-
-                </header>
+                <Header formData={user} profileImg={user?.avatar} />
 
                 {/* CONTENT */}
                 <div className="p-10 grid grid-cols-1 lg:grid-cols-12 gap-8 max-w-[1600px]">
@@ -292,14 +245,14 @@ export default function CostumerDetail() {
 
                         <div>
 
-                            <h1 className="text-2xl font-semibold">
+                            <h1 className="text-xl font-semibold">
                                 Detail Customer Insight
                             </h1>
 
                             <div className="flex items-center gap-2 mt-1">
 
                                 <span
-                                    onClick={() => navigate('/DashboardUser')}
+                                    onClick={() => navigate('/dashboardUser')}
                                     className="text-[11px] text-gray-400 cursor-pointer hover:text-[#D82F5A]"
                                 >
                                     Dashboard
@@ -388,10 +341,10 @@ export default function CostumerDetail() {
                                 </div>
 
                                 <div>
-                                    <p className="text-xs text-[#D82F5A] mb-1">
+                                    <p className="text-base font-semibold text-[#D82F5A] mb-1">
                                         Churn Score
                                     </p>
-                                    <p className="text-sm font-semibold text-[#D82F5A]">
+                                    <p className="text-base font-semibold text-[#D82F5A]">
                                         {detail.Score}
                                     </p>
                                 </div>
@@ -455,7 +408,7 @@ export default function CostumerDetail() {
                                 </div>
 
                                 <div>
-                                    <h2 className="font-semibold text-base">
+                                    <h2 className="font-semibold text-sm">
                                         Communication Center
                                     </h2>
 
@@ -482,35 +435,32 @@ export default function CostumerDetail() {
                                         placeholder="Tulis pesan..."
                                         className="w-full bg-gray-50 border border-gray-100 rounded-[4px] p-4 text-xs h-28 outline-none"
                                     />
+                                    <div className="flex gap-3 mt-3">
+                                        <button
+                                            disabled={disableButton}
+                                            onClick={handleSendChat}
+                                            className={`
+      flex-1 py-2.5 rounded-[4px] text-xs font-medium text-white transition-all duration-200
+      ${disableButton
+                                                    ? "bg-gray-300 cursor-not-allowed"
+                                                    : "bg-[#D82F5A] hover:bg-[#bb244a] active:scale-[0.98]"
+                                                }
+    `}
+                                        >
+                                            Kirim pesan
+                                        </button>
 
-                                    <button
-                                        disabled={disableButton}
-                                        onClick={handleSendChat}
-                                        className={`
-                                            w-full py-3 rounded-[4px] text-white transition-all
-                                            ${disableButton
-                                                ? "bg-gray-400 cursor-not-allowed"
-                                                : "bg-[#D82F5A] hover:bg-[#bb244a]"
-                                            }
-    `}                                    >
-                                        Kirim Pesan
-                                    </button>
-
-                                    <button
-                                        
-                                        onClick={() => {
-
-                                            const previewWindow = window.open("", "_blank");
-
-                                            previewWindow.document.write(chatMessage);
-
-                                            previewWindow.document.close();
-
-                                        }}
-                                        className="w-full mt-3 bg-black text-white py-3 rounded-[4px]"
-                                    >
-                                        view pesan
-                                    </button>
+                                        <button
+                                            onClick={() => {
+                                                const previewWindow = window.open("", "_blank");
+                                                previewWindow.document.write(chatMessage);
+                                                previewWindow.document.close();
+                                            }}
+                                            className="flex-1 bg-[#1A1A1A] hover:bg-black text-white text-xs font-medium py-2.5 rounded-[4px] transition-all duration-200 active:scale-[0.98]"
+                                        >
+                                            Lihat pesan
+                                        </button>
+                                    </div>
 
                                 </div>
 
@@ -552,7 +502,7 @@ export default function CostumerDetail() {
                                             disabled={disableButton}
                                             onClick={() => setShowPopup(true)}
                                             className={`
-                                            w-full py-3 rounded-[4px] text-white transition-all
+                                            w-full py-2.5 rounded-[4px] text-xs text-white transition-all
                                             ${disableButton
                                                     ? "bg-gray-400 cursor-not-allowed"
                                                     : "bg-[#D82F5A] hover:bg-[#bb244a]"
@@ -574,10 +524,10 @@ export default function CostumerDetail() {
 
                                             }}
                                             className={`
-                                            w-full py-3 rounded-[4px] text-white transition-all
+                                            w-full py-2 rounded-[4px] text-xs text-white transition-all
                                             ${disableButton
                                                     ? "bg-gray-400 cursor-not-allowed"
-                                                    : "bg-[#D82F5A] hover:bg-[#bb244a]"
+                                                    : "bg-black hover:bg-[#bb244a]"
                                                 }
     `}
                                         >
@@ -601,146 +551,144 @@ export default function CostumerDetail() {
             {/* POPUP */}
             {
                 showPopup && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-6">
+                        {/* max-h-[90vh] biar ga nempel atas bawah, flex-col biar layoutnya bener */}
+                        <div className="bg-white w-full max-w-md rounded-[4px] shadow-2xl overflow-hidden border flex flex-col max-h-[90vh]">
 
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-
-                        <div className="bg-white w-full max-w-md rounded-[4px] shadow-2xl overflow-hidden border">
-
-                            <div className="p-5 border-b bg-gray-50 flex justify-between items-center">
-
-                                <span className="text-sm font-semibold flex items-center gap-2">
-                                    <i className="ti ti-settings-automation text-[#D82F5A]"></i>
-                                    Konfigurasi Campaign
-                                </span>
-
+                            {/* HEADER - Judul & Subjudul lebih santai */}
+                            <div className="p-5 border-b bg-white flex justify-between items-start">
+                                <div>
+                                    <h3 className="text-lg font-semibold text-[#1A1A1A]">Atur penawaran promo</h3>
+                                    <p className="text-xs text-gray-500 mt-1 font-medium">Sesuaikan hadiah yang pas buat tipe pengguna ini.</p>
+                                </div>
                                 <button
                                     onClick={() => setShowPopup(false)}
+                                    className="text-gray-400 hover:text-black transition-colors p-1"
                                 >
-                                    <i className="ti ti-x"></i>
+                                    <i className="ti ti-x text-xl"></i>
                                 </button>
-
                             </div>
 
-                            <div className="p-8 space-y-5">
+                            {/* CONTENT AREA - Bisa di-scroll */}
+                            <div className="p-8 space-y-6 overflow-y-auto custom-scrollbar">
 
                                 <div className="grid grid-cols-2 gap-4">
-
                                     <div>
-
-                                        <label className="text-xs text-gray-400">
-                                            Risk Level
+                                        <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
+                                            Tingkat risiko
                                         </label>
-
-                                        <div className="bg-gray-50 border rounded-[4px] p-3 text-xs font-bold text-orange-500 mt-1">
+                                        <div className="bg-gray-50 border rounded-[4px] p-3 text-xs font-semibold text-orange-500 mt-1">
                                             {detail.Risk}
                                         </div>
-
                                     </div>
-
                                     <div>
-
-                                        <label className="text-xs text-gray-400">
-                                            Segment
+                                        <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
+                                            Kelompok pengguna
                                         </label>
-
-                                        <div className="bg-gray-50 border rounded-[4px] p-3 text-xs mt-1">
+                                        <div className="bg-gray-50 border rounded-[4px] p-3 text-xs mt-1 font-medium text-[#1A1A1A]">
                                             {detail.Segment}
                                         </div>
-
                                     </div>
-
                                 </div>
 
                                 <div>
-
-                                    <label className="text-xs text-gray-400">
-                                        Rekomendasi Retensi
+                                    <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
+                                        Saran langkah selanjutnya
                                     </label>
-
                                     <textarea
                                         readOnly
                                         value={getRetentionRecommendation()}
-                                        className="w-full bg-gray-50 border rounded-[4px] p-3 text-xs h-24 mt-1"
+                                        className="w-full bg-gray-50 border rounded-[4px] p-3 text-xs h-24 mt-1 font-medium text-[#757575] resize-none outline-none"
                                     />
-
                                 </div>
 
-                                <div className="space-y-4 bg-gray-50 p-4 rounded-[4px] border">
-
+                                {/* Form Input Section */}
+                                <div className="space-y-4 bg-gray-50 p-5 rounded-[4px] border border-gray-200">
                                     <div>
-
-                                        <label className="text-xs text-gray-400">
-                                            Promo Name
+                                        <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
+                                            Nama promo
                                         </label>
-
                                         <input
                                             type="text"
                                             value={promoName}
                                             onChange={(e) => setPromoName(e.target.value)}
-                                            className="w-full border rounded-[4px] p-3 text-xs mt-1"
+                                            placeholder="Contoh: Promo kangen nonton"
+                                            className="w-full border border-gray-200 rounded-[4px] p-3 text-xs mt-1 font-medium outline-none focus:border-[#D82F5A] transition-all"
                                         />
-
                                     </div>
 
                                     <div>
-
-                                        <label className="text-xs text-gray-400">
-                                            Discount %
+                                        <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
+                                            Besar diskon (%)
                                         </label>
-
                                         <input
                                             type="number"
                                             value={promoDiscount}
                                             onChange={(e) => setPromoDiscount(e.target.value)}
-                                            className="w-full border rounded-[4px] p-3 text-xs mt-1"
+                                            placeholder="0"
+                                            className="w-full border border-gray-200 rounded-[4px] p-3 text-xs mt-1 font-medium outline-none focus:border-[#D82F5A] transition-all"
                                         />
-
                                     </div>
 
                                     <div>
-
-                                        <label className="text-xs text-gray-400">
-                                            Expired Date
+                                        <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
+                                            Batas waktu (Expired)
                                         </label>
-
                                         <input
                                             type="date"
                                             value={expiredDate}
                                             onChange={(e) => setExpiredDate(e.target.value)}
-                                            className="w-full border rounded-[4px] p-3 text-xs mt-1"
+                                            className="w-full border border-gray-200 rounded-[4px] p-3 text-xs mt-1 font-medium outline-none focus:border-[#D82F5A] transition-all"
                                         />
-
                                     </div>
-
                                 </div>
-
                             </div>
 
-                            <div className="p-6 bg-gray-50 border-t flex gap-3">
-
+                            {/* FOOTER - Button Sejajar & Clean */}
+                            {/* CONTAINER TOMBOL */}
+                            <div className="p-6 bg-white border-t flex gap-3 font-['Plus_Jakarta_Sans',sans-serif]">
                                 <button
+                                    type="button"
+                                    disabled={loadingPromo}
                                     onClick={() => setShowPopup(false)}
-                                    className="flex-1 py-3 border border-[#D82F5A] text-[#D82F5A] rounded-[4px]"
+                                    className="flex-1 py-3 border border-gray-200 text-gray-600 font-medium rounded-[4px] text-sm hover:bg-gray-50 transition-all active:scale-[0.98] disabled:opacity-50"
                                 >
                                     Batal
                                 </button>
 
                                 <button
+                                    type="button"
+                                    disabled={loadingPromo}
                                     onClick={handleGenerateEmail}
-                                    className="flex-1 py-3 bg-black text-white rounded-[4px]"
+                                    className="flex-1 py-3 bg-[#1A1A1A] hover:bg-black text-white font-medium rounded-[4px] text-sm transition-all active:scale-[0.98] shadow-md disabled:bg-zinc-700"
                                 >
-                                    Generate
+                                    Buat pesan promo
                                 </button>
-
                             </div>
 
+                            {/* CUKUP POP-UP LOADING INI AJA */}
+                            {loadingPromo && (
+                                <div className="fixed inset-0 bg-slate-900/40 z-[9999] flex items-center justify-center animate-in fade-in duration-300 backdrop-blur-sm">
+                                    <div className="bg-white p-6 rounded-[4px] shadow-[0_20px_50px_rgba(0,0,0,0.1)] flex flex-col items-center gap-3 max-w-xs w-full text-center border border-slate-50 scale-100 animate-in zoom-in-95 duration-300">
+                                        {/* Spinner Bulat Pink Tua */}
+                                        <div className="animate-spin h-8 w-8 border-4 border-[#D82F5A] border-t-transparent rounded-full"></div>
+
+                                        <div className="space-y-1">
+                                            <p className="text-sm font-bold text-slate-800 font-['Plus_Jakarta_Sans',sans-serif]">
+                                                Menulis Pesan Promo
+                                            </p>
+                                            <p className="text-xs text-slate-400 font-medium font-['Plus_Jakarta_Sans',sans-serif] leading-relaxed">
+                                                AI sedang menyusun penawaran terbaik berdasarkan preferensi pelanggan...
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
                         </div>
-
                     </div>
-
                 )
             }
-
         </div>
     );
 }

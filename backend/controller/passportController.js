@@ -3,12 +3,13 @@ const churnguard_con = require("../config/db");
 
 
 exports.googleCallback = async (req, res) => {
+  console.log("register kepanggil")
   const mode = req.query.state;
 
   if (!req.user) {
     return res.status(500).send("User tidak ditemukan dari Google");
   }
-  
+
 
   const profile = req.user;
   const avatar = profile.photos?.[0]?.value || null;
@@ -27,20 +28,34 @@ exports.googleCallback = async (req, res) => {
         <script>
           window.opener.postMessage(
             { error: "User belum terdaftar" },
-            "http://localhost:5173"
+            "${process.env.FRONTEND_URL}"
           );
           window.close();
         </script>
       `);
     }
 
-    if(existing.length > 0 && existing[0].google_id === null){
+        const active = existing[0].is_active
+
+    if (active === 0) {
+      return res.send(`
+        <script>
+          window.opener.postMessage(
+            { error: "akun anda sudah diban" },
+            "${process.env.FRONTEND_URL}"
+          );
+          window.close();
+        </script>
+      `);
+    }
+
+    if (existing.length > 0 && existing[0].google_id === null) {
       console.log("akun ini tidak dibuat menggunakan via google login")
       return res.send(`
         <script>
           window.opener.postMessage(
             { error: "akun ini tidak dibuat menggunakan via google login" },
-            "http://localhost:5173"
+            "${process.env.FRONTEND_URL}"
           );
           window.close();
         </script>
@@ -48,7 +63,7 @@ exports.googleCallback = async (req, res) => {
     }
 
     sessionVersion = existing[0].session_version + 1;
-    
+
     await churnguard_con.query(
       "UPDATE users SET session_version = ? WHERE email = ?",
       [sessionVersion, profile.email]
@@ -62,29 +77,30 @@ exports.googleCallback = async (req, res) => {
     );
 
     if (existing.length > 0) {
-      console.log("email sudah terpakai")
       return res.send(`
         <script>
           window.opener.postMessage(
             { error: "User sudah ada, silakan login" },
-            "http://localhost:5173"
+            "${process.env.FRONTEND_URL}"
           );
           window.close();
         </script>
       `);
     }
-    
+
     sessionVersion = 1;
 
+    console.log("saving data")
     await churnguard_con.query(
       "INSERT INTO users (email, name, google_id, avatar_url, session_version) VALUES (?, ?, ?, ?, ?)",
       [profile.email, profile.displayName, profile.id, avatar, sessionVersion]
     );
+    console.log("data ke save")
   }
-    const [rows] = await churnguard_con.query(
-      "SELECT * FROM users WHERE email = ?",
-      [profile.email]
-    );
+  const [rows] = await churnguard_con.query(
+    "SELECT * FROM users WHERE email = ?",
+    [profile.email]
+  );
 
   const user = {
     email: profile.email,
@@ -100,7 +116,7 @@ exports.googleCallback = async (req, res) => {
     <script>
       window.opener.postMessage(
         { token: "${token}" },
-        "http://localhost:5173"
+        "${process.env.FRONTEND_URL}"
       );
       window.close();
     </script>

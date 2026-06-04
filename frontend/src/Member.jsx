@@ -1,317 +1,289 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import logochurn from './assets/logo churn.png';
-// Pastikan icon ini sudah terinstall atau ganti dengan icon library pilihanmu
-import { IconUserCircle, IconBrandMyOppo, IconLogout2 } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom';
+import Header from './Header';
+import { useAuth } from '../utils/auth';
+import axios from 'axios';
+import Footer from './Footer';
 
 const Member = () => {
-    const [selectedPlan, setSelectedPlan] = useState("Growth Strategist");
-    const [isOpen, setIsOpen] = useState(false);
-    const navigate = useNavigate(); // Tambahkan ini
+    const user = useAuth();
+    const [selectedPlan, setSelectedPlan] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [tiersLoading, setTiersLoading] = useState(true);
+    const [tiersError, setTiersError] = useState(null);
+    const [pricingPlans, setPricingPlans] = useState([]);
+    const navigate = useNavigate();
 
+    // ─── Fetch tiers dari backend ────────────────────────────────────────────────
+    useEffect(() => {
+        const fetchTiers = async () => {
+            // Hanya tampilkan loading skeleton saat pertama kali load
+            if (pricingPlans.length === 0) setTiersLoading(true);
+            setTiersError(null);
+    
+            try {
+                const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/tier`);
+    
+                const tiers = Array.isArray(res.data)
+                    ? res.data
+                    : Array.isArray(res.data.data)
+                    ? res.data.data
+                    : [];
+    
+                const mapped = tiers.map((tier, index) => ({
+                    id: tier.id,
+                    title: tier.title,
+                    price:
+                        tier.price === 0
+                            ? "Free"
+                            : `Rp ${Number(tier.price).toLocaleString("id-ID")}`,
+                    rawPrice: tier.price,
+                    period: tier.price === 0 ? "Selamanya" : "per bulan",
+                    description: tier.description ?? "",
+                    features: Array.isArray(tier.descriptions)
+                        ? tier.descriptions
+                        : [],
+                    isBestSeller: index === 1,
+                }));
+    
+                setPricingPlans(mapped);
+    
+                // Jaga selectedPlan tetap valid jika title berubah
+                setSelectedPlan(prev => {
+                    const stillExists = mapped.find(
+                        p => p.title.toLowerCase() === prev?.toLowerCase()
+                    );
+                    if (stillExists) return prev; // tidak berubah
+                    return mapped[1]?.title ?? mapped[0]?.title ?? null;
+                });
+    
+            } catch (err) {
+                console.error("Gagal memuat data tier:", err);
+                setTiersError("Gagal memuat paket harga. Silakan coba lagi.");
+            } finally {
+                setTiersLoading(false);
+            }
+        };
+    
+        // Fetch pertama kali
+        fetchTiers();
+    
+        // Polling setiap 30 detik
+        const interval = setInterval(fetchTiers, 30_000);
+    
+        // Cleanup saat komponen unmount
+        return () => clearInterval(interval);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-    const pricingPlans = [
-        {
-            title: "Insight Enthusiast",
-            price: "Rp 149.000",
-            description: "Paket paling hemat untuk memahami perasaan pelanggan.",
-            features: [
-                "Analisis Sentimen NLP (Positif/Negatif/Netral).",
-                "Ringkasan topik otomatis.",
-                "Limit 1.000 baris teks/bulan."
-            ],
-            isBestSeller: false,
-        },
-        {
-            title: "Growth Strategist",
-            price: "Rp 499.000",
-            oldPrice: "Rp 549.900",
-            description: "Paket paling hemat untuk memahami perasaan pelanggan.",
-            features: [
-                "Prediksi yang akan berhenti berlangganan.",
-                "Fitur Email Marketing.",
-                "Skor loyalitas pelanggan.",
-                "Limit 50.000 profil pelanggan/bulan."
-            ],
-            isBestSeller: true,
-        },
-        {
-            title: "Intelligence Master",
-            price: "Rp 899.000",
-            description: "Paket paling hemat untuk memahami perasaan pelanggan.",
-            features: [
-                "Semua Fitur NLP + Semua Fitur Prediksi.",
-                "Analisis mendalam berdasarkan data sentimen.",
-                "Prioritas pemrosesan data (Lebih cepat).",
-                "Limit 100.000 profil & teks/bulan.",
-                "Dukungan konsultasi teknis."
-            ],
-            isBestSeller: false,
+    // ─── Handle klik tombol bayar / pilih paket ──────────────────────────────────
+    const handleSubscription = async (plan) => {
+        setLoading(true);
+        try {
+            navigate('/memberPayment', { state: { chosenPlan: plan } });
+        } catch (error) {
+            console.error('Gagal menghubungkan ke backend:', error);
+            alert('Terjadi kesalahan sistem, coba lagi nanti.');
+        } finally {
+            setLoading(false);
         }
-    ];
+    };
 
+    // ─── Render ──────────────────────────────────────────────────────────────────
     return (
-        <div className="min-h-screen bg-[#F9FAFB] font-['Plus_Jakarta_Sans',sans-serif] text-[#1F2937] flex flex-col">
+        <div className="min-h-screen bg-[#F9FAFB] font-['Plus_Jakarta_Sans',sans-serif] text-[#0F172A] flex flex-col relative overflow-x-hidden">
+
             {/* NAVBAR */}
-            <header className="h-20 bg-white border-b border-gray-100 flex items-center justify-between px-10 sticky top-0 z-[100]">
+            <div className="relative z-20 bg-white border-b border-slate-100 w-full px-4 sm:px-8 lg:px-12">
+                <Header formData={user} profileImg={user?.avatar} />
+            </div>
 
-                {/* KIRI: Logo */}
-                <div className="flex items-center">
-                    <img
-                        src={logochurn}
-                        alt="Logo Churn"
-                        className="h-14 w-auto object-contain cursor-pointer"
-                        onClick={() => window.location.href = '/'}
-                    />
-                </div>
+            {/* MAIN CONTENT SPLIT GRID */}
+            <main className="flex-1 w-full px-4 sm:px-8 lg:px-12 py-12 lg:py-16 relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center bg-[#F9FAFB]">
 
-                {/* KANAN: Navigasi & Profile */}
-                <div className="flex items-center gap-6">
-                    {/* Notification Bell */}
-                    <div className="w-10 h-10 border border-[#FEF5F6] rounded-xl flex items-center justify-center text-gray-500 cursor-pointer hover:bg-gray-50 transition-all group">
-                        <i className="ti ti-bell text-xl group-hover:shake"></i>
-                    </div>
-
-                    {/* User Profile Section */}
-                    <div className="relative">
-                        {/* Trigger Area */}
-                        <div
-                            className="flex items-center gap-3 pl-6 border-l border-gray-100 h-10 cursor-pointer group"
-                            onClick={() => setIsOpen(!isOpen)}
-                        >
-                            <img
-                                src="https://ui-avatars.com/api/?name=Zahrah+Purnama&background=D82F5A&color=fff&bold=true"
-                                className="w-10 h-10 rounded-xl object-cover shadow-sm"
-                                alt="avatar"
-                            />
-                            <div className="flex flex-col text-left leading-tight">
-                                <p className="text-sm font-semibold text-[#111827]">Hai, Zahrah Purnama</p>
-                                <p className="text-xs text-[#D82F5A]">zahrah.purnama@gmail.com</p>
-                            </div>
-                            <i className={`ti ti-chevron-down text-gray-400 text-sm ml-1 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}></i>
+                {/* LEFT COLUMN: HERO */}
+                <div className="lg:col-span-5 space-y-6 flex flex-col items-start text-left">
+                    <div className="space-y-4">
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#D82F5A]/15 text-[#D82F5A] text-[11px] font-semibold bg-[#FFF1F2] tracking-wider uppercase">
+                            <span className="w-1.5 h-1.5 bg-[#D82F5A] rounded-full animate-pulse"></span>
+                            Membership Plan 2026
                         </div>
 
-                        {/* Dropdown Menu */}
-                        {isOpen && (
-                            <>
-                                {/* Overlay: Pastikan z-index di bawah dropdown tapi di atas konten lain */}
-                                <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)}></div>
+                        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-slate-900 tracking-tight leading-[1.1]">
+                            Struktur harga <br className="hidden lg:block" />
+                            yang <span className="text-[#D82F5A]">terkurasi.</span>
+                        </h1>
 
-                                {/* Dropdown Container: z-50 agar di atas overlay */}
-                                <div className="absolute right-0 mt-4 w-72 bg-white rounded-[4px] shadow-[0px_10px_40px_rgba(0,0,0,0.15)] border border-gray-50 overflow-hidden animate-in fade-in zoom-in duration-200 z-50">
-                                    {/* Header Dropdown */}
-                                    <div className="p-5 flex items-center gap-4">
-                                        <div className="w-12 h-12 rounded-[4px] overflow-hidden bg-gray-100">
-                                            <img
-                                                src="https://ui-avatars.com/api/?name=Zahrah+Purnama&background=E0E0E0&color=9E9E9E&bold=true"
-                                                alt="profile"
-                                            />
-                                        </div>
-                                        <div className="flex flex-col text-left leading-tight">
-                                            <p className="text-sm font-semibold text-[#111827]">Zahrah Purnama</p>
-                                            <p className="text-xs text-[#D82F5A]">User</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="border-b border-gray-100 mx-5"></div>
-
-                                    {/* List Menu */}
-                                    <div className="p-2">
-                                        <div
-                                            onClick={() => window.location.href = '/Profile'}
-                                            className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-[#FEF5F6] text-gray-600 hover:text-[#D82F5A] cursor-pointer transition-all group"
-                                        >
-                                            <IconUserCircle stroke={1.5} size={20} />
-                                            <span className="text-sm font-medium">Profile</span>
-                                        </div>
-
-                                        <div
-                                            onClick={() => window.location.href = '/Member'}
-                                            className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-[#FEF5F6] text-gray-600 hover:text-[#D82F5A] cursor-pointer transition-all group"
-                                        >
-                                            <IconBrandMyOppo stroke={1.5} size={20} />
-                                            <span className="text-sm font-medium">Member</span>
-                                        </div>
-
-                                        <div className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-[#FEF5F6] text-gray-600 hover:text-[#D82F5A] cursor-pointer transition-all group">
-                                            <IconLogout2 stroke={1.5} size={20} />
-                                            <span className="text-sm font-medium">Keluar</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </>
-                        )}
+                        <p className="text-sm text-slate-500 leading-relaxed max-w-xl mt-8">
+                            Gunakan analitik prediktif berbasis AI untuk mengidentifikasi pelanggan yang berisiko pergi sebelum mereka melakukannya. Ambil tindakan tepat waktu dan tingkatkan nilai seumur hidup pelanggan anda.
+                        </p>
                     </div>
+
+                    {/* Trust Indicator */}
+                    <div className="pt-6 border-t border-slate-200/80 w-full max-w-xs flex items-center gap-4 text-slate-400">
+                        <div className="flex -space-x-2">
+                            <div className="w-7 h-7 rounded-full bg-slate-200 border-2 border-white flex items-center justify-center text-[9px] font-semibold text-slate-600">AI</div>
+                            <div className="w-7 h-7 rounded-full bg-[#FFF1F2] border-2 border-white flex items-center justify-center text-[9px] font-semibold text-[#D82F5A]">CRM</div>
+                        </div>
+                        <p className="text-[11px] font-semibold tracking-wide uppercase">Terintegrasi Sistem ChurnGuard</p>
+                    </div>
+
+                    <button
+                        onClick={() => navigate('/dashboardUser')}
+                        className="w-full sm:w-auto px-4 py-3 bg-black text-white rounded-[4px] hover:bg-zinc-900 active:scale-[0.99] transition-all text-xs shadow-md flex items-center justify-center gap-2 group mt-5"
+                    >
+                        <i className="ti ti-arrow-left text-sm group-hover:-translate-x-0.5 transition-transform"></i>
+                        Kembali ke dashboard
+                    </button>
                 </div>
-            </header>
 
-            {/* MAIN CONTENT WRAPPER */}
-            <main className="flex-grow">
-                {/* HEADER SECTION */}
-                <header className="py-16 text-center space-y-4 px-4">
-                    <motion.span
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="inline-block px-4 py-1.5 rounded-full border border-[#D82F5A] text-[#D82F5A] text-xs font-medium bg-[#FEF5F6]"
-                    >
-                        Harga Membership 2026!
-                    </motion.span>
+                {/* RIGHT COLUMN: TIER CARDS */}
+                <div className="lg:col-span-7 w-full">
 
-                    <motion.h1
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.1 }}
-                        className="text-3xl font-semibold text-gray-900 tracking-tight"
-                    >
-                        Struktur Harga yang Terkurasi
-                    </motion.h1>
+                    {/* ── Loading state ── */}
+                    {tiersLoading && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {[1, 2].map(i => (
+                                <div key={i} className="h-96 rounded-[4px] bg-slate-100 animate-pulse" />
+                            ))}
+                        </div>
+                    )}
 
-                    <motion.p
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.2 }}
-                        className="max-w-5xl mx-auto text-sm text-[#929191] leading-relaxed font-medium"
-                    >
-                        Gunakan analitik prediktif berbasis AI untuk mengidentifikasi pelanggan yang berisiko pergi sebelum mereka melakukannya. Ambil tindakan tepat waktu dan tingkatkan nilai seumur hidup pelanggan Anda.
-                    </motion.p>
-                </header>
-
-                {/* PRICING CARDS SECTION */}
-                <div className="max-w-7xl mx-auto px-8 grid grid-cols-1 md:grid-cols-3 gap-8 items-start pb-20">
-                    {pricingPlans.map((plan, index) => {
-                        const isSelected = selectedPlan === plan.title;
-
-                        return (
-                            <motion.div
-                                key={index}
-                                onClick={() => setSelectedPlan(plan.title)}
-                                initial={{ opacity: 0, y: 30 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: index * 0.1 }}
-                                whileHover={{ y: -10, transition: { duration: 0.2 } }}
-                                className={`relative p-8 bg-white border-2 rounded-[4px] transition-all cursor-pointer flex flex-col h-full ${isSelected ? 'border-[#D82F5A]' : 'border-[#EDEDED]'
-                                    }`}
+                    {/* ── Error state ── */}
+                    {!tiersLoading && tiersError && (
+                        <div className="flex flex-col items-center justify-center gap-4 py-16 text-center">
+                            <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center">
+                                <i className="ti ti-alert-circle text-[#D82F5A] text-xl"></i>
+                            </div>
+                            <p className="text-sm text-slate-500">{tiersError}</p>
+                            <button
+                                onClick={() => window.location.reload()}
+                                className="text-xs px-4 py-2 border border-slate-200 rounded-[4px] hover:bg-slate-50 transition-colors"
                             >
-                                {plan.isBestSeller && (
-                                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
-                                        {/* TAMBAHKAN 'border' dan 'border-[#D82F5A]' di bawah ini */}
-                                        <div className="border border-[#D82F5A] text-[#D82F5A] text-xs font-medium bg-[#FEF5F6] px-4 py-0.5 rounded-full shadow-sm flex items-center gap-1.5">
-                                            <div className="w-1 h-1 bg-[#D82F5A] rounded-full animate-pulse"></div>
-                                            {/* Hapus class bg dan text yang double di span agar bersih */}
-                                            <span className="font-medium">Recommended</span>
+                                Coba Lagi
+                            </button>
+                        </div>
+                    )}
+
+                    {/* ── Tier cards ── */}
+                    {!tiersLoading && !tiersError && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+                            {pricingPlans.map((plan, index) => {
+                                const isSelected = selectedPlan?.toLowerCase() === plan.title.toLowerCase();
+                                const isFree = plan.rawPrice === 0;
+
+                                return (
+                                    <motion.div
+                                        key={plan.id}
+                                        onClick={() => setSelectedPlan(plan.title)}
+                                        initial={{ opacity: 0, y: 30 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: index * 0.1, duration: 0.4 }}
+                                        whileHover={{ y: -6, transition: { duration: 0.2 } }}
+                                        className={`relative p-6 sm:p-8 bg-white border rounded-[4px] transition-all duration-300 cursor-pointer flex flex-col justify-between h-full group ${
+                                            isSelected
+                                                ? 'border-[#D82F5A] ring-1 ring-[#D82F5A] shadow-[0_20px_40px_rgba(216,47,90,0.04)]'
+                                                : 'border-[#EDEDED] hover:border-slate-300 shadow-[0_4px_12px_rgba(15,23,42,0.015)] hover:shadow-[0_10px_25px_rgba(15,23,42,0.03)]'
+                                        }`}
+                                    >
+                                        {/* Badge Rekomendasi */}
+                                        {plan.isBestSeller && (
+                                            <div className="absolute -top-3 right-5">
+                                                <span className="bg-[#D82F5A] text-white text-[9px] font-semibold px-2.5 py-1 rounded-[4px] shadow-sm tracking-wider uppercase inline-flex items-center gap-1">
+                                                    <i className="ti ti-star-filled text-[8px]"></i> Rekomendasi
+                                                </span>
+                                            </div>
+                                        )}
+
+                                        <div>
+                                            {/* Title badge */}
+                                            <div className="flex items-center justify-between mb-4">
+                                                <span className={`text-[10px] font-semibold uppercase tracking-widest px-2.5 py-0.5 rounded-[4px] ${
+                                                    isSelected ? 'bg-[#FFF1F2] text-[#D82F5A]' : 'bg-slate-100 text-slate-500'
+                                                }`}>
+                                                    {plan.title}
+                                                </span>
+                                            </div>
+
+                                            {/* Harga */}
+                                            <div className="space-y-1 mb-4">
+                                                <div className="flex items-baseline gap-1">
+                                                    <span className="text-3xl font-semibold text-slate-900 tracking-tight">
+                                                        {plan.price}
+                                                    </span>
+                                                    <span className="text-slate-400 text-xs font-semibold">/ {plan.period}</span>
+                                                </div>
+
+                                                <div className="h-5 flex items-center gap-2">
+                                                    {isFree ? (
+                                                        <span className="text-[11px] text-emerald-600 font-medium flex items-center gap-1">
+                                                            <i className="ti ti-circle-check-filled text-xs"></i> Full Access
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-[10px] bg-emerald-50 text-emerald-600 font-semibold px-1.5 py-0.5 rounded-[4px]">
+                                                            Berbayar
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {/* Deskripsi */}
+                                            {plan.description ? (
+                                                <p className="text-xs text-slate-400 font-medium leading-relaxed mb-6">
+                                                    {plan.description}
+                                                </p>
+                                            ) : (
+                                                <div className="mb-6" />
+                                            )}
+
+                                            <div className="h-px bg-slate-100 w-full mb-6"></div>
+
+                                            {/* Fitur-fitur */}
+                                            <ul className="space-y-3.5 mb-8">
+                                                {plan.features.length > 0
+                                                    ? plan.features.map((feature, i) => (
+                                                        <li key={i} className="flex items-start gap-2.5 text-left">
+                                                            <div className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#FFF1F2] text-[#D82F5A] mt-0.5">
+                                                                <i className="ti ti-check text-[10px] font-semibold"></i>
+                                                            </div>
+                                                            <span className="text-xs font-medium text-slate-600 leading-normal">
+                                                                {feature}
+                                                            </span>
+                                                        </li>
+                                                    ))
+                                                    : (
+                                                        <li className="text-xs text-slate-300 italic">Tidak ada fitur yang terdaftar.</li>
+                                                    )
+                                                }
+                                            </ul>
                                         </div>
-                                    </div>
-                                )}
 
-                                {/* Plan Info */}
-                                <div className="mb-8">
-                                    <h3 className="text-[#D82F5A] text-sm font-medium mb-3">
-                                        {plan.title}
-                                    </h3>
-                                    <div className="flex items-baseline gap-2 mb-2">
-                                        <span className="text-3xl font-bold text-gray-900 tracking-tight">{plan.price}</span>
-                                        <span className="text-gray-400 text-xs font-medium">/ Bulan</span>
-                                    </div>
-                                    {plan.oldPrice && (
-                                        <span className="text-sm text-gray-300 line-through font-medium">{plan.oldPrice}</span>
-                                    )}
-                                    <p className="text-[11px] text-gray-400 mt-2 leading-relaxed teks-xs">
-                                        {plan.description}
-                                    </p>
-                                </div>
-
-                                {/* Features List */}
-                                <div className="space-y-4 mb-10 flex-grow">
-                                    {plan.features.map((feature, i) => (
-                                        <div key={i} className="flex items-start gap-3">
-                                            <i className="ti ti-check text-[#D82F5A] mt-0.5 font-bold"></i>
-                                            <span className="text-xs font-medium text-gray-600 leading-relaxed">
-                                                {feature}
-                                            </span>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                {/* Button */}
-                                <motion.button
-                                    whileTap={{ scale: 0.95 }}
-                                    onClick={() => navigate('/memberPayment')} // Navigasi saat diklik
-                                    className="w-full bg-black text-white py-4 rounded-[4px]  font-medium text-sm hover:bg-gray-900 transition-colors shadow-lg shadow-black/5"
-                                >
-                                    Daftar Member
-                                </motion.button>
-                            </motion.div>
-                        );
-
-                    })}
+                                        {/* Tombol aksi */}
+                                        <motion.button
+                                            whileTap={{ scale: 0.98 }}
+                                            disabled={loading}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleSubscription(plan);
+                                            }}
+                                            className={`w-full py-3.5 rounded-[4px] font-medium text-xs transition-all tracking-wide border ${
+                                                isSelected
+                                                    ? 'bg-[#D82F5A] border-[#D82F5A] text-white hover:bg-[#b0264a] shadow-md shadow-[#D82F5A]/15'
+                                                    : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300'
+                                            } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                        >
+                                            {loading ? 'Processing...' : isSelected ? 'Lanjutkan Pembayaran' : 'Pilih Paket Ini'}
+                                        </motion.button>
+                                    </motion.div>
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
             </main>
 
             {/* FOOTER */}
-            <footer className="bg-white border-t border-gray-100 pt-12 px-10 flex-shrink-0">
-                <div className="max-w-[1400px] mx-auto grid md:grid-cols-4 gap-12 border-b border-gray-100 pb-8">
-
-                    {/* BRAND SECTION & SOCIALS */}
-                    <div className="space-y-8 text-left">
-                        <div className="space-y-6">
-                            <h3 className="text-2xl tracking-tight font-semibold">
-                                ChurnGuard <span className="text-[#D82F5A]">CRM</span>
-                            </h3>
-                            <p className="text-[#616161] text-sm leading-relaxed">
-                                Solusi cerdas menjaga loyalitas dan memperkuat hubungan pelanggan Anda secara berkelanjutan.
-                            </p>
-                        </div>
-
-                        {/* Social Media Icons moved here */}
-                        <div className="flex gap-4">
-                            {['brand-instagram', 'brand-x', 'brand-youtube'].map(s => (
-                                <div key={s} className="w-10 h-10 border border-[#D82F5A]/20 rounded-[4px] flex items-center justify-center text-[#D82F5A] hover:bg-[#D82F5A] hover:text-white hover:-translate-y-1 transition-all duration-300 cursor-pointer shadow-sm">
-                                    <i className={`ti ti-${s} text-lg`}></i>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* ADDRESS */}
-                    <div>
-                        <h4 className="text-sm mb-6 flex items-center gap-2 text-[#111827]">
-                            <i className="ti ti-map-pin text-[#D82F5A]"></i> Alamat
-                        </h4>
-                        <p className="text-[#616161] text-[13px] leading-relaxed">
-                            Gedung Perpustakaan PNJ, Beji, Depok, Jawa Barat 16425.
-                        </p>
-                    </div>
-
-                    {/* PHONE */}
-                    <div>
-                        <h4 className="text-sm mb-6 flex items-center gap-2 text-[#111827]">
-                            <i className="ti ti-phone text-[#D82F5A]"></i> No. Telepon
-                        </h4>
-                        <p className="text-[#616161] text-[13px] leading-relaxed">
-                            +62 21 727 0036
-                        </p>
-                    </div>
-
-                    {/* EMAIL */}
-                    <div>
-                        <h4 className="text-sm mb-6 flex items-center gap-2 text-[#111827]">
-                            <i className="ti ti-mail text-[#D82F5A]"></i> Email
-                        </h4>
-                        <p className="text-[#616161] text-[13px] underline underline-offset-8 decoration-[#D82F5A]/30 hover:text-[#D82F5A] transition-colors cursor-pointer">
-                            petisatukan@pnj.ac.id
-                        </p>
-                    </div>
-
-                </div>
-
-                {/* COPYRIGHT */}
-                <div className="bg-black py-6 -mx-10">
-                    <p className="text-center text-white text-sm opacity-70">
-                        © 2026 CHURNGUARD CRM. Hak Cipta Dilindungi Undang-Undang.
-                    </p>
-                </div>
-            </footer>
+            <Footer />
         </div>
     );
 };

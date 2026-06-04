@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNotif } from "./NotificationContext";
+
 import {
   IconLayoutDashboard,
   IconChartBar,
@@ -23,8 +25,14 @@ import { IconUserCircle } from '@tabler/icons-react';
 import { IconLogout2 } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import Header from './Header';
+import { useAuth } from '../utils/auth'
+import Sidebar from './SideBar';
+
 
 const Feedback = () => {
+  const { showNotif } = useNotif();
+  const user = useAuth()
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
   const [submitted, setSubmitted] = useState(false);
@@ -51,7 +59,7 @@ const Feedback = () => {
     try {
 
       const response = await axios.post(
-        'http://localhost:5000/feedback/sendFeed',
+        `${import.meta.env.VITE_BACKEND_URL}/feedback/sendFeed`,
         {
           topik: feedbackData.topik,
           subjek: feedbackData.subjek,
@@ -83,7 +91,10 @@ const Feedback = () => {
       setRating(0);
 
     } catch (error) {
-
+      showNotif(
+        "error",
+        error.response?.data?.message || "Upload gagal"
+      );
       console.log(error);
 
     }
@@ -93,133 +104,17 @@ const Feedback = () => {
     <div className="min-h-screen bg-white font-['Plus_Jakarta_Sans',sans-serif] text-[#111827] flex flex-col">
       <div className="flex flex-1">
         {/* SIDEBAR - Sharp 4px edges */}
-        <aside className="w-[280px] bg-white border-r border-gray-100 flex flex-col h-screen sticky top-0 z-20 font-['Plus_Jakarta_Sans',sans-serif]">
-          {/* Logo Section */}
-          <div className="pt-10 pb-4 flex flex-col items-center">
-            <div className="flex flex-col items-center mb-4">
-              <img
-                src={logochurn}
-                alt="logochurn"
-                className="w-28 h-auto" // Logo ukuran sedang (pas)
-              />
-            </div>
-            <div className="w-[85%] border-b border-gray-100"></div>
-          </div>
-
-          {/* Navigation Menu */}
-          <nav className="flex-1 px-4 space-y-2 mt-4">
-
-            {/* Dashboard - ACTIVE (Pakai ti-home) */}
-            <div
-              onClick={() => navigate('/dashboarduser')} // Arahkan ke path dashboard
-              className="text-[#E2A7B8] flex items-center gap-4 px-6 py-4 rounded-[4px] hover:bg-gray-50 cursor-pointer transition-all"
-            >
-              <i className="ti ti-home text-xl" style={{ WebkitTextStroke: '0.5px white', paintOrder: 'stroke fill' }}></i>
-              <span className="text-sm">Dashboard</span>
-            </div>
-            {/* Analisis Ulasan - INACTIVE */}
-            <div className="text-[#E2A7B8] flex items-center gap-4 px-6 py-4 rounded-[4px] hover:bg-gray-50 cursor-pointer transition-all">
-              <i className="ti ti-chart-bar text-xl" style={{ WebkitTextStroke: '0.5px white', paintOrder: 'stroke fill' }}></i>
-              <span className="text-sm">Analisis Ulasan</span>
-            </div>
-
-            {/* Riwayat Prediksi - INACTIVE */}
-            <div
-              onClick={() => navigate('/riwayatPrediksi')}
-              className="text-[#E2A7B8] flex items-center gap-4 px-6 py-4 rounded-[4px] hover:bg-gray-50 cursor-pointer transition-all">
-              <i className="ti ti-history text-xl" style={{ WebkitTextStroke: '0.5px white', paintOrder: 'stroke fill' }}></i>
-              <span className="text-sm">Riwayat Prediksi</span>
-            </div>
-
-
-            <div className="bg-[#FEF5F6] text-[#D82F5A] flex items-center gap-4 px-5 py-3 rounded-[4px] cursor-pointer transition-all">
-              <i className="ti ti-message text-xl" style={{ WebkitTextStroke: '0.5px white', paintOrder: 'stroke fill' }}></i>
-              <span className="text-sm">User Feedback</span>
-            </div>
-          </nav>
-        </aside>
+        <Sidebar></Sidebar>
 
         {/* MAIN CONTENT */}
         <main className="flex-1 flex flex-col min-w-0 bg-[#F9FAFB]">
           {/* TOPBAR - Full Stretch */}
-          <header className="h-20 bg-white border-b border-gray-100 flex items-center justify-end px-10 gap-6 sticky top-0 z-50]">
-
-            {/* Notification Bell */}
-            <div className="w-10 h-10 border border-[#FEF5F6] rounded-xl flex items-center justify-center text-gray-500 cursor-pointer hover:bg-gray-50 transition-all group">
-              <i className="ti ti-bell text-xl group-hover:shake"></i>
-            </div>
-
-            {/* User Profile Section dengan Dropdown */}
-            <div className="relative">
-              {/* Trigger Area */}
-              <div
-                className="flex items-center gap-3 pl-6 border-l border-gray-100 h-10 cursor-pointer group"
-                onClick={() => setIsOpen(!isOpen)}
-              >
-                <img
-                  src="https://ui-avatars.com/api/?name=Zahrah+Purnama&background=D82F5A&color=fff&bold=true"
-                  className="w-10 h-10 rounded-xl object-cover shadow-sm"
-                  alt="avatar"
-                />
-                <div className="flex flex-col text-left leading-tight">
-                  <p className="text-sm font-semibold text-[#111827]">Hai, Zahrah Purnama</p>
-                  <p className="text-xs text-[#D82F5A] ">zahrah.purnama@gmail.com</p>
-                </div>
-                <i className={`ti ti-chevron-down text-gray-400 text-sm ml-1 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}></i>
-              </div>
-
-              {/* Dropdown Menu (Sesuai Gambar) */}
-              {isOpen && (
-                <>
-                  {/* Overlay untuk menutup dropdown saat klik di luar */}
-                  <div className="fixed inset-0 z-[-1]" onClick={() => setIsOpen(false)}></div>
-
-                  <div className="absolute right-0 mt-4 w-72 bg-white rounded-[4px] shadow-[0px_10px_40px_rgba(0,0,0,0.08)] border border-gray-50 overflow-hidden animate-in fade-in zoom-in duration-200 z-50">
-
-                    {/* Header Dropdown */}
-                    <div className="p-5 flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-xl overflow-hidden bg-gray-100">
-                        <img
-                          src="https://ui-avatars.com/api/?name=Zahrah+Purnama&background=E0E0E0&color=9E9E9E&bold=true"
-                          alt="profile"
-                        />
-                      </div>
-                      <div className="flex flex-col text-left leading-tight">
-                        <p className="text-sm font-semibold text-[#111827]">Zahrah Purnama</p>
-                        <p className="text-xs text-[#D82F5A] ">User</p>
-                      </div>
-                    </div>
-
-                    <div className="border-b border-gray-100 mx-5"></div>
-
-                    {/* List Menu */}
-                    <div className="p-2">
-                      <div className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-[#FEF5F6] text-[#E2A7B8] cursor-pointer transition-all group">
-                        <IconUserCircle stroke={1.5} />
-                        <span className="text-sm ">Profile</span>
-                      </div>
-
-                      <div className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-[#FEF5F6] text-[#E2A7B8] cursor-pointer transition-all group">
-                        <IconBrandMyOppo stroke={1.5} />
-                        <span className="text-sm ">Member</span>
-                      </div>
-
-                      <div className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-[#FEF5F6] text-[#E2A7B8] cursor-pointer transition-all group">
-                        <IconLogout2 stroke={1.5} />
-                        <span className="text-sm ">Keluar</span>
-                      </div>
-                    </div>
-
-                  </div>
-                </>
-              )}
-            </div>
-          </header>
+          <Header formData={user} profileImg={user?.avatar} />
 
           {/* PAGE CONTENT */}
           <div className="p-8 w-full">
             <div className="mb-8">
-              <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Penilaian Pelanggan</h1>
+              <h1 className="text-xl font-semibold text-gray-900 tracking-tight">Penilaian Pelanggan</h1>
               <p className="text-sm text-gray-500 mt-1">Berikan feedback teknis untuk membantu optimalisasi algoritma AI kami.</p>
             </div>
 
@@ -342,9 +237,11 @@ const Feedback = () => {
                   <p className="text-xs text-gray-400 leading-relaxed mb-4">
                     Butuh bantuan integrasi data atau menemukan bug sistem?
                   </p>
-                  <button className="w-full py-2.5 bg-[#D82F5A] text-white text-xs rounded-[4px] hover:bg-[#b52448] transition-colors">
-                    Buka Tiket Bantuan
-                  </button>
+                  <a href="https://wa.me/08779999818" target="_blank" rel="noopener noreferrer">
+                    <button className="w-full py-2.5 bg-[#D82F5A] text-white text-xs rounded-[4px] hover:bg-[#b52448] transition-colors">
+                      Buka Tiket Bantuan
+                    </button>
+                  </a>
                 </div>
 
                 <div className="bg-white border border-gray-200 p-6 rounded-[4px]">

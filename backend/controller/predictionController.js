@@ -71,6 +71,16 @@ exports.getPrediction = async (req, res) => {
 
     const prediction_id = active[0].prediction_id;
 
+    const [detail_exsist] = await churnguard_con.query(`
+      select detail_id from prediction_detail where prediction_id = ? LIMIT 1
+    `, [prediction_id])
+
+    if (detail_exsist.length === 0) {
+      const [delete_active] = await churnguard_con.query(`
+        DELETE FROM prediction_list WHERE prediction_id = ?
+        `, [prediction_id])
+    }
+
     const [countResult] = await churnguard_con.query(
       `
             SELECT COUNT(*) as total
@@ -264,41 +274,51 @@ exports.analytics = async (req, res) => {
     }
 
     const prediction_id = active[0].prediction_id;
+    const filename_active = active[0].filename
 
-    // STATS
     const [stats] = await churnguard_con.query(
       `
-            SELECT
-                COUNT(*) as totalCustomer,
+SELECT
+    COUNT(*) AS totalCustomer,
 
-                SUM(
-                    CASE
-                        WHEN Risk = 'High'
-                        THEN 1
-                        ELSE 0
-                    END
-                ) as highRisk,
+    SUM(
+        CASE
+            WHEN Risk = 'High'
+            THEN 1
+            ELSE 0
+        END
+    ) AS highRisk,
 
-                SUM(
-                    CASE
-                        WHEN Prediction = 1
-                        THEN 1
-                        ELSE 0
-                    END
-                ) as churnCustomer,
+    SUM(
+        CASE
+            WHEN Prediction = 1
+            THEN 1
+            ELSE 0
+        END
+    ) AS churnCustomer,
 
-                ROUND(
-                    SUM(MonthlyCharges),
-                    2
-                ) as totalRevenue
+    ROUND(
+        SUM(MonthlyCharges),
+        2
+    ) AS totalRevenue,
 
-            FROM prediction_detail
-            WHERE prediction_id = ?
+    ROUND(
+        SUM(
+            CASE
+                WHEN Prediction = 1
+                THEN MonthlyCharges
+                ELSE 0
+            END
+        ),
+        2
+    ) AS churnRevenue
+
+FROM prediction_detail
+WHERE prediction_id = ?;
             `,
       [prediction_id]
     );
 
-    // PIE CHART
     const [risk] = await churnguard_con.query(
       `
             SELECT
@@ -311,7 +331,38 @@ exports.analytics = async (req, res) => {
       [prediction_id]
     );
 
-    // BAR CHART
+    const [genre] = await churnguard_con.query(
+      `
+      
+      SELECT GenrePreference, COUNT(*)
+FROM prediction_detail
+WHERE prediction_id = ?
+GROUP BY GenrePreference`, [prediction_id]
+    )
+
+
+    const [SubscriptionTypeChurn] = await churnguard_con.query(`
+SELECT
+    SubscriptionType AS subscription,
+
+    ROUND(SUM(MonthlyCharges), 2) AS totalRevenue,
+
+    ROUND(
+        SUM(
+            CASE
+                WHEN Prediction = 1
+                THEN MonthlyCharges
+                ELSE 0
+            END
+        ),
+        2
+    ) AS lostRevenue
+
+FROM prediction_detail
+WHERE prediction_id = ?
+GROUP BY SubscriptionType;
+      `, [prediction_id])
+
     const [subscription] = await churnguard_con.query(
       `
             SELECT
@@ -340,7 +391,6 @@ exports.analytics = async (req, res) => {
       [prediction_id]
     );
 
-    // SEGMENT INSIGHT
     const [segment] = await churnguard_con.query(
       `
             SELECT
@@ -374,8 +424,13 @@ exports.analytics = async (req, res) => {
 
       subscriptionVsChurn: subscription,
 
-      segmentInsight: segment
+      subscriptionRevenueLoss: SubscriptionTypeChurn,
 
+      genreInsight: genre,
+
+      segmentInsight: segment,
+
+      filename: filename_active,
     });
 
   } catch (err) {
@@ -556,3 +611,57 @@ exports.getPredictionDashboardHistory = async (req, res) => {
 
   }
 };
+
+exports.deletePrediction = async (req, res) => {
+
+  try {
+
+    const { id } = req.body;
+
+    if (!id) {
+      return res.status(400).json({
+        status: "error",
+        message: "ID wajib diisi"
+      });
+    }
+
+    const [checkData] = await churnguard_con.query(
+      `SELECT * FROM prediction_list
+             WHERE prediction_id = ?`,
+      [id]
+    );
+
+    if (checkData.length === 0) {
+      return res.status(404).json({
+        status: "error",
+        message: "Data tidak ditemukan"
+      });
+    }
+
+    await churnguard_con.query(
+      `DELETE FROM prediction_list
+             WHERE prediction_id = ?`,
+      [id]
+    );
+
+    await churnguard_con.query(
+      `DELETE FROM prediction_detail
+          WHERE prediction_id = ?`, [id]
+    )
+
+    return res.status(200).json({
+      status: "success",
+      message: "History berhasil dihapus"
+    });
+
+  } catch (err) {
+
+    console.log(err);
+
+    return res.status(500).json({
+      status: "error",
+      message: "Internal server error"
+    });
+  }
+};
+

@@ -52,9 +52,34 @@ const RiwayatPrediksi = () => {
         setIsModalOpen(true);
     };
 
-    const handleDelete = () => {
-        setDataHistory(dataHistory.filter(item => item.id !== selectedId));
-        setIsModalOpen(false);
+    const handleDelete = async () => {
+        try {
+
+            const token = localStorage.getItem("token");
+
+            const response = await axios.post(
+                `${import.meta.env.VITE_BACKEND_URL}/prediction/delete`,
+                {
+                    id: selectedId
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            console.log(response.data);
+
+            getHistory();
+
+            setIsModalOpen(false);
+
+            setSelectedId(null);
+
+        } catch (err) {
+            console.log(err);
+        }
     };
 
     useEffect(() => {
@@ -70,7 +95,7 @@ const RiwayatPrediksi = () => {
             const token = localStorage.getItem("token");
 
             const res = await axios.get(
-                "http://localhost:5000/prediction/history",
+                `${import.meta.env.VITE_BACKEND_URL}/prediction/history`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -156,14 +181,11 @@ const RiwayatPrediksi = () => {
 
                 {/* MAIN CONTENT */}
                 <main className="flex-1 flex flex-col min-w-0 bg-[#F9FAFB]">
-                    <Header
-                        formData={user}
-                        profileImg={user?.profileImg}
-                    />
+                    <Header formData={user} profileImg={user?.avatar} />
 
                     <div className="p-8 w-full">
                         <div className="mb-8">
-                            <h1 className="text-2xl font-semibold text-gray-900 ">Riwayat Prediksi</h1>
+                            <h1 className="text-xl font-semibold text-gray-900 ">Riwayat Prediksi</h1>
                             <p className="text-sm text-gray-500 mt-1 leading-relaxed">
                                 Arsip lengkap seluruh hasil prediksi yang pernah dilakukan di sistem ChurnGuard.
                             </p>
@@ -282,11 +304,7 @@ const RiwayatPrediksi = () => {
                                                 <div className="grid grid-cols-2 gap-3">
 
                                                     <button
-                                                        onClick={() =>
-                                                            navigate(
-                                                                `/dashboardhistory?prediction_id=${item.prediction_id}`
-                                                            )
-                                                        }
+                                                        onClick={() => openConfirmModal(item.prediction_id)}
                                                         className="bg-white border border-[#D82F5A] text-[#D82F5A] py-2.5 rounded-[4px] text-xs font-medium hover:bg-pink-50 transition-all"
                                                     >
                                                         Hapus

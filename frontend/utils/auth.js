@@ -44,11 +44,10 @@ export const useAuth = (options = {}) => {
           return;
         }
 
-        // VALIDASI SERVER OPTIONAL
         if (validateServer) {
 
           await axios.get(
-            "http://localhost:5000/test/ping",
+            `${import.meta.env.VITE_BACKEND_URL}/test/ping`,
             {
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -57,10 +56,8 @@ export const useAuth = (options = {}) => {
           );
 
         }
-
-        // AMBIL DATA USER DARI DB
-        const res = await axios.get(
-          "http://localhost:5000/auth/me",
+         const res = await axios.get(
+          `${import.meta.env.VITE_BACKEND_URL}/auth/me`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

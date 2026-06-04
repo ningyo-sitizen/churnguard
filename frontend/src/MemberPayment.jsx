@@ -1,69 +1,62 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import axios from 'axios';
 import {
-  IconChevronDown,
-  IconChevronUp,
-  IconBell,
-  IconQrcode,
-  IconBrandInstagram,
-  IconBrandX,
-  IconBrandYoutube,
-  IconMapPin,
   IconChevronRight,
-  IconPhone,
-  IconMail
+  IconCreditCard,
+  IconShieldCheck,
+  IconCircleCheck,
+  IconCalendarEvent,
+  IconSparkles,
+  IconArrowUpRight
 } from '@tabler/icons-react';
-import logoDana from './assets/dana.png';
-import logoOvo from './assets/ovo.png';
-import logoShopee from './assets/shopeepay.png';
-import logochurn from './assets/logo churn.png';
-import unggahdata from './assets/unggahdata.png';
-import { IconBrandMyOppo } from '@tabler/icons-react';
-import { IconUserCircle } from '@tabler/icons-react';
-import { IconLogout2 } from '@tabler/icons-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from "../utils/auth";
+import Header from './Header';
+import Footer from './Footer';
+import LoadingOverlay from './LoadingOverlay';
+
 
 const MemberPayment = () => {
-  // Data Master Paket
-  const plans = [
-    { id: 1, title: "Paket Premium Growth Strategist", duration: "1 Bulan", price: 499000, oldPrice: 549900 },
-    { id: 2, title: "Paket Insight Enthusiast", duration: "3 Bulan", price: 199000, oldPrice: 549900 },
-    { id: 3, title: "Paket Intelligence Master", duration: "3 Bulan", price: 949000, oldPrice: 1049000 }
-  ];
+  const user = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  // State
-  const [selectedPlan, setSelectedPlan] = useState(plans[0]);
-  const [isEWalletOpen, setIsEWalletOpen] = useState(true); // Default open agar terlihat
-  const [selectedWallet, setSelectedWallet] = useState('Shopee Pay');
-  const [isPromoActive, setIsPromoActive] = useState(false);
-  const [linkedWallets, setLinkedWallets] = useState(['Shopee Pay']);
-  const [isOpen, setIsOpen] = useState(false);
+  // ─── Ambil data plan yang dipilih dari Member.jsx ─────────────────────────────
+  // Member.jsx sudah kirim: navigate('/memberPayment', { state: { chosenPlan: plan } })
+  const chosenPlan = location.state?.chosenPlan;
 
-  const togglePromo = () => {
-    if (!isPromoActive) {
-      // Aktifkan Promo
-      setSelectedPlan({
-        ...plans[0],
-        duration: "3 Bulan",
-        price: 549000,
-        title: "Paket Premium Growth Strategist (Promo)"
-      });
-      setIsPromoActive(true);
-    } else {
-      // Balik ke Normal
-      setSelectedPlan(plans[0]);
-      setIsPromoActive(false);
-    }
-  };
+  // Fallback jika user akses halaman ini langsung tanpa memilih plan
+  if (!chosenPlan) {
+    return (
+      <div className="min-h-screen bg-[#F9FAFB] font-['Plus_Jakarta_Sans',sans-serif] flex flex-col">
+        <div className="relative z-20 bg-white border-b border-slate-100 w-full px-4 sm:px-8 lg:px-12">
+          <Header formData={user} profileImg={user?.avatar} />
+        </div>
+        <div className="flex-1 flex flex-col items-center justify-center gap-4 text-center px-4">
+          <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center">
+            <IconCreditCard size={24} className="text-[#D82F5A]" />
+          </div>
+          <p className="text-sm font-semibold text-slate-700">Tidak ada paket yang dipilih.</p>
+          <p className="text-xs text-slate-400">Silakan pilih paket terlebih dahulu dari halaman Member.</p>
+          <button
+            onClick={() => navigate('/member')}
+            className="mt-2 px-5 py-2.5 bg-black text-white text-xs rounded-[4px] hover:bg-zinc-800 transition-all"
+          >
+            Kembali ke Halaman Member
+          </button>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
-  const wallets = [
-    { name: 'Dana', cashback: '35%', logo: logoDana },
-    { name: 'OVO', cashback: '15%', logo: logoOvo },
-    { name: 'Shopee Pay', cashback: '50%', logo: logoShopee },
-  ];
-
+  // ─── Data dari plan yang dipilih ──────────────────────────────────────────────
+  // chosenPlan berisi: { id, title, price (string "Rp 499.000"), rawPrice (number), period, features, description, ... }
+  const isFree = chosenPlan.rawPrice === 0;
+  const [loading, setLoading] = useState(false);
+  const [isLoading, setisLoading] = useState(false);
   const handleConnect = (walletName) => {
-    // Simulasi loading sebentar
+
     alert(`Menghubungkan ke ${walletName}...`);
 
     if (!linkedWallets.includes(walletName)) {
@@ -71,426 +64,272 @@ const MemberPayment = () => {
     }
   };
 
-  // Helper untuk mendapatkan logo yang sedang terpilih di Ringkasan
-  const getSelectedLogo = () => {
-    if (selectedWallet === 'QRIS') return <IconQrcode size={14} className="text-gray-600" />;
-    const wallet = wallets.find(w => w.name === selectedWallet);
-    // Sekarang tinggal panggil wallet.logo yang isinya sudah variabel import
-    return wallet ? <img src={wallet.logo} alt="" className="w-4 h-4 object-contain" /> : null;
+  const handlePayment = async () => {
+
+    console.log("BUTTON CLICKED");
+
+    try {
+      
+      console.log("START REQUEST");
+
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/api/payment/create-transaction`,
+        {
+          name: user?.name,
+          email: user?.email,
+          amount: Number(chosenPlan.rawPrice),
+          plan: chosenPlan.title,
+          payment: "qris"
+        }
+      );
+
+      console.log("RESPONSE MASUK");
+      console.log(response);
+
+      const token = response.data.token;
+
+      window.snap.pay(token, {
+
+        onSuccess: function (result) {
+
+          console.log("PAYMENT SUCCESS");
+          console.log(result);
+
+          alert("Pembayaran berhasil!");
+          navigate("/profile")
+        },
+
+        onPending: function (result) {
+
+          console.log("PAYMENT PENDING");
+          console.log(result);
+
+          alert("payment cancel");
+        },
+
+        onError: function (result) {
+
+          console.log("PAYMENT ERROR");
+          console.log(result);
+
+          alert("Pembayaran gagal");
+        },
+
+        onClose: async function () {
+
+          console.log("USER CLOSED POPUP");
+
+          try {
+
+            await axios.post(
+              `${import.meta.env.VITE_BACKEND_URL}/api/payment/cancel-payment`,
+              {
+                order_id: response.data.order_id
+              }
+            );
+
+            console.log("STATUS UPDATED TO CANCEL");
+
+          } catch (err) {
+
+            console.log("CANCEL ERROR");
+            console.log(err);
+          }
+
+          alert("Pembayaran dibatalkan");
+        }
+      });
+
+    } catch (err) {
+
+      console.log("ERROR:");
+      console.log(err);
+    }
   };
 
+  // Tanggal transaksi dinamis
+  const today = new Date().toLocaleDateString('id-ID', {
+    day: 'numeric', month: 'long', year: 'numeric'
+  });
+
   return (
-    <div className="min-h-screen bg-[#F9FAFB] font-['Plus_Jakarta_Sans',sans-serif] text-[#1F2937]">
-      {/* NAVBAR */}
-      {/* Tambahkan justify-between dan z-index yang sangat tinggi (z-50 atau lebih) */}
-      <header className="h-20 bg-white border-b border-gray-100 flex items-center justify-between px-10 sticky top-0 z-[100]">
+    <div className="min-h-screen bg-[#F9FAFB] font-['Plus_Jakarta_Sans',sans-serif] text-[#0F172A] flex flex-col relative overflow-x-hidden">
 
-        {/* KIRI: Logo */}
-        <div className="flex items-center">
-          <img
-            src={logochurn}
-            alt="Logo Churn"
-            className="h-14 w-auto object-contain cursor-pointer"
-            onClick={() => window.location.href = '/'}
-          />
-        </div>
+      {/* HEADER */}
+      <div className="relative z-20 bg-white border-b border-slate-100 w-full px-4 sm:px-8 lg:px-12">
+        <Header formData={user} profileImg={user?.avatar} />
+      </div>
 
-        {/* KANAN: Navigasi & Profile */}
-        <div className="flex items-center gap-6">
-          {/* Notification Bell */}
-          <div className="w-10 h-10 border border-[#FEF5F6] rounded-xl flex items-center justify-center text-gray-500 cursor-pointer hover:bg-gray-50 transition-all group">
-            <i className="ti ti-bell text-xl group-hover:shake"></i>
-          </div>
+      {/* MAIN */}
+      <main className="flex-1 w-full px-4 sm:px-8 lg:px-12 pt-6 lg:pt-8 pb-14 relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start bg-[#F9FAFB]">
 
-          {/* User Profile Section */}
-          <div className="relative">
-            {/* Trigger Area */}
-            <div
-              className="flex items-center gap-3 pl-6 border-l border-gray-100 h-10 cursor-pointer group"
-              onClick={() => setIsOpen(!isOpen)}
-            >
-              <img
-                src="https://ui-avatars.com/api/?name=Zahrah+Purnama&background=D82F5A&color=fff&bold=true"
-                className="w-10 h-10 rounded-xl object-cover shadow-sm"
-                alt="avatar"
-              />
-              <div className="flex flex-col text-left leading-tight">
-                <p className="text-sm font-semibold text-[#111827]">Hai, Zahrah Purnama</p>
-                <p className="text-xs text-[#D82F5A]">zahrah.purnama@gmail.com</p>
-              </div>
-              <i className={`ti ti-chevron-down text-gray-400 text-sm ml-1 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}></i>
-            </div>
-
-            {/* Dropdown Menu */}
-            {isOpen && (
-              <>
-                {/* Overlay: Pastikan z-index di bawah dropdown tapi di atas konten lain */}
-                <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)}></div>
-
-                {/* Dropdown Container: z-50 agar di atas overlay */}
-                <div className="absolute right-0 mt-4 w-72 bg-white rounded-[4px] shadow-[0px_10px_40px_rgba(0,0,0,0.15)] border border-gray-50 overflow-hidden animate-in fade-in zoom-in duration-200 z-50">
-                  {/* Header Dropdown */}
-                  <div className="p-5 flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-[4px] overflow-hidden bg-gray-100">
-                      <img
-                        src="https://ui-avatars.com/api/?name=Zahrah+Purnama&background=E0E0E0&color=9E9E9E&bold=true"
-                        alt="profile"
-                      />
-                    </div>
-                    <div className="flex flex-col text-left leading-tight">
-                      <p className="text-sm font-semibold text-[#111827]">Zahrah Purnama</p>
-                      <p className="text-xs text-[#D82F5A]">User</p>
-                    </div>
-                  </div>
-
-                  <div className="border-b border-gray-100 mx-5"></div>
-
-                  {/* List Menu */}
-                  <div className="p-2">
-                    <div
-                      onClick={() => window.location.href = '/Profile'}
-                      className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-[#FEF5F6] text-gray-600 hover:text-[#D82F5A] cursor-pointer transition-all group"
-                    >
-                      <IconUserCircle stroke={1.5} size={20} />
-                      <span className="text-sm font-medium">Profile</span>
-                    </div>
-
-                    <div
-                      onClick={() => window.location.href = '/Member'}
-                      className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-[#FEF5F6] text-gray-600 hover:text-[#D82F5A] cursor-pointer transition-all group"
-                    >
-                      <IconBrandMyOppo stroke={1.5} size={20} />
-                      <span className="text-sm font-medium">Member</span>
-                    </div>
-
-                    <div className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-[#FEF5F6] text-gray-600 hover:text-[#D82F5A] cursor-pointer transition-all group">
-                      <IconLogout2 stroke={1.5} size={20} />
-                      <span className="text-sm font-medium">Keluar</span>
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      </header>
-      {/* MAIN CONTENT */}
-      <main className="max-w-[1600px] mx-auto px-10 py-8 grid grid-cols-12 gap-8">
-
-        {/* LEFT SECTION */}
-        <div className="col-span-8 space-y-6">
-          <div>
-            <div>
-              <h2 className="text-xl font-semibold text-gray-800 mb-1 tracking-tight">
-                Pembayaran
-              </h2>
-
-              {/* BREADCRUMBS */}
-              <div className="flex items-center gap-2 mb-6">
-                <span
-                  onClick={() => window.location.href = '/Member'}
-                  className="text-xs  text-gray-400 cursor-pointer hover:text-[#D82F5A] transition-colors"
-                >
-                  Member
-                </span>
-
-                <IconChevronRight size={15} className="text-gray-300" />
-
-                <span className="text-xs text-[#D82F5A] ">
-                  Pembayaran
-                </span>
-              </div>
-            </div>
-            <div className="bg-white border border-gray-100 rounded-[4px] p-6 mb-4 shadow-sm">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="text-[#D82F5A] text-lg font-semibold">{selectedPlan.title}</h3>
-                  <p className="text-gray-400 text-xs font-medium">{selectedPlan.duration}</p>
-                </div>
-                <div className="text-right">
-                  <div className="flex items-baseline gap-1 justify-end">
-                    <span className="text-xl font-semibold">Rp {selectedPlan.price.toLocaleString('id-ID')}</span>
-                    <span className="text-gray-400 text-xs font-medium">/ Bulan</span>
-                  </div>
-                  <div className="flex items-center gap-2 justify-end">
-                    <span className="text-xs text-green-600 px-1.5 py-0.5 font-medium">Diskon 10%</span>
-                    <span className="text-gray-300 line-through text-xs font-medium">Rp {selectedPlan.oldPrice.toLocaleString('id-ID')}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-5 bg-[#FEF5F6] border border-[#D82F5A]/5 rounded-[4px] p-3 flex justify-center items-center gap-2">
-                <p className="text-xs font-medium text-gray-600 text-center">
-                  {isPromoActive
-                    ? "Promo 3 bulan telah diaktifkan! Ingin kembali ke paket awal?"
-                    : "Apakah Anda ingin mengubah paket yang lain menjadi 3 bulan hanya dengan tambahan RP 50.000?"
-                  }
-                </p>
-                <button
-                  onClick={togglePromo}
-                  className={`text-xs font-medium hover:underline flex-shrink-0 ${isPromoActive ? 'text-gray-500' : 'text-[#D82F5A]'}`}
-                >
-                  {isPromoActive ? 'Cancel' : 'Ganti'}
-                </button>
-              </div>
-
-              <div className="mt-1 space-y-4 pt-6">
-                {plans.slice(1).map((plan) => (
-                  <div
-                    key={plan.id}
-                    onClick={() => {
-                      // Jika yang diklik adalah paket yang sudah terpilih, balikkan ke plans[0]
-                      // Jika bukan, maka pilih paket tersebut
-                      if (selectedPlan.id === plan.id) {
-                        setSelectedPlan(plans[0]);
-                        setIsPromoActive(false); // Pastikan status promo juga mati kalau balik ke awal
-                      } else {
-                        setSelectedPlan(plan);
-                        setIsPromoActive(false); // Matikan status promo jika pilih paket manual
-                      }
-                    }}
-                    className={`flex justify-between items-center p-3 cursor-pointer border rounded-[4px] transition-all ${selectedPlan.id === plan.id
-                      ? 'border-[#D82F5A] bg-[#FEF5F6]/30 shadow-sm'
-                      : 'border-[#ededed] hover:bg-gray-50'
-                      }`}
-                  >
-                    <div>
-                      <h4 className={`font-medium text-xs ${selectedPlan.id === plan.id ? 'text-[#D82F5A]' : 'text-gray-700'}`}>
-                        {plan.title}
-                      </h4>
-                      <p className="text-xs text-gray-400">{plan.duration}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-xs text-gray-700">
-                        Rp {plan.price.toLocaleString('id-ID')} <span className="text-gray-400 font-normal">/ Bulan</span>
-                      </p>
-                      <p className="text-gray-300 line-through text-[9px]">
-                        Rp {plan.oldPrice.toLocaleString('id-ID')}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* PAYMENT METHOD SECTION - UPDATED */}
-          <div>
-            <h2 className="text-base font-semibold text-gray-800 mb-4 tracking-tight">Metode Pembayaran</h2>
-            <div className="bg-white border border-gray-100 rounded-[4px] overflow-hidden shadow-sm">
-              <div
-                className="p-4 flex justify-between items-center cursor-pointer hover:bg-gray-50"
-                onClick={() => setIsEWalletOpen(!isEWalletOpen)}
+        {/* KIRI */}
+        <div className="lg:col-span-8 space-y-6 w-full">
+          <div className="w-full flex flex-col items-start">
+            <h2 className="text-xl font-semibold text-slate-900 tracking-tight leading-none">
+              Detail Langganan
+            </h2>
+            <div className="flex items-center gap-1.5 mt-3 font-medium text-xs">
+              <span
+                onClick={() => navigate('/member')}
+                className="text-slate-400 cursor-pointer hover:text-[#D82F5A] transition-colors"
               >
-                <span className="font-semibold text-xs ">E-Wallet</span>
-                {isEWalletOpen ? <IconChevronUp size={16} /> : <IconChevronDown size={16} />}
-              </div>
-
-              <AnimatePresence>
-                {isEWalletOpen && (
-                  <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} className="overflow-hidden bg-gray-50/30 border-t border-gray-50">
-                    {wallets.map((wallet) => (
-                      <div
-                        key={wallet.name}
-                        className="p-4 px-6 flex justify-between items-center border-b border-gray-50 last:border-b-0 hover:bg-white cursor-pointer transition-all"
-                        onClick={() => setSelectedWallet(wallet.name)}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-13 h-13  rounded-[4px] p-2 flex items-center justify-center">
-                            <img src={wallet.logo} alt={wallet.name} className="max-h-full max-w-full object-contain" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-semibold">{wallet.name}</p>
-                            <p className="text-[9px] text-gray-400 font-medium">Cashback {wallet.cashback}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-4">
-                          <div className="flex items-center gap-4">
-
-                            {/* Radio Button Indikator (CUKUP SATU INI SAJA) */}
-                            <div className="flex items-center gap-4">
-                              {/* 1. Logika Teks: Sambungkan vs Tersambung */}
-                              {!linkedWallets.includes(wallet.name) ? (
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleConnect(wallet.name);
-                                  }}
-                                  className="text-xs text-[#929191]  hover:underline active:opacity-70 transition-all"
-                                >
-                                  Sambungkan
-                                </button>
-                              ) : (
-                                <div className="flex items-center gap-1.5">
-                                  <span className="text-xs text-[#D82F5A] tracking-tight">
-                                    Tersambung
-                                  </span>
-                                </div>
-                              )}
-
-                              {/* 2. Radio Button: HANYA SATU DIV INI SAJA */}
-                              <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all 
-    ${!linkedWallets.includes(wallet.name)
-                                  ? 'bg-gray-50 border-gray-100 cursor-not-allowed'
-                                  : selectedWallet === wallet.name
-                                    ? 'border-[#D82F5A] bg-white'
-                                    : 'border-gray-200 bg-white'
-                                }`}
-                              >
-                                {/* Titik pink hanya muncul jika SUDAH tersambung DAN dipilih */}
-                                {selectedWallet === wallet.name && linkedWallets.includes(wallet.name) && (
-                                  <div className="w-2 h-2 bg-[#D82F5A] rounded-full" />
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              <div
-                className="p-4 px-6 flex justify-between items-center border-t border-gray-50 cursor-pointer hover:bg-gray-50 transition-all"
-                onClick={() => setSelectedWallet('QRIS')}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 border border-gray-100 rounded-[4px] flex items-center justify-center bg-white text-gray-500 shadow-sm">
-                    <IconQrcode size={22} />
-                  </div>
-                  <span className="text-sm font-semibold">QRIS</span>
-                </div>
-                <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${selectedWallet === 'QRIS' ? 'border-[#D82F5A]' : 'border-gray-200'}`}>
-                  {selectedWallet === 'QRIS' && <div className="w-2 h-2 bg-[#D82F5A] rounded-full" />}
-                </div>
-              </div>
+                Member
+              </span>
+              <IconChevronRight size={14} className="text-slate-300" />
+              <span className="text-[#D82F5A]">Pembayaran</span>
             </div>
           </div>
-        </div>
 
-        {/* SIDEBAR (RINGKASAN) - UPDATED WITH LOGO */}
-        <div className="col-span-4">
-          <div className="bg-white border border-gray-100 rounded-[4px] p-6 shadow-sm sticky top-24">
-            <h3 className="font-semibold text-base mb-6  border-b border-gray-50 pb-4">Ringkasan Pembelian</h3>
+          {/* DETAIL PACK CARD */}
+          <div className="w-full bg-white border border-[#EDEDED] rounded-[4px] p-6 sm:p-8 shadow-[0_4px_20px_rgba(15,23,42,0.015)] relative overflow-hidden">
 
-            <div className="space-y-3 mb-6">
+            <div className="w-full flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 border-b border-slate-100 pb-6">
+              <div className="space-y-3">
+                <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-[4px] bg-[#FFF1F2] text-[#D82F5A]">
+                  PAKET PILIHAN ANDA
+                </span>
+                {/* ── Nama paket dari data tier ── */}
+                <h3 className="text-slate-900 text-base font-semibold tracking-tight">
+                  {chosenPlan.title}
+                </h3>
+                <div className="flex items-center gap-2 text-slate-400 text-xs font-medium">
+                  <IconCalendarEvent size={14} className="text-slate-400" />
+                  <span>Masa Aktif: {chosenPlan.period}</span>
+                </div>
+              </div>
+
+              <div className="w-full sm:w-auto text-left sm:text-right">
+                {/* ── Harga dari data tier ── */}
+                <span className="text-xl font-semibold text-slate-950 tracking-tight">
+                  {isFree ? 'Gratis' : `Rp ${Number(chosenPlan.rawPrice).toLocaleString('id-ID')}`}
+                </span>
+                <span className="text-slate-400 text-xs font-medium"> / {chosenPlan.period}</span>
+              </div>
+            </div>
+
+            {/* FITUR dari descriptions di DB */}
+            <div className="pt-6 w-full">
+              <h4 className="text-xs font-semibold text-slate-900 uppercase tracking-wider mb-4">
+                Fitur Yang Anda Dapatkan:
+              </h4>
+              {chosenPlan.features?.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+                  {chosenPlan.features.map((feature, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between text-xs text-slate-600 font-medium w-full bg-slate-50/50 p-2.5 border border-slate-100 rounded-[4px]"
+                    >
+                      <span>{feature}</span>
+                      <IconCircleCheck size={16} className="text-emerald-500 shrink-0 ml-2" />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-slate-300 italic">Tidak ada fitur terdaftar.</p>
+              )}
+            </div>
+          </div>
+
+          {/* STEP AKTIVASI */}
+          <div className="w-full bg-white border border-[#EDEDED] rounded-[4px] p-5 shadow-[0_4px_20px_rgba(15,23,42,0.015)]">
+            <h4 className="text-xs font-semibold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
+              <IconSparkles size={16} className="text-[#D82F5A]" />
+              3 Langkah Mudah Aktivasi Akun Premium
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {[
-                { label: 'Transaction ID', value: '83636116273890091' },
-                { label: 'Name', value: 'Zahrah Purnama' },
-                { label: 'Paket', value: selectedPlan.title.replace('Paket ', '') },
-                { label: 'Durasi', value: selectedPlan.duration },
-                { label: 'Tanggal Pembelian', value: '03 Mei 2026' },
-                { label: 'Tanggal Tenggat', value: selectedPlan.duration === "3 Bulan" ? '03 Ags 2026' : '03 Jun 2026' },
+                { num: '01', title: 'Bayar Tagihan', desc: 'Klik tombol bayar sekarang dan selesaikan transaksi via e-wallet atau QRIS di pop-up.' },
+                { num: '02', title: 'Verifikasi Instan', desc: 'Sistem Midtrans akan memverifikasi dana Anda secara otomatis tanpa bukti transfer.' },
+                { num: '03', title: 'Buka Akses AI', desc: 'Akun premium otomatis aktif saat itu juga dan fitur langsung terbuka penuh.' },
+              ].map(step => (
+                <div key={step.num} className="flex gap-3 items-start">
+                  <span className="text-lg font-bold text-slate-200 font-mono leading-none pt-0.5">{step.num}</span>
+                  <div>
+                    <h5 className="text-xs font-semibold text-slate-800">{step.title}</h5>
+                    <p className="text-[11px] text-slate-400 mt-1 leading-normal">{step.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* SECURITY NOTE */}
+          <div className="w-full flex items-center gap-3 border border-[#EDEDED] bg-white p-4 rounded-[4px]">
+            <div className="w-9 h-9 rounded-[4px] bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+              <IconShieldCheck size={20} />
+            </div>
+            <div className="text-left">
+              <h5 className="text-xs font-semibold text-slate-900">Enkripsi Midtrans 256-bit</h5>
+              <p className="text-[11px] text-slate-400 font-medium">Data transaksi Anda dilindungi dengan standar keamanan perbankan global terenkripsi.</p>
+            </div>
+          </div>
+        </div>
+
+        {/* KANAN - INVOICE */}
+        <div className="lg:col-span-4 w-full lg:sticky lg:top-24">
+          <div className="w-full bg-black text-white rounded-[4px] p-6 sm:p-8 shadow-[0_20px_40px_rgba(0,0,0,0.15)] space-y-6">
+
+            <h3 className="w-full font-semibold text-base text-white border-b border-slate-800 pb-4 flex items-center gap-2">
+              <IconCreditCard size={18} className="text-[#D82F5A]" />
+              Ringkasan Pembelian
+            </h3>
+
+            <div className="space-y-4 w-full">
+              {[
+                { label: 'Nama Pengguna', value: user?.name ?? user?.username ?? user?.full_name ?? user?.email ?? 'User Pelanggan' },
+                { label: 'Paket', value: chosenPlan.title },
+                { label: 'Masa Aktif', value: chosenPlan.period },
+                { label: 'Metode Pembayaran', value: isFree ? 'Gratis' : 'E-Wallet / Midtrans' },
+                { label: 'Tanggal Transaksi', value: today },
               ].map((item, idx) => (
-                <div key={idx} className="flex justify-between text-xs">
-                  <span className="text-[#9f9f9f]">{item.label}</span>
-                  <span className="text-gray-800">{item.value}</span>
+                <div key={idx} className="flex justify-between items-start text-xs w-full gap-2">
+                  <span className="text-slate-400 font-medium shrink-0">{item.label}</span>
+                  <span className="text-slate-200 font-semibold text-right">{item.value}</span>
                 </div>
               ))}
             </div>
 
-            <div className="space-y-3 pt-4 border-t border-dashed border-gray-200">
-              <div className="flex justify-between text-xs">
-                <span className="text-gray-400">Harga Awal</span>
-                <span className="text-gray-700 ">Rp {selectedPlan.oldPrice.toLocaleString('id-ID')}</span>
-              </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-gray-400">Potongan Diskon</span>
-                <span className="text-[#D82F5A] ">-Rp {(selectedPlan.oldPrice - selectedPlan.price).toLocaleString('id-ID')}</span>
-              </div>
-              <div className="flex justify-between text-sm pt-2 border-t border-gray-50 mt-2">
-                <span className="font-medium text-gray-500 text-xs">Total Harga</span>
-                <span className="text-black font-semibold">Rp {selectedPlan.price.toLocaleString('id-ID')}</span>
+            {/* TOTAL */}
+            <div className="pt-5 border-t border-dashed border-slate-800 space-y-3.5 w-full">
+              <div className="flex justify-between items-center pt-3 border-t border-slate-900 w-full">
+                <span className="text-xs font-semibold text-slate-400">Total Tagihan</span>
+                <span className="text-xl font-semibold text-white tracking-tight">
+                  {isFree ? 'Gratis' : `Rp ${Number(chosenPlan.rawPrice).toLocaleString('id-ID')}`}
+                </span>
               </div>
             </div>
 
-            {/* METODE PEMBAYARAN RINGKASAN WITH ICON */}
-            <div className="mt-6 mb-4 flex justify-between items-center bg-gray-50 p-2.5 rounded-[2px] border border-gray-100">
-              <span className="text-xs text-gray-400">Metode</span>
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-[2px] flex items-center justify-center p-0.5">
-                  {getSelectedLogo()}
-                </div>
-                <span className="text-xs font- text-gray-700">{selectedWallet}</span>
-              </div>
-            </div>
-
-            <button className="w-full bg-black text-white py-3 rounded-[4px] font-bold text-[10px] uppercase tracking-widest hover:bg-gray-900 transition-colors">
-              Bayar Sekarang
+            {/* TOMBOL BAYAR */}
+            <button
+              onClick={handlePayment}
+              disabled={loading}
+              className={`w-full bg-[#D82F5A] text-white py-4 rounded-[4px] font-semibold text-xs tracking-wider uppercase hover:bg-[#b0264a] active:scale-[0.99] transition-all shadow-md flex items-center justify-center gap-2 ${loading ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+            >
+              <span>
+                {loading
+                  ? 'Memproses Transaksi...'
+                  : isFree
+                    ? 'AKTIVASI GRATIS'
+                    : 'BAYAR SEKARANG'}
+              </span>
+              {!loading && <IconArrowUpRight size={16} />}
             </button>
 
-            <p className="mt-4 text-[10px] text-[#FF1515] leading-tight">
-              *Cek kembali paket & metode pembayaran Anda. Pilih paket yang tepat untuk tekan Churn Rate sebelum melanjutkan!
-            </p>
+            {!isFree && (
+              <div className="w-full bg-zinc-900 border border-zinc-800 p-3.5 rounded-[4px]">
+                <p className="text-[11px] text-slate-400 leading-relaxed font-medium">
+                  <span className="text-[#D82F5A] font-semibold">*Klik "Bayar Sekarang"</span> untuk memunculkan gerbang pembayaran aman Midtrans. Anda dapat memilih OVO, Dana, ShopeePay, atau QRIS di dalam pop-up.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </main>
 
-      {/* FOOTER */}
-      <footer className="bg-white border-t border-gray-100 pt-12 px-10">
-        <div className="max-w-[1400px] mx-auto grid md:grid-cols-4 gap-12 border-b border-gray-100 pb-8">
-
-          {/* BRAND SECTION & SOCIALS */}
-          <div className="space-y-8 text-left">
-            <div className="space-y-6">
-              <h3 className="text-2xl tracking-tight font-semibold">
-                ChurnGuard <span className="text-[#D82F5A]">CRM</span>
-              </h3>
-              <p className="text-[#616161] text-sm leading-relaxed">
-                Solusi cerdas menjaga loyalitas dan memperkuat hubungan pelanggan Anda secara berkelanjutan.
-              </p>
-            </div>
-
-            {/* Social Media Icons moved here */}
-            <div className="flex gap-4">
-              {['brand-instagram', 'brand-x', 'brand-youtube'].map(s => (
-                <div key={s} className="w-10 h-10 border border-[#D82F5A]/20 rounded-[4px] flex items-center justify-center text-[#D82F5A] hover:bg-[#D82F5A] hover:text-white hover:-translate-y-1 transition-all duration-300 cursor-pointer shadow-sm">
-                  <i className={`ti ti-${s} text-lg`}></i>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* ADDRESS */}
-          <div>
-            <h4 className="text-sm mb-6 flex items-center gap-2 text-[#111827]">
-              <i className="ti ti-map-pin text-[#D82F5A]"></i> Alamat
-            </h4>
-            <p className="text-[#616161] text-[13px] leading-relaxed">
-              Gedung Perpustakaan PNJ, Beji, Depok, Jawa Barat 16425.
-            </p>
-          </div>
-
-          {/* PHONE */}
-          <div>
-            <h4 className="text-sm mb-6 flex items-center gap-2 text-[#111827]">
-              <i className="ti ti-phone text-[#D82F5A]"></i> No. Telepon
-            </h4>
-            <p className="text-[#616161] text-[13px] leading-relaxed">
-              +62 21 727 0036
-            </p>
-          </div>
-
-          {/* EMAIL */}
-          <div>
-            <h4 className="text-sm mb-6 flex items-center gap-2 text-[#111827]">
-              <i className="ti ti-mail text-[#D82F5A]"></i> Email
-            </h4>
-            <p className="text-[#616161] text-[13px] underline underline-offset-8 decoration-[#D82F5A]/30 hover:text-[#D82F5A] transition-colors cursor-pointer">
-              petisatukan@pnj.ac.id
-            </p>
-          </div>
-
-        </div>
-
-        {/* COPYRIGHT */}
-        <div className="bg-black py-6  -mx-10">
-          <p className="text-center text-white text-sm opacity-70">
-            © 2026 CHURNGUARD CRM. Hak Cipta Dilindungi Undang-Undang.
-          </p>
-        </div>
-      </footer>
+      <Footer />
+      {isLoading && <LoadingOverlay />}
     </div>
   );
 };

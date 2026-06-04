@@ -10,9 +10,10 @@ import { useAuth } from "../utils/auth";
 import { jwtDecode } from "jwt-decode";
 import { useNotif } from "./NotificationContext";
 import Header from './Header';
-import Footer from './footer';
+import Footer from './Footer';
 import Sidebar from './SideBar';
 import axios from 'axios';
+import { Loader2 } from 'lucide-react';
 
 const ValidasiProses = () => {
     const [disableButton, setDisableButton] = useState(false);
@@ -27,6 +28,7 @@ const ValidasiProses = () => {
 
 
     const [isLoadingProcess, setIsLoadingProcess] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const [loadingProgress, setLoadingProgress] = useState(0);
 
     const location = useLocation();
@@ -70,18 +72,17 @@ const ValidasiProses = () => {
         if (!file) return alert("Pilih file dulu");
 
         try {
-
+            // Pemicu modal loading aktif pas proses mulai
+            setIsLoading(true);
 
             const formData = new FormData();
-
             formData.append("file", file.raw);
 
             const token = localStorage.getItem("token");
-
             jwtDecode(token);
 
             await axios.post(
-                "http://localhost:5000/csv/upload-csv-py",
+                `${import.meta.env.VITE_BACKEND_URL}/csv/upload-csv-py`,
                 formData,
                 {
                     headers: {
@@ -94,10 +95,10 @@ const ValidasiProses = () => {
         } catch (err) {
             console.log("Upload error:", err);
         } finally {
-
+            // Loading otomatis mati di sini setelah proses axios selesai (sukses/gagal)
+            setIsLoading(false);
         }
     };
-
     const {
         totalRows = 0,
         totalError = 0,
@@ -125,54 +126,7 @@ const ValidasiProses = () => {
     return (
         <div className="flex min-h-screen bg-[#F9FAFB] text-[#111827]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             {/* SIDEBAR */}
-            <aside className="w-[280px] bg-white border-r border-gray-100 flex flex-col h-screen sticky top-0 z-20 font-['Plus_Jakarta_Sans',sans-serif]">
-                {/* Logo Section */}
-                <div className="pt-10 pb-4 flex flex-col items-center">
-                    <div className="flex flex-col items-center mb-4">
-                        <img
-                            src={logochurn}
-                            alt="logochurn"
-                            className="w-28 h-auto" // Logo ukuran sedang (pas)
-                        />
-                    </div>
-                    <div className="w-[85%] border-b border-gray-100"></div>
-                </div>
-
-                {/* Navigation Menu */}
-                <nav className="flex-1 px-4 space-y-2 mt-4">
-
-                    <div onClick={() => navigate('/dashboardUser')}
-                        className="bg-[#FEF5F6] text-[#D82F5A] flex items-center gap-4 px-5 py-3 rounded-[4px] cursor-pointer transition-all">
-                        <i className="ti ti-home text-xl" style={{ WebkitTextStroke: '0.5px white', paintOrder: 'stroke fill' }}></i>
-                        <span className="text-sm">Dashboard</span>
-                    </div>
-
-                    {/* Analisis Ulasan - INACTIVE */}
-                    <div className="text-[#E2A7B8] flex items-center gap-4 px-6 py-4 rounded-[4px] hover:bg-gray-50 cursor-pointer transition-all">
-                        <i className="ti ti-chart-bar text-xl" style={{ WebkitTextStroke: '0.5px white', paintOrder: 'stroke fill' }}></i>
-                        <span className="text-sm">Analisis Ulasan</span>
-                    </div>
-
-                    <div
-                        onClick={() => navigate('riwayatPrediksi')}
-                        className="text-[#E2A7B8] flex items-center gap-4 px-6 py-4 rounded-[4px] hover:bg-gray-50 cursor-pointer transition-all"
-                    >
-                        <i className="ti ti-message text-xl" style={{ WebkitTextStroke: '0.5px white', paintOrder: 'stroke fill' }}></i>
-                        <span className="text-sm">User Feedback</span>
-                    </div>
-
-
-                    <div
-                        onClick={() => navigate('/feedback')}
-                        className="text-[#E2A7B8] flex items-center gap-4 px-6 py-4 rounded-[4px] hover:bg-gray-50 cursor-pointer transition-all"
-                    >
-                        <i className="ti ti-message text-xl" style={{ WebkitTextStroke: '0.5px white', paintOrder: 'stroke fill' }}></i>
-                        <span className="text-sm">User Feedback</span>
-                    </div>
-
-                </nav>
-            </aside>
-
+            <Sidebar />
             {/* MAIN CONTENT */}
             <div className="flex-1 flex flex-col">
                 {/* HEADER - Benerin typo z-50 */}
@@ -217,257 +171,181 @@ const ValidasiProses = () => {
                         </div>
                     </div>
 
-
                     {/* WARNING ALERT */}
-                    <div className="bg-white border border-[#EDEDED] p-3 rounded-[4px] flex items-center gap-3 mb-10 shadow-sm">
+                    <div className="bg-white border border-[#EDEDED] p-3 rounded-[4px] flex items-center gap-3 mb-8 shadow-sm">
                         <i className="ti ti-alert-triangle text-amber-400 text-xl"></i>
-                        <p className="text-[#929191] text-sm ">Total {totalError} masalah ditemukan pada data Anda</p>
+                        <p className="text-[#929191] text-sm">
+                            Total <span className="font-bold text-[#111827]"> {totalError} </span> masalah ditemukan pada data Anda
+                        </p>
                     </div>
 
-                    {/* ERROR SUMMARY */}
-                    <h3 className="text-base font-medium mb-5 text-[#111827]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                        Ringkasan Error dan Peringatan
+                    {/* ERROR SUMMARY TITLE */}
+                    <h3 className="text-sm font-semibold mb-4 text-[#111827]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                        Ringkasan Validasi
                     </h3>
-                    <div className="grid grid-cols-3 gap-2 mb-12">
 
+                    {/* HORIZONTAL COMPACT CARDS */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
                         {[
                             {
                                 title: 'Total Rows',
                                 count: `${columnSummary.length} data`,
                                 desc: 'Jumlah total data yang berhasil diterima.',
-                                isRows: true
+                                isRows: true,
+                                icon: 'ti-database',
+                                iconBg: 'bg-blue-50',
+                                iconColor: 'text-blue-500'
                             },
                             {
-                                title: 'missing data',
+                                title: 'Missing Data',
                                 count: `${totalError} error ditemukan`,
-                                desc: 'missing data validasi pada file csv.',
-                                isError: true
+                                desc: 'Data kosong akan menghalangi proses upload.',
+                                isError: true,
+                                icon: 'ti-alert-circle',
+                                iconBg: 'bg-[#FEF5F6]',
+                                iconColor: 'text-[#D82F5A]',
+                                action: () => setShowRowDetail(true)
                             },
                             {
                                 title: 'Header Error',
-                                count: `${headerError?.type ? 1 : 0} header bermasalah`,
-                                desc: 'Periksa kembali nama kolom csv anda.',
-                                isHeader: true
+                                count: headerError?.type ? '1 Masalah' : '0 Masalah',
+                                desc: 'Ketidaksesuaian nama kolom pada file CSV.',
+                                isHeader: true,
+                                icon: 'ti-layout-navbar',
+                                iconBg: 'bg-amber-50',
+                                iconColor: 'text-amber-500',
+                                action: () => setShowHeaderDetail(true)
                             }
                         ].map((err, i) => (
-
-                            <div
-                                key={i}
-                                className="bg-white border border-[#EDEDED] p-3 rounded-[4px]"
-                            >
-
-                                <div className="flex items-start gap-4">
-
-                                    {/* ICON */}
-                                    <div className="w-10 h-10 rounded-full bg-[#FEF5F6] flex items-center justify-center flex-shrink-0">
-                                        <i className="ti ti-alert-triangle text-[#D82F5A] text-xl"></i>
-                                    </div>
-
-                                    {/* CONTENT */}
-                                    <div className="flex-1">
-
-                                        <div className="flex items-start justify-between gap-3">
-
-                                            <div>
-                                                <h4 className="text-sm font-medium text-[#111827]">
-                                                    {err.title}
-
-                                                    <span className="text-[#D82F5A] ml-2 text-xs">
-                                                        {err.count}
-                                                    </span>
-                                                </h4>
-
-                                                <p className="text-xs text-[#929191] mt-1 leading-relaxed">
-                                                    {err.desc}
-                                                </p>
-                                            </div>
-
-                                            {/* BUTTON DETAIL */}
-                                            {err.isError && missingData?.length > 0 && (
-                                                <button
-                                                    onClick={() =>
-                                                        setShowRowDetail(!showRowDetail)
-                                                    }
-                                                    className="
-                                    text-xs
-                                    border
-                                    border-[#D82F5A]
-                                    text-[#D82F5A]
-                                    px-3
-                                    py-1
-                                    rounded
-                                    hover:bg-[#D82F5A]
-                                    hover:text-white
-                                    transition-all
-                                "
-                                                >
-                                                    {showRowDetail
-                                                        ? "Hide Detail"
-                                                        : "View Detail"}
-                                                </button>
-                                            )}
-
-                                            {err.isHeader && headerError?.type && (
-                                                <button
-                                                    onClick={() =>
-                                                        setShowHeaderDetail(!showHeaderDetail)
-                                                    }
-                                                    className="
-                                    text-xs
-                                    border
-                                    border-[#D82F5A]
-                                    text-[#D82F5A]
-                                    px-3
-                                    py-1
-                                    rounded
-                                    hover:bg-[#D82F5A]
-                                    hover:text-white
-                                    transition-all
-                                "
-                                                >
-                                                    {showHeaderDetail
-                                                        ? "Hide Detail"
-                                                        : "View Detail"}
-                                                </button>
-                                            )}
-
-                                        </div>
-
-                                        {/* ========================= */}
-                                        {/* TOTAL ERROR DETAIL */}
-                                        {/* ========================= */}
-
-                                        {err.isError && showRowDetail && (
-
-                                            <div className="mt-4 border-t pt-4">
-
-                                                <p className="text-xs font-semibold text-[#111827] mb-3">
-                                                    Missing Data Detail
-                                                </p>
-
-                                                <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1">
-
-                                                    {missingData.map((item, idx) => (
-
-                                                        <div
-                                                            key={idx}
-                                                            className="
-                                            border
-                                            border-[#F3F4F6]
-                                            rounded
-                                            p-2
-                                            text-xs
-                                            bg-[#FAFAFA]
-                                        "
-                                                        >
-
-                                                            <div className="flex items-center gap-2 flex-wrap">
-
-                                                                <span className="px-2 py-1 bg-[#FEF2F2] text-[#D82F5A] rounded">
-                                                                    Row {item.row}
-                                                                </span>
-
-                                                                <span className="px-2 py-1 bg-[#EFF6FF] text-[#2563EB] rounded">
-                                                                    {item.column}
-                                                                </span>
-
-                                                            </div>
-
-                                                            <p className="text-[#6B7280] mt-2">
-                                                                {item.message}
-                                                            </p>
-
-                                                        </div>
-
-                                                    ))}
-
-                                                </div>
-
-                                            </div>
-
-                                        )}
-
-                                        {/* ========================= */}
-                                        {/* HEADER DETAIL */}
-                                        {/* ========================= */}
-
-                                        {err.isHeader &&
-                                            showHeaderDetail &&
-                                            headerError && (
-
-                                                <div className="mt-4 border-t pt-4">
-
-                                                    <div className="mb-4">
-
-                                                        <p className="text-xs font-semibold text-[#111827] mb-2">
-                                                            Error Type
-                                                        </p>
-
-                                                        <span className="px-2 py-1 bg-[#FEF2F2] text-[#D82F5A] rounded text-xs">
-                                                            {headerError.type}
-                                                        </span>
-
-                                                    </div>
-
-                                                    <div className="mb-4">
-
-                                                        <p className="text-xs font-semibold text-[#111827] mb-2">
-                                                            Expected Header
-                                                        </p>
-
-                                                        <div className="flex flex-wrap gap-2">
-
-                                                            {headerError.expected?.map((item, idx) => (
-
-                                                                <span
-                                                                    key={idx}
-                                                                    className="px-2 py-1 bg-[#F3F4F6] rounded text-xs text-[#374151]"
-                                                                >
-                                                                    {item}
-                                                                </span>
-
-                                                            ))}
-
-                                                        </div>
-
-                                                    </div>
-
-                                                    <div>
-
-                                                        <p className="text-xs font-semibold text-[#111827] mb-2">
-                                                            CSV Header Found
-                                                        </p>
-
-                                                        <div className="flex flex-wrap gap-2">
-
-                                                            {headerError.got?.map((item, idx) => (
-
-                                                                <span
-                                                                    key={idx}
-                                                                    className="px-2 py-1 bg-[#FEF2F2] rounded text-xs text-[#D82F5A]"
-                                                                >
-                                                                    {item}
-                                                                </span>
-
-                                                            ))}
-
-                                                        </div>
-
-                                                    </div>
-
-                                                </div>
-
-                                            )}
-
-                                    </div>
-
+                            <div key={i} className="bg-white border border-[#EDEDED] p-4 rounded-[4px] shadow-sm flex items-start gap-3 relative transition-all">
+                                {/* ICON */}
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${err.iconBg}`}>
+                                    <i className={`ti ${err.icon} ${err.iconColor} text-xl`}></i>
                                 </div>
 
+                                {/* CONTENT */}
+                                <div className="flex-1 pr-6">
+                                    <div className="flex items-baseline gap-2 mb-1">
+                                        <h4 className="text-sm font-semibold text-[#111827] leading-none">{err.title}</h4>
+                                        <span className={`text-[11px] font-bold ${err.isRows ? 'text-blue-500' : 'text-[#D82F5A]'}`}>
+                                            {err.count}
+                                        </span>
+                                    </div>
+                                    <p className="text-[11px] text-[#929191] leading-tight">
+                                        {err.desc}
+                                    </p>
+                                </div>
+
+                                {/* NEXT BUTTON */}
+                                {err.action && (
+                                    <button
+                                        onClick={err.action}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-300 hover:text-[#D82F5A] transition-colors"
+                                    >
+                                        <i className="ti ti-chevron-right text-lg"></i>
+                                    </button>
+                                )}
                             </div>
-
                         ))}
-
                     </div>
+
+                    {/* ========================= */}
+                    {/* POP UP DETAIL SYSTEM */}
+                    {/* ========================= */}
+                    {(showRowDetail || showHeaderDetail) && (
+                        <div className="fixed inset-0 z-[99] flex items-center justify-center p-6 bg-[#111827]/40 backdrop-blur-md transition-all">
+                            <div className="bg-white rounded-[4px] shadow-2xl w-full max-w-lg flex flex-col overflow-hidden border border-white/20 animate-in fade-in slide-in-from-bottom-4 duration-300">
+
+                                {/* Header Pop Up */}
+                                <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-white">
+                                    <div>
+                                        <h3 className="font-semibold text-[#111827] text-sm">
+                                            {showRowDetail ? 'Detail Temuan Data' : 'Validasi Struktur Header'}
+                                        </h3>
+                                        <p className="text-[10px] text-[#929191]">Tinjau kembali data sebelum melakukan impor</p>
+                                    </div>
+                                    <button
+                                        onClick={() => { setShowRowDetail(false); setShowHeaderDetail(false); }}
+                                        className="w-8 h-8 flex items-center justify-center rounded-[4px] hover:bg-gray-100 text-gray-400 transition-colors"
+                                    >
+                                        <i className="ti ti-x text-lg"></i>
+                                    </button>
+                                </div>
+
+                                {/* Content Pop Up */}
+                                <div className="p-6 max-h-[400px] overflow-y-auto bg-[#FAFBFC]">
+
+                                    {/* MISSING DATA DETAIL */}
+                                    {showRowDetail && (
+                                        <div className="space-y-3">
+                                            {missingData?.map((item, idx) => (
+                                                <div key={idx} className="bg-white border border-[#EDEDED] p-4 rounded-[4px] shadow-sm flex flex-col gap-2 transition-all">
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="px-2 py-0.5 bg-[#FEF2F2] text-[#D82F5A] rounded-[4px] text-[10px] font-bold border border-red-100 uppercase">Baris {item.row}</span>
+                                                            <span className="px-2 py-0.5 bg-[#F0F7FF] text-[#0061FF] rounded-[4px] text-[10px] font-bold border border-blue-100 uppercase">{item.column}</span>
+                                                        </div>
+                                                        <i className="ti ti-alert-circle text-[#D82F5A] text-sm"></i>
+                                                    </div>
+                                                    <p className="text-xs font-medium text-[#4B5563] leading-relaxed">
+                                                        {item.message}
+                                                    </p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {/* HEADER ERROR DETAIL */}
+                                    {showHeaderDetail && headerError && (
+                                        <div className="space-y-6">
+                                            <div className="bg-white border-l-4 border-red-500 shadow-sm p-4 rounded-[4px]">
+                                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Tipe Masalah</p>
+                                                <p className="text-sm font-semibold text-[#111827]">{headerError.type}</p>
+                                            </div>
+
+                                            <div className="space-y-5">
+                                                <div>
+                                                    <p className="text-[11px] font-bold text-gray-500 mb-3 flex items-center gap-2">
+                                                        <i className="ti ti-check text-green-600"></i> Format Kolom Standar
+                                                    </p>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {headerError.expected?.map((item, idx) => (
+                                                            <span key={idx} className="px-2.5 py-1.5 bg-white border border-[#EDEDED] rounded-[4px] text-[11px] font-semibold text-gray-600 shadow-sm">
+                                                                {item}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+
+                                                <div className="pt-5 border-t border-gray-200">
+                                                    <p className="text-[11px] font-bold text-gray-500 mb-3 flex items-center gap-2">
+                                                        <i className="ti ti-x text-red-600"></i> Kolom Ditemukan
+                                                    </p>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {headerError.got?.map((item, idx) => (
+                                                            <span key={idx} className={`px-2.5 py-1.5 border rounded-[4px] text-[11px] font-semibold shadow-sm ${!headerError.expected?.includes(item) ? 'bg-red-50 border-red-200 text-[#D82F5A]' : 'bg-white border-[#EDEDED] text-gray-400'}`}>
+                                                                {item}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Footer Pop Up */}
+                                <div className="px-6 py-4 border-t border-gray-100 bg-white flex justify-end">
+                                    <button
+                                        onClick={() => { setShowRowDetail(false); setShowHeaderDetail(false); }}
+                                        className="px-6 py-2 bg-[#111827] hover:bg-black text-white text-[11px] font-bold rounded-[4px] transition-all shadow-md active:scale-95 uppercase tracking-wide"
+                                    >
+                                        Tutup Detail
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* TABLE PREVIEW */}
                     <h3 className="text-base font-medium mb-5">Panduan Pemetaan</h3>
@@ -547,31 +425,53 @@ const ValidasiProses = () => {
 
                     {/* ACTION BUTTONS */}
                     <div className="mt-12 flex justify-between">
-                        <button
-                            onClick={() => navigate('/uploadData')} // Sesuaikan path dengan route kamu
-                            className="flex items-center gap-4 px-10 py-3 border border-[#D82F5A] text-[#D82F5A] rounded-[4px] text-sm font-medium hover:bg-pink-50 transition-all duration-300 active:scale-95"
-                        >
-                            <i className="ti ti-arrow-left text-base"></i>
-                            <span>Kembali</span>
-                        </button>
+                        <div className="w-full flex items-center justify-between gap-4 mt-6">
+                            {/* TOMBOL KEMBALI (Ukurannya disamakan) */}
+                            <button
+                                onClick={() => navigate('/uploadData')}
+                                className="flex items-center gap-2 px-5 py-3 border border-[#D82F5A] text-[#D82F5A] rounded-[4px] text-xs font-medium hover:bg-pink-50/50 transition-all duration-300 active:scale-95 shrink-0"
+                            >
+                                <i className="ti ti-arrow-left text-sm"></i>
+                                <span>Kembali</span>
+                            </button>
 
-                        {/* Tombol Selanjutnya tetap di sini */}
+                            {/* TOMBOL PROSES DATA (Ukurannya disamakan) */}
+                            <button
+                                disabled={disableButton || isLoading}
+                                onClick={handleUploadpy}
+                                className={`flex items-center gap-2 px-5 py-3 rounded-[4px] text-xs font-medium transition-all duration-300 active:scale-95 group shrink-0 ${disableButton || isLoading
+                                        ? "bg-gray-100 text-gray-300 cursor-not-allowed"
+                                        : "bg-[#111827] text-white hover:bg-black shadow-md"
+                                    }`}
+                            >
+                                <span>Proses Data</span>
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2.5"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                >
+                                    <path d="M9 6l6 6l-6 6" />
+                                </svg>
+                            </button>
 
-                        {/* TOMBOL PROSES DATA */}
-                        {/* 1. TOMBOL PROSES DATA (PASTIKAN INI ADA) */}
-                        <button
-                            disabled={disableButton}
-                            onClick={handleUploadpy}
-                            className=
-                            {`px-8 py-2 bg-[#111827] text-white rounded-[4px] text-sm font-semibold hover:bg-black flex items-center gap-4 transition-all shadow-xl active:scale-95 group
-                                    ${disableButton
-                                    ? "bg-gray-400 cursor-not-allowed"
-                                    : "bg-[#D82F5A] hover:bg-[#bb244a]"
-                                }`}
-                        >
-                            Proses Data
-                            <i className="ti ti-chevron-right text-lg group-hover:translate-x-1 transition-transform"></i>
-                        </button>
+                            {/* POP-UP OVERLAY LOADING SCREEN (Muncul saat isLoading === true) */}
+                            {isLoading && (
+                                <div className="fixed inset-0 bg-slate-900/40 z-[9999] flex items-center justify-center animate-in fade-in duration-300">
+                                    <div className="bg-white p-6 rounded-[4px] shadow-xl flex flex-col items-center gap-3 max-w-xs w-full text-center border-0 scale-100 animate-in zoom-in-95 duration-300">
+                                        <Loader2 size={32} className="animate-spin text-[#D82F5A]" />
+                                        <div>
+                                            <p className="text-sm font-bold text-slate-800">Memproses analisis</p>
+                                            <p className="text-xs text-slate-400 mt-0.5">Mengklasifikasikan data sentimen ulasan...</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
 
                         {/* 2. MODAL LOADING (HANYA SATU KALI SAJA) */}
                         <AnimatePresence>

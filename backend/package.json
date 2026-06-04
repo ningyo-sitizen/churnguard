@@ -13,7 +13,9 @@
   },
   "dependencies": {
     "axios": "^1.15.2",
+    "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.3",
+    "brevo": "^1.0.0",
     "cloudinary": "^2.10.0",
     "cors": "^2.8.6",
     "csv": "^6.5.1",
@@ -24,6 +26,7 @@
     "fs": "^0.0.1-security",
     "iconv-lite": "^0.7.2",
     "jsonwebtoken": "^9.0.3",
+    "midtrans-client": "^1.4.3",
     "multer": "^2.1.1",
     "mysql": "^2.18.1",
     "mysql2": "^3.22.3",
@@ -31,7 +34,9 @@
     "parse": "^8.6.0",
     "passport": "^0.7.0",
     "passport-google-oauth2": "^0.2.0",
-    "promise": "^8.3.0"
+    "promise": "^8.3.0",
+    "resend": "^6.12.4",
+    "sib-api-v3-sdk": "^8.5.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"

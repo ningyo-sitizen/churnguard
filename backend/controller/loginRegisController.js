@@ -2,98 +2,188 @@ const jwt = require("jsonwebtoken");
 const churnguard_con = require("../config/db");
 const bcrypt = require("bcryptjs");
 const cloudinary = require("../config/cloud")
+const fs = require("fs")
 
-exports.validateImage = async (req,res) => {
 
-}
 
-exports.saveImage = async (req,res) => {
-  
-}
-
-exports.update_user_profile = async (req, res) => {
-
-  const email = req.user.email;
-
-  const {
-    name,
-    nama_perusahaan,
-    nama_app,
-    link_app,
-    avatar
-  } = req.body;
+exports.ChurnGuardChagepass = async (req,res) => {
+  const { email, password } = req.body;
 
   try {
+    const hashed = await bcrypt.hash(password, 10);
 
-    const [existing] = await churnguard_con.query(
-      "SELECT * FROM users WHERE email = ?",
-      [email]
-    );
-
-    if (existing.length === 0) {
-      return res.status(404).json({
-        message: "user tidak ditemukan"
-      });
-    }
-
-    await churnguard_con.query(
-      `
-      UPDATE users
-      SET
-        name = ?,
-        nama_perusahaan = ?,
-        nama_app = ?,
-        link_app = ?,
-        avatar_url = ?
-      WHERE email = ?
-      `,
-      [
-        name,
-        nama_perusahaan,
-        nama_app,
-        link_app,
-        avatar,
-        email
-      ]
-    );
-
-    const [updatedUser] = await churnguard_con.query(
-      `
-      SELECT
-        name,
-        email,
-        nama_perusahaan,
-        nama_app,
-        link_app,
-        avatar_url
-      FROM users
-      WHERE email = ?
-      `,
-      [email]
-    );
+    const [update] = await churnguard_con.query('update users set password = ? where email = ?',[hashed,email])
 
     return res.status(200).json({
-      message: "profile berhasil diupdate",
-      user: {
-        name: updatedUser[0].name,
-        email: updatedUser[0].email,
-        nama_perusahaan: updatedUser[0].nama_perusahaan,
-        nama_app: updatedUser[0].nama_app,
-        link_app: updatedUser[0].link_app,
-        avatar: updatedUser[0].avatar_url
-      }
+      status: "success",
+      message: "Password berhasil diubah"
     });
 
-  } catch (error) {
+  } catch(err){
 
-    console.log(error);
+    console.log(err);
 
     return res.status(500).json({
-      message: "server error"
+      status: "error",
+      message: "Server error"
     });
-
   }
-};
+}
+
+exports.update_user_profile =
+  async (req, res) => {
+
+    const email =
+      req.user.email;
+
+    const {
+      name,
+      nama_perusahaan,
+      nama_app,
+      link_app
+
+    } = req.body;
+
+    let avatarUrl = null;
+
+    try {
+
+      const [existing] =
+        await churnguard_con.query(`SELECT * FROM users WHERE email = ?`, [email]);
+
+      if (existing.length === 0) {
+        return res.status(404).json({
+
+          message:
+            "user tidak ditemukan"
+
+        });
+
+      }
+
+      if (req.file) {
+        const result =
+          await cloudinary.uploader.upload(req.file.path,
+            {
+              folder:
+                "uploads"
+            }
+          );
+
+        avatarUrl =
+          result.secure_url;
+        if (
+          fs.existsSync(
+            req.file.path
+          )
+        ) {
+          fs.unlinkSync(
+            req.file.path
+          );
+
+        }
+
+      }
+
+      let query = `UPDATE users SET name = ?,nama_perusahaan = ?,nama_app = ?,link_app = ?`;
+
+      const values = [
+        name,
+        nama_perusahaan,
+        nama_app,
+        link_app,
+      ];
+      if (avatarUrl) {
+        query += `, avatar_url = ? `;
+        values.push(
+          avatarUrl
+        );
+      }
+
+      query += `
+        WHERE email = ?
+      `;
+
+      values.push(email);
+
+      await churnguard_con.query(
+        query,
+        values
+      );
+
+      const [updatedUser] =
+        await churnguard_con.query(
+          `
+          SELECT
+            name,
+            email,
+            nama_perusahaan,
+            nama_app,
+            link_app,
+            avatar_url
+          FROM users
+          WHERE email = ?
+          `,
+
+          [email]
+
+        );
+
+      return res.status(200).json({
+        message:
+          "profile berhasil diupdate",
+        user: {
+
+          name:
+            updatedUser[0].name,
+
+          email:
+            updatedUser[0].email,
+
+          nama_perusahaan:
+            updatedUser[0]
+              .nama_perusahaan,
+
+          nama_app:
+            updatedUser[0]
+              .nama_app,
+
+          link_app:
+            updatedUser[0]
+              .link_app,
+
+          avatar:
+            updatedUser[0]
+              .avatar_url
+
+        }
+
+      });
+
+    } catch (error) {
+
+      console.log(error);
+      if (
+        req.file &&
+        fs.existsSync(
+          req.file.path
+        )
+      ) {
+
+        fs.unlinkSync(
+          req.file.path
+        );
+
+      }
+      return res.status(500).json({
+        message:
+          "server error"
+
+      });
+
+    }
+
+  };
 
 
 exports.get_user_data = async (req, res) => {
@@ -101,6 +191,24 @@ exports.get_user_data = async (req, res) => {
   const email = req.user.email;
 
   try {
+
+    const [checking] = await churnguard_con.query(
+      "SELECT * FROM users WHERE email = ?",
+      [email]
+    );
+    const now = new Date();
+
+    const memberUntil = new Date(checking[0].member_until);
+
+    if (memberUntil < now) {
+      try {
+        const [change] = await churnguard_con.query(`
+          update users set member = ?,member_plan = ?, member_until = ? where email = ?`,["free","Paket free","9999-12-31",email]
+        )
+      } catch (err) {
+        console.log(err)
+      }
+    }
 
     const [existing] = await churnguard_con.query(
       "SELECT * FROM users WHERE email = ?",
@@ -113,13 +221,18 @@ exports.get_user_data = async (req, res) => {
       });
     }
 
+
     const user_detail = {
+      id:existing[0].id,
       name: existing[0].name,
       nama_perusahaan: existing[0].nama_perusahaan,
       nama_app: existing[0].nama_app,
       link_app: existing[0].link_app,
       avatar: existing[0].avatar_url,
-      email: existing[0].email
+      member: existing[0].member,
+      email: existing[0].email,
+      member_until: existing[0].member_until,
+      member_plan: existing[0].member_plan
     };
 
     return res.status(200).json(user_detail);
@@ -223,11 +336,19 @@ exports.ChurnGuardLogin = async (req, res) => {
 
     const userLogin = existing[0];
 
+    const active = existing[0].is_active
+
+    if (active === 0) {
+      return res.status(401).json({ message: 'your account have been ban' });
+    }
+
     const valid = await bcrypt.compare(pass, userLogin.password);
 
     if (!valid) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
+
+
 
     const sessionVersion = userLogin.session_version + 1;
 
@@ -256,3 +377,93 @@ exports.ChurnGuardLogin = async (req, res) => {
     return res.status(500).json({ message: "Database error" });
   }
 };
+
+exports.ChurnGuardEmailCheckForget = async (req, res) => {
+
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        status: "error",
+        message: "Email wajib diisi"
+      });
+    }
+
+    const [rowsgoogle] = await churnguard_con.query(
+      `SELECT id, email 
+             FROM users 
+             WHERE email = ? AND google_id IS NOT NULL`,
+      [email]
+    );
+
+    if (rowsgoogle.length > 0) {
+      return res.status(404).json({
+        status: "error",
+        message: "Email yang dikirim menggunakan login google"
+      });
+    }
+
+    const [rows] = await churnguard_con.query(
+      `SELECT id, email 
+             FROM users 
+             WHERE email = ?`,
+      [email]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        status: "error",
+        message: "Email tidak terdaftar"
+      });
+    }
+    return res.status(200).json({
+      status: "success",
+      message: "Email ditemukan",
+      data: rows[0]
+    });
+
+  } catch (err) {
+
+    console.log(err);
+
+    return res.status(500).json({
+      status: "error",
+      message: "Internal server error"
+    });
+  }
+};
+
+exports.ChurnGuardPaymentHistory = async (req, res) => {
+  const email = req.user.email;
+  try {
+    const [data] = await churnguard_con.query('select * from payment where email = ?', [email])
+    const [success] = await churnguard_con.query(
+      'SELECT * FROM payment WHERE email = ? AND status = "success"',
+      [email]
+    );
+
+    const [sum] = await churnguard_con.query(
+      'SELECT SUM(price) AS total_price FROM payment WHERE email = ? AND status = "success"',
+      [email]
+    );
+
+    const jumlah_sukses = success.length;
+    const total = sum[0].total_price || 0;
+
+    if (data.length === 0) {
+      return res.status(200).json({
+        message:
+          "belum ada data payment"
+      });
+    }
+    return res.json({
+      status: "success",
+      data: data,
+      sum: total,
+      success: jumlah_sukses
+    });
+  } catch (err) {
+    console.log(err)
+  }
+}

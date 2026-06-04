@@ -1,19 +1,5 @@
-const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-transporter.verify((err, success) => {
-  if (err) {
-    console.log("Email transporter error:", err);
-  } else {
-    console.log("Email server ready");
-  }
-});
-
-module.exports = transporter;
+module.exports = resend;
