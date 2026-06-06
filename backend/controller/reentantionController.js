@@ -4,6 +4,7 @@ const transporter = require("../config/malier");
 const axios = require("axios");
 const genremap = require("../config/genremap");
 const resend = require("../config/malier");
+const { link } = require("fs");
 
 async function getMovies() {
 
@@ -153,7 +154,10 @@ function generateHTML({
     recommendation,
     genre,
     risk,
-    segment
+    segment,
+    nama_app,
+    nama_perusahaan,
+    link_app
 }) {
 
     return `
@@ -180,13 +184,15 @@ function generateHTML({
 
 <div class="container-custom">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-        <div>
-            <h1 style="font-size: 24px; font-weight: 800; margin: 0; letter-spacing: -0.5px;">Retention Controller</h1>
-            <p style="color: #64748b; font-size: 13px; margin-top: 4px;">Analisis dan rekomendasi retensi pelanggan anda.</p>
-        </div>
-        <a href="/DashboardDetail" style="text-decoration: none; font-size: 13px; font-weight: 700; color: #D82F5A; background: #ffffff; padding: 10px 20px; border-radius: 6px; border: 1px solid #e2e8f0; transition: all 0.2s;">
-            ← Back to Dashboard
-        </a>
+    <div style="text-align:center; margin-bottom:40px;">
+    <h1 style="font-size:32px; font-weight:800; margin:0;">
+        Kami Merindukan Anda 👋
+    </h1>
+
+    <p style="color:#64748b; font-size:14px; margin-top:10px;">
+        Rekomendasi dan promo eksklusif yang kami siapkan khusus untuk Anda di ${nama_app}.
+    </p>
+</div>
     </div>
 
     <div style="background: #000000; color: white; padding: 45px 50px; border-radius: 12px; margin-bottom: 40px; position: relative; overflow: hidden; display: flex; align-items: center;">
@@ -238,7 +244,7 @@ function generateHTML({
                     <div style="margin-top: 20px; font-size: 12px; color: #94a3b8;">Berlaku sampai: <br><b style="color: #111827;">${expired_date}</b></div>
                 </div>
                 
-                <button style="width: 100%; margin-top: 25px; background: #111827; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer;">Klaim Sekarang</button>
+                <button style="width: 100%; margin-top: 25px; background: #111827; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer;"><a href = "${link_app}">Klaim Sekarang</a></button>
             </div>
         </div>
     </div>
@@ -287,7 +293,10 @@ exports.getGeneratedEmail = async (req, res) => {
             risk,
             segment,
             genre,
-            email
+            email,
+            nama_app,
+            nama_perusahaan,
+            link_app
         } = req.body;
 
         const genreId =
@@ -318,7 +327,10 @@ exports.getGeneratedEmail = async (req, res) => {
             recommendation,
             genre,
             risk,
-            segment
+            segment,
+            nama_app,
+            nama_perusahaan,
+            link_app
         });
 
         return res.status(200).json({
@@ -385,7 +397,7 @@ exports.sendEmail = async (req, res) => {
                 `,
                 [userEmail]
             );
-
+        console.log(predid)
         if (predid.length === 0) {
 
             return res.status(404).json({
@@ -394,19 +406,22 @@ exports.sendEmail = async (req, res) => {
 
         }
 
-        await churnguard_con.query(
+        const [result] = await churnguard_con.query(
             `
-            UPDATE prediction_detail
-            SET email_sent = ?
-            WHERE prediction_id = ?
-            AND CustomerID = ?
-            `,
+    UPDATE prediction_detail
+    SET email_sent = ?
+    WHERE prediction_id = ?
+    AND CustomerID = ?
+    `,
             [
                 html,
                 predid[0].prediction_id,
                 id
             ]
         );
+        console.log("prediction_id:", predid[0].prediction_id);
+        console.log("CustomerID:", id);
+        console.log(result);
 
         return res.status(200).json({
 
@@ -440,15 +455,18 @@ async function sendRetentionEmail({
     expired_date,
     risk,
     segment,
+    nama_app,
+    nama_perusahaan,
+    link_app,
     prediction_id
 }) {
     try {
 
         const genreId =
             genremap[
-                customer.GenrePreference
-                    ?.toLowerCase()
-                    ?.replace(/\s/g, "_")
+            customer.GenrePreference
+                ?.toLowerCase()
+                ?.replace(/\s/g, "_")
             ];
 
         const movies = await getMovies();
@@ -474,7 +492,10 @@ async function sendRetentionEmail({
             recommendation,
             genre: customer.GenrePreference,
             risk,
-            segment
+            segment,
+            nama_app,
+            nama_perusahaan,
+            link_app
         });
 
         await resend.emails.send({
@@ -530,7 +551,10 @@ exports.bulkSend = async (req, res) => {
 
         promo_L_R_M_L_S,
         promo_L_R_M_L_S_value,
-        promo_L_R_M_L_S_expired
+        promo_L_R_M_L_S_expired,
+        nama_perusahaan,
+        link_app,
+        nama_app
     } = req.body;
     try {
         const authHeader = req.headers.authorization;
@@ -636,6 +660,9 @@ exports.bulkSend = async (req, res) => {
                         expired_date: promo.expired,
                         risk: promo.risk,
                         segment: promo.segment,
+                        nama_app: nama_app,
+                        nama_perusahaan: nama_perusahaan,
+                        link_app: link_app,
                         prediction_id
                     });
 
