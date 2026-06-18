@@ -377,7 +377,7 @@ exports.sendEmail = async (req, res) => {
 
         const info = await resend.emails.send({
 
-            from: "ChurnGuard <onboarding@resend.dev>",
+            from: 'ChurnGuard <noreply@churnguard.online>',
 
             to: customerEmail,
 
@@ -500,7 +500,7 @@ async function sendRetentionEmail({
 
         await resend.emails.send({
 
-            from: "ChurnGuard <onboarding@resend.dev>",
+            from: 'ChurnGuard <noreply@churnguard.online>',
 
             to: customer.email,
 
