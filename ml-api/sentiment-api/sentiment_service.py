@@ -343,7 +343,7 @@ async def analyze_playstore(
         if cached:
             return cached
 
-        scrape_count = 50
+        scrape_count = 20
         logger.info(f"Scraping {scrape_count} reviews for app_id='{app_id}'")
         scraped_data, _ = reviews(app_id, lang='en', country='id', sort=Sort.NEWEST, count=scrape_count)
 
