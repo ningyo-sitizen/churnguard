@@ -4,7 +4,6 @@ import os
 import re
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import datetime
 from io import BytesIO
 from time import time
 import emoji
@@ -77,8 +76,8 @@ _RE_APP_ID    = re.compile(r'^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$')
 
 # Load Machine Learning Models
 current_dir     = os.path.dirname(os.path.abspath(__file__))
-model_path      = os.path.join(current_dir, 'app', 'model', 'SVMCW.pkl')
-vectorizer_path = os.path.join(current_dir, 'app', 'model', 'vectorizer.pkl')
+model_path      = os.path.join(current_dir, 'app', 'model', 'SVM_OVO.pkl')
+vectorizer_path = os.path.join(current_dir, 'app', 'model', 'vectorizer_new.pkl')
 
 try:
     tfidf_loaded = joblib.load(vectorizer_path)
@@ -280,8 +279,8 @@ def get_top_words(df: pd.DataFrame, sentiment: str, top_n: int = 20) -> list:
 _scrape_cache: dict = {}
 CACHE_TTL_SECONDS = 300
 
-def _cache_key(app_id: str, start_date: str, end_date: str) -> str:
-    raw = f"{app_id}|{start_date}|{end_date}"
+def _cache_key(app_id: str) -> str:
+    raw = f"{app_id}"
     return hashlib.md5(raw.encode()).hexdigest()
 
 def _get_cache(key: str):
@@ -304,13 +303,8 @@ def root():
 async def analyze_playstore(
     app_name:   str = Form(...),
     app_id:     str = Form(None),
-    start_date: str = Form("2026-05-01"),
-    end_date:   str = Form(None),
 ):
     try:
-        if not end_date:
-            end_date = datetime.now().strftime('%Y-%m-%d')
-
         title     = None
         icon      = None
         developer = None
@@ -344,7 +338,7 @@ async def analyze_playstore(
             if not app_id:
                 return {"status": "error", "message": f"Aplikasi '{app_name}' tidak ditemukan"}
 
-        ckey   = _cache_key(app_id, start_date, end_date)
+        ckey   = _cache_key(app_id)
         cached = _get_cache(ckey)
         if cached:
             return cached
@@ -358,17 +352,8 @@ async def analyze_playstore(
 
         logger.info(f"Scraped {len(scraped_data)} reviews")
 
-        start_dt = pd.to_datetime(start_date)
-        end_dt   = pd.to_datetime(end_date)
-        df_raw   = pd.DataFrame(scraped_data)
-        df_raw['at'] = pd.to_datetime(df_raw['at'])
-
-        df = df_raw[(df_raw['at'] >= start_dt) & (df_raw['at'] <= end_dt)].copy()
-        after_filter_count = len(df)
-        logger.info(f"After date filter: {after_filter_count} reviews")
-
-        if df.empty:
-            return {"status": "error", "message": "Tidak ada review dalam range tanggal"}
+        df_raw = pd.DataFrame(scraped_data)
+        df = df_raw.copy()
 
         df = df[['content']].dropna().drop_duplicates()
         logger.info(f"Processing {len(df)} reviews")
@@ -400,7 +385,6 @@ async def analyze_playstore(
             "developer": developer,
             "debug_info": {
                 "scraped_count": len(scraped_data),
-                "after_date_filter": after_filter_count,
                 "final_count": total
             }
         }
