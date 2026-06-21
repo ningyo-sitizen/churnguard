@@ -171,8 +171,8 @@ exports.validateCSV = async (req, res) => {
     let acceptedRows = 0;
 
     const LIMITS = {
-      free: 5,
-      active: 10
+      free: 50,
+      active: 500
     };
 
     const rowLimit = LIMITS[member_status] || 100;
