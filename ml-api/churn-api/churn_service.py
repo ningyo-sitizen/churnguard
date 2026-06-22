@@ -65,9 +65,9 @@ async def test_upload(file: UploadFile = File(...),email: str = Form(...),filena
 
                 
         df['user_engagement'] = (
-            df['ViewingHoursPerWeek'] * 0.4 +
-            df['ContentDownloadsPerMonth'] * 0.3 +
-            df['WatchlistSize'] * 0.3
+            df['ViewingHoursPerWeek'] +
+            df['ContentDownloadsPerMonth'] +
+            df['WatchlistSize']
         ).round(4)
 
         drop_cols = [
@@ -84,7 +84,7 @@ async def test_upload(file: UploadFile = File(...),email: str = Form(...),filena
 
         proba = model.predict_proba(X_scaled)[:, 1]
 
-        threshold = 0.47
+        threshold = 0.50
         pred = (proba >= threshold).astype(int)
 
         cluster_features = [

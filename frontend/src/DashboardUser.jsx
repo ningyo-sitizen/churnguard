@@ -240,400 +240,301 @@ const DashboardUser = () => {
         predictionData.filter(item => item.Prediction === 1).length;
 
     return (
+    <div
+        className="flex h-screen w-screen bg-[#F9FAFB] text-[#111827] overflow-hidden"
+        style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+    >
 
-        <div
-            className="flex h-screen w-screen bg-[#F9FAFB] text-[#111827] overflow-hidden"
-            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-        >
+        {/* SIDEBAR */}
+        <Sidebar />
+        {/* MAIN */}
+        <main className="flex-1 h-full overflow-y-auto overflow-x-hidden">
 
-            {/* SIDEBAR */}
-            <Sidebar />
-            {/* MAIN */}
-            <main className="flex-1 h-full overflow-y-auto overflow-x-hidden">
+            {/* TOPBAR */}
+            <Header formData={user} profileImg={user?.avatar} />
 
-                {/* TOPBAR */}
-                <Header formData={user} profileImg={user?.avatar} />
+            {/* CONTENT - Responsif: padding p-4 di HP, md:p-8 di desktop */}
+            <div className="p-4 md:p-8">
 
-                {/* CONTENT */}
-                <div className="p-8">
+                {/* HEADER */}
+                <div className="mb-6 md:mb-8">
+                    <h1 className="text-lg md:text-xl font-semibold">
+                        Dashboard
+                    </h1>
 
-                    {/* HEADER */}
-                    <div className="mb-8">
-                        <h1 className="text-xl font-semibold">
-                            Dashboard
-                        </h1>
+                    <p className="text-xs md:text-sm text-gray-500 mt-1">
+                        Analisis Risiko Kehilangan Pelanggan
+                    </p>
+                </div>
 
-                        <p className="text-sm text-gray-500 mt-1">
-                            Analisis Risiko Kehilangan Pelanggan
-                        </p>
-
-                    </div>
-
-                    {/* STAT CARD */}
-                    <div className="bg-white rounded-[4px] border border-[#EDEDED] shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-7 mb-12">
-                        {/* TOP ROW: Stats dengan warna & teks yang persis sesuai gambar */}
-                        <div className="flex flex-wrap md:flex-nowrap items-center justify-between gap-4 mb-5">
-                            {[
-                                {
-                                    label: "Tingkat Pengunduran Diri",
-                                    val: totalData, // Biasanya ini angka churn
-                                    suffix: "%",
-                                    icon: "ti-arrow-big-down-lines",
-                                    col: "text-[#BE78E3] bg-[#F1EDF8]" // Ungu sesuai gambar
-                                },
-                                {
-                                    label: "Total Pelanggan",
-                                    val: highRisk, // Ganti ke variabel total pelangganmu
-                                    suffix: " Orang",
-                                    icon: "ti-users",
-                                    col: "text-[#DE869D] bg-[#F6EAEC]" // Pink sesuai gambar
-                                },
-                                {
-                                    label: "Berisiko Tinggi",
-                                    val: churnCustomer, // Ganti ke variabel risiko tinggi
-                                    suffix: "%",
-                                    icon: "ti-trending-up",
-                                    col: "text-[#EAAD62] bg-[#FDF0ED]" // Orange sesuai gambar
-                                },
-                                {
-                                    label: "Total Pages",
-                                    val: totalPages,
-                                    suffix: "",
-                                    icon: "ti-database",
-                                    col: "text-[#C6CE56] bg-[#F6F7E6]" // Hijau kekuningan sesuai gambar
-                                }
-                            ].map((item, idx) => (
-                                <React.Fragment key={idx}>
-                                    <div className="flex items-center gap-5 flex-1 min-w-[200px] px-4">
-                                        {/* Icon Box */}
-                                        <div className={`w-10 h-10 rounded-[4px] flex items-center justify-center text-2xl ${item.col}`}>
-                                            <i className={`ti ${item.icon}`}></i>
-                                        </div>
-
-                                        {/* Label & Value */}
-                                        <div className="flex flex-col">
-                                            <p className="text-xs text-gray-400">{item.label}</p>
-                                            <p className="text-base font-semibold text-gray-800">
-                                                {item.val}{item.suffix}
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    {/* Divider Vertikal */}
-                                    {idx !== 3 && <div className="hidden md:block w-[1px] h-12 bg-gray-100"></div>}
-                                </React.Fragment>
-                            ))}
-                        </div>
-
-                        {/* BOTTOM ROW: Analisis Note */}
-                        <div className="flex items-center justify-between bg-gray-50/50 border border-[#DCDBDB] rounded-[4px] p-4 px-8 group cursor-pointer hover:bg-gray-50 transition-colors">
-                            <div className="flex items-center gap-2 text-xs">
-                                <span className="text-[#D82F5A] font-semibold">statistik</span>
-                                <span className="text-gray-400 text-xs">|</span>
-                                <span className="text-gray-600 text-xs">
-                                    Ini adalah hasil analisis data statistik di atas
-                                </span>
-                            </div>
-
-                            <div className="flex items-center gap-2 text-gray-400 group-hover:text-[#D82F5A] transition-colors text-xs">
-                                <span onClick={() => navigate('/analisisUlasan')}>Lihat detail analitik</span>
-                                <i className="ti ti-arrow-right"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* TABLE */}
-                    <div className="bg-white rounded-[4px] border border-[#ededed] overflow-hidden">
-
-                        <div className="p-6 flex justify-between items-center">
-
-                            <div>
-
-                                <h2 className="text-lg font-semibold">
-                                    Data Pelanggan & Prediksi Churn
-                                </h2>
-
-                                <p className="text-xs text-gray-400 mt-1">
-                                    Daftar pelanggan berdasarkan hasil prediksi
-                                </p>
-
-                            </div>
-
+                {/* STAT CARD */}
+                <div className="bg-white rounded-[4px] border border-[#EDEDED] shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-4 md:p-7 mb-6 md:mb-12">
+                    {/* TOP ROW: Responsif menggunakan grid di HP, flex di desktop */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:flex md:flex-nowrap items-center justify-between gap-6 md:gap-4 mb-5">
+                        {[
                             {
-                                predictionData.length > 0 && (
-
-                                    <div className="flex gap-3">
-
-                                        <div className="flex gap-3">
-                                            {/* Tombol Bulk Email */}
-                                            <button
-                                                onClick={() => setShowBulkPopup(true)}
-                                                className="bg-[#D82F5A] hover:bg-[#E48CA3] text-xs text-white px-5 py-2 rounded-[4px] flex items-center gap-2 transition-colors shadow-sm"
-                                            >
-                                                <i className="ti ti-mail-fast text-base"></i>
-                                                Bulk Email
-                                            </button>
-
-                                            {/* Tombol Prediksi Baru */}
-                                            <button
-                                                onClick={() => setShowPredictionPopup(true)}
-                                                className="bg-[#111827] hover:bg-gray-800 text-xs text-white px-4 py-1 rounded-[4px] flex items-center gap-2 transition-colors shadow-sm"
-                                            >
-                                                <i className="ti ti-plus text-lg"></i>
-                                                Prediksi Baru
-                                            </button>
-                                        </div>
-
-                                    </div>
-
-                                )
+                                label: "total user terbaca",
+                                val: totalData,
+                                icon: "ti-arrow-big-down-lines",
+                                col: "text-[#BE78E3] bg-[#F1EDF8]"
+                            },
+                            {
+                                label: "Total Pelanggan ber-potensi tinggi",
+                                val: highRisk,
+                                suffix: " Orang",
+                                icon: "ti-users",
+                                col: "text-[#DE869D] bg-[#F6EAEC]"
+                            },
+                            {
+                                label: "costumer terprediksi churn",
+                                val: churnCustomer,
+                                suffix: " Orang",
+                                icon: "ti-trending-up",
+                                col: "text-[#EAAD62] bg-[#FDF0ED]"
                             }
-
-                        </div>
-
-                        <div className="p-6">
-
-                            {
-                                loading ? (
-
-                                    <div className="text-center py-20">
-                                        Loading...
+                        ].map((item, idx) => (
+                            <React.Fragment key={idx}>
+                                <div className="flex items-center gap-4 md:gap-5 flex-1 min-w-[150px] md:px-4">
+                                    {/* Icon Box */}
+                                    <div className={`w-10 h-10 rounded-[4px] flex items-center justify-center text-xl md:text-2xl flex-shrink-0 ${item.col}`}>
+                                        <i className={`ti ${item.icon}`}></i>
                                     </div>
 
-                                ) : predictionData.length === 0 ? (
-
-                                    <div className="py-24 flex flex-col items-center">
-
-                                        <img
-                                            src={unggahdata}
-                                            className="w-40 mb-4"
-                                            alt=""
-                                        />
-
-                                        <h2 className="text-xl font-semibold mb-2">
-                                            Belum ada data pelanggan
-                                        </h2>
-
-                                        <p className="text-gray-500 text-sm mb-6">
-                                            Data pelanggan akan ditampilkan di sini setelah Anda mengunggah file.
+                                    {/* Label & Value */}
+                                    <div className="flex flex-col">
+                                        <p className="text-[11px] md:text-xs text-gray-400">{item.label}</p>
+                                        <p className="text-sm md:text-base font-semibold text-gray-800">
+                                            {item.val}{item.suffix}
                                         </p>
+                                    </div>
+                                </div>
 
+                                {/* Divider Vertikal */}
+                                {idx !== 3 && <div className="hidden md:block w-[1px] h-12 bg-gray-100"></div>}
+                            </React.Fragment>
+                        ))}
+                    </div>
+
+                    {/* BOTTOM ROW: Analisis Note - flex-col di HP agar tidak desak-desakan */}
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center justify-between bg-gray-50/50 border border-[#DCDBDB] rounded-[4px] p-4 md:px-8 group cursor-pointer hover:bg-gray-50 transition-colors">
+                        <div className="flex items-center gap-2 text-[11px] md:text-xs">
+                            <span className="text-[#D82F5A] font-semibold flex-shrink-0">statistik</span>
+                            <span className="text-gray-400">|</span>
+                            <span className="text-gray-600 line-clamp-1 sm:line-clamp-none">
+                                Ini adalah hasil analisis data statistik di atas
+                            </span>
+                        </div>
+
+                        <div className="flex items-center gap-2 text-gray-400 group-hover:text-[#D82F5A] transition-colors text-[11px] md:text-xs self-end sm:self-auto">
+                            <span onClick={() => navigate('/analisisUlasan')}>Lihat detail analitik</span>
+                            <i className="ti ti-arrow-right"></i>
+                        </div>
+                    </div>
+                </div>
+
+                {/* TABLE CARD */}
+                <div className="bg-white rounded-[4px] border border-[#ededed] overflow-hidden">
+
+                    {/* Table Header - Dioptimalkan untuk HP agar tombol tidak menumpuk */}
+                   <div className="p-4 md:p-6 flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
+                        <div>
+                            <h2 className="text-base md:text-lg font-semibold text-gray-900">
+                                Data Pelanggan & Prediksi Churn
+                            </h2>
+                            <p className="text-[11px] md:text-xs text-gray-400 mt-1">
+                                Daftar pelanggan berdasarkan hasil prediksi
+                            </p>
+                        </div>
+
+                        {
+                            predictionData.length > 0 && (
+                                /* flex-wrap ditambahkan agar jika di HP yang sangat kecil, tombol otomatis turun rapi dan tidak keluar layar */
+                                <div className="flex flex-wrap gap-2 sm:gap-3 w-full sm:w-auto">
+                                    {/* Tombol Bulk Email */}
+                                    <button
+                                        onClick={() => setShowBulkPopup(true)}
+                                        className="flex-1 sm:flex-none justify-center bg-[#D82F5A] hover:bg-[#E48CA3] text-[11px] md:text-xs text-white px-3 md:px-5 py-2.5 rounded-[4px] flex items-center gap-1.5 md:gap-2 transition-colors shadow-sm min-w-[100px]"
+                                    >
+                                        <i className="ti ti-mail-fast text-sm md:text-base"></i>
+                                        Bulk Email
+                                    </button>
+
+                                    {/* Tombol Prediksi Baru */}
+                                    <button
+                                        onClick={() => setShowPredictionPopup(true)}
+                                        className="flex-1 sm:flex-none justify-center bg-[#111827] hover:bg-gray-800 text-[11px] md:text-xs text-white px-3 md:px-4 py-2.5 rounded-[4px] flex items-center gap-1.5 md:gap-2 transition-colors shadow-sm min-w-[100px]"
+                                    >
+                                        <i className="ti ti-plus text-sm md:text-lg"></i>
+                                        Prediksi Baru
+                                    </button>
+                                </div>
+                            )
+                        }
+                    </div>
+
+                    <div className="p-4 md:p-6">
+                        {
+                            loading ? (
+                                <div className="text-center py-20 text-sm text-gray-500">
+                                    Loading...
+                                </div>
+                            ) : predictionData.length === 0 ? (
+                                <div className="py-16 md:py-24 flex flex-col items-center text-center px-4">
+                                    <img
+                                        src={unggahdata}
+                                        className="w-32 md:w-40 mb-4 object-contain"
+                                        alt=""
+                                    />
+                                    <h2 className="text-lg md:text-xl font-semibold mb-2">
+                                        Belum ada data pelanggan
+                                    </h2>
+                                    <p className="text-gray-500 text-xs md:text-sm mb-6 max-w-sm">
+                                        Data pelanggan akan ditampilkan di sini setelah Anda mengunggah file.
+                                    </p>
+                                    <button
+                                        onClick={() => {
+                                            makeprediction();
+                                        }}             
+                                        className="bg-[#D82F5A] text-white text-xs md:text-sm px-5 py-2.5 md:py-3 rounded-[4px] hover:bg-[#E48CA3] transition-colors"
+                                    >
+                                        Upload Data
+                                    </button>
+                                </div>
+                            ) : (
+                                <>
+                                    {/* TABLE WRAPPER - Diberikan padding horizontal tipis (px-4) agar teks di dalam sel tabel tidak mepet ke pinggir layar HP saat di-scroll */}
+                                    <div className="overflow-x-auto -mx-4 md:mx-0 whitespace-nowrap px-4 md:px-0">
+                                        <table className="w-full min-w-[800px]">
+                                            <thead>
+                                                <tr className="bg-[#D82F5A] text-white">
+                                                    <th className="p-3 md:p-4 text-xs font-semibold text-center tracking-wider">Customer ID</th>
+                                                    <th className="p-3 md:p-4 text-xs font-semibold text-center tracking-wider">Account Age</th>
+                                                    <th className="p-3 md:p-4 text-xs font-semibold text-center tracking-wider">Monthly Charges</th>
+                                                    <th className="p-3 md:p-4 text-xs font-semibold text-center tracking-wider">Total Charges</th>
+                                                    <th className="p-3 md:p-4 text-xs font-semibold text-center tracking-wider">Score</th>
+                                                    <th className="p-3 md:p-4 text-xs font-semibold text-center tracking-wider">Risk</th>
+                                                    <th className="p-3 md:p-4 text-xs font-semibold text-center tracking-wider">Prediction</th>
+                                                    <th className="p-3 md:p-4 text-xs font-semibold text-center tracking-wider">Segment</th>
+                                                    <th className="p-3 md:p-4 text-xs font-semibold text-center tracking-wider">Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {
+                                                    predictionData.map((item, index) => (
+                                                        <tr
+                                                            key={index}
+                                                            className="border-b hover:bg-gray-50 transition-colors"
+                                                        >
+                                                            <td className="p-3 md:p-4 text-center text-xs text-gray-600">{item.CustomerID}</td>
+                                                            <td className="p-3 md:p-4 text-center text-xs text-gray-600">{item.AccountAge}</td>
+                                                            <td className="p-3 md:p-4 text-center text-xs text-gray-600">${item.MonthlyCharges}</td>
+                                                            <td className="p-3 md:p-4 text-center text-xs text-gray-600">${item.TotalCharges}</td>
+                                                            <td className="p-3 md:p-4 text-center text-xs font-semibold text-gray-700">{item.Score}</td>
+                                                            <td className="p-3 md:p-4 text-center">
+                                                                <span
+                                                                    className="px-3 md:px-4 py-1 rounded-full text-[11px] md:text-xs font-semibold inline-block min-w-[70px]"
+                                                                    style={{
+                                                                        backgroundColor:
+                                                                            item.Risk === "High"
+                                                                                ? "#FFE1E1"
+                                                                                : item.Risk === "Medium"
+                                                                                    ? "#F6F7E6"
+                                                                                    : "#F5E4FF",
+                                                                        color:
+                                                                            item.Risk === "High"
+                                                                                ? "#FF1515"
+                                                                                : item.Risk === "Medium"
+                                                                                    ? "#EAAD62"
+                                                                                    : "#BE78E3",
+                                                                    }}
+                                                                >
+                                                                    {item.Risk}
+                                                                </span>
+                                                            </td>
+                                                            <td className="p-3 md:p-4 text-center text-xs">
+                                                                {
+                                                                    item.Prediction === 1 ? (
+                                                                        <span className="text-red-500 font-bold">Churn</span>
+                                                                    ) : (
+                                                                        <span className="text-green-500 font-bold">Non-Churn</span>
+                                                                    )
+                                                                }
+                                                            </td>
+                                                            <td className="p-3 md:p-4 text-center text-xs text-gray-600">{item.Segment}</td>
+                                                            <td className="p-3 md:p-4 text-center">
+                                                                <div className="group relative flex justify-center items-center">
+                                                                    <button
+                                                                        onClick={() =>
+                                                                            navigate(`/DashboardDetail?prediction_id=${item.prediction_id}&CustomerID=${item.CustomerID}`)
+                                                                        }
+                                                                        className="p-1.5 md:p-2 text-[#D82F5A] hover:bg-[#FFE1E1] rounded-full transition-all duration-200 flex items-center justify-center focus:outline-none"
+                                                                    >
+                                                                        <ChevronRight size={18} strokeWidth={2} />
+                                                                    </button>
+                                                                    <span className="absolute bottom-full mb-2 scale-0 group-hover:scale-100 transition-all duration-150 origin-bottom bg-gray-800 text-white text-[10px] px-2 py-1 rounded shadow-md whitespace-nowrap z-10 hidden sm:inline-block">
+                                                                        Detail
+                                                                    </span>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    ))
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    {/* PAGINATION - Dioptimalkan jarak gap-nya agar saat wrap di layar HP tidak terlalu renggang */}
+                                    <div className="flex flex-wrap justify-center items-center gap-y-4 gap-x-2 sm:gap-3 mt-6 md:mt-8 font-['Plus_Jakarta_Sans',_sans-serif]">
+                                        {/* Tombol Sebelumnya */}
                                         <button
-                                            onClick={() => {
-                                                makeprediction();
-                                            }}             
-                                            className="bg-[#D82F5A] text-white text-sm px-4 py-3 rounded-[4px]"
+                                            disabled={page === 1}
+                                            onClick={() => setPage(page - 1)}
+                                            className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 text-xs sm:text-sm transition-colors ${page === 1 ? "text-[#B3B3B3] cursor-not-allowed" : "text-[#757575] hover:text-[#D82F5A]"
+                                                }`}
                                         >
-                                            Upload Data
+                                            <ChevronLeft size={16} strokeWidth={2.5} color={page === 1 ? "#B3B3B3" : "#D82F5A"} />
+                                            <span className="font-medium">Sebelumnya</span>
                                         </button>
 
-                                    </div>
+                                        {/* Render Angka Halaman */}
+                                        <div className="flex flex-wrap items-center justify-center gap-1">
+                                            {[...Array(totalPages)].map((_, index) => {
+                                                const pageNum = index + 1;
+                                                const isActive = page === pageNum;
 
-                                ) : (
-
-                                    <>
-                                        <div className="overflow-x-auto">
-
-                                            <table className="w-full">
-
-                                                <thead>
-
-                                                    <tr className="bg-[#D82F5A] text-white">
-
-                                                        <th className="p-4 text-xs">
-                                                            Customer ID
-                                                        </th>
-
-                                                        <th className="p-4 text-xs">
-                                                            Account Age
-                                                        </th>
-
-                                                        <th className="p-4 text-xs">
-                                                            Monthly Charges
-                                                        </th>
-
-                                                        <th className="p-4 text-xs">
-                                                            Total Charges
-                                                        </th>
-
-                                                        <th className="p-4 text-xs">
-                                                            Score
-                                                        </th>
-
-                                                        <th className="p-4 text-xs">
-                                                            Risk
-                                                        </th>
-
-                                                        <th className="p-4 text-xs">
-                                                            Prediction
-                                                        </th>
-
-                                                        <th className="p-4 text-xs">
-                                                            Segment
-                                                        </th>
-
-                                                        <th className="p-4 text-xs">
-                                                            Action
-                                                        </th>
-
-                                                    </tr>
-
-                                                </thead>
-
-                                                <tbody>
-
-                                                    {
-                                                        predictionData.map((item, index) => (
-
-                                                            <tr
-                                                                key={index}
-                                                                className="border-b hover:bg-gray-50"
-                                                            >
-
-                                                                <td className="p-4 text-center text-xs">
-                                                                    {item.CustomerID}
-                                                                </td>
-
-                                                                <td className="p-4 text-center text-xs">
-                                                                    {item.AccountAge}
-                                                                </td>
-
-                                                                <td className="p-4 text-center text-xs">
-                                                                    ${item.MonthlyCharges}
-                                                                </td>
-
-                                                                <td className="p-4 text-center text-xs">
-                                                                    ${item.TotalCharges}
-                                                                </td>
-
-                                                                <td className="p-4 text-center text-xs font-semibold">
-                                                                    {item.Score}
-                                                                </td>
-
-                                                                <td className="p-4 text-center">
-                                                                    <span
-                                                                        className="px-4 py-1 rounded-full text-xs font-semibold"
-                                                                        style={{
-                                                                            backgroundColor:
-                                                                                item.Risk === "High"
-                                                                                    ? "#FFE1E1"
-                                                                                    : item.Risk === "Medium"
-                                                                                        ? "#F6F7E6"
-                                                                                        : "#F5E4FF",
-                                                                            color:
-                                                                                item.Risk === "High"
-                                                                                    ? "#FF1515"
-                                                                                    : item.Risk === "Medium"
-                                                                                        ? "#EAAD62"
-                                                                                        : "#BE78E3",
-                                                                        }}
-                                                                    >
-                                                                        {item.Risk}
-                                                                    </span>
-                                                                </td>
-                                                                <td className="p-4 text-center text-xs">
-
-                                                                    {
-                                                                        item.Prediction === 1
-                                                                            ? (
-                                                                                <span className="text-red-500 font-bold">
-                                                                                    Churn
-                                                                                </span>
-                                                                            )
-                                                                            : (
-                                                                                <span className="text-green-500 font-bold">
-                                                                                    Non-Churn
-                                                                                </span>
-                                                                            )
-                                                                    }
-
-                                                                </td>
-
-                                                                <td className="p-4 text-center text-xs">
-                                                                    {item.Segment}
-                                                                </td>
-
-                                                                <td className="p-4 text-center">
-                                                                    <div className="group relative flex justify-center items-center">
-                                                                        <button
-                                                                            onClick={() =>
-                                                                                navigate(`/DashboardDetail?prediction_id=${item.prediction_id}&CustomerID=${item.CustomerID}`)
-                                                                            }
-                                                                            className="p-2 text-[#D82F5A] hover:bg-[#FFE1E1] rounded-full transition-all duration-200 flex items-center justify-center"
-                                                                        >
-                                                                            {/* Icon panah ala 'next' */}
-                                                                            <ChevronRight size={20} strokeWidth={2} />
-                                                                        </button>
-
-                                                                        {/* Tooltip Tulisan Detail pas di Hover */}
-                                                                        <span className="absolute bottom-full mb-2 scale-0 group-hover:scale-100 transition-all duration-150 origin-bottom bg-gray-800 text-white text-[10px] px-2 py-1 rounded shadow-md whitespace-nowrap z-10">
-                                                                            Detail
-                                                                        </span>
-                                                                    </div>
-                                                                </td>
-
-                                                            </tr>
-
-                                                        ))
-                                                    }
-
-                                                </tbody>
-
-                                            </table>
-
+                                                return (
+                                                    <button
+                                                        key={pageNum}
+                                                        onClick={() => setPage(pageNum)}
+                                                        className={`w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-xl text-xs sm:text-sm transition-all ${isActive
+                                                            ? "bg-[#F6EAEC] text-[#D82F5A] border border-[#DE869D] font-bold shadow-sm"
+                                                            : "text-[#D82F5A] hover:bg-[#F6EAEC]/50 font-medium"
+                                                            }`}
+                                                    >
+                                                        {pageNum}
+                                                    </button>
+                                                );
+                                            })}
                                         </div>
 
-                                        {/* PAGINATION */}
-                                        <div className="flex justify-center items-center gap-2 mt-8 font-['Plus_Jakarta_Sans',_sans-serif]">
-                                            {/* Tombol Sebelumnya */}
-                                            <button
-                                                disabled={page === 1}
-                                                onClick={() => setPage(page - 1)}
-                                                className={`flex items-center gap-2 px-3 py-1 text-sm transition-colors ${page === 1 ? "text-[#B3B3B3] cursor-not-allowed" : "text-[#757575] hover:text-[#D82F5A]"
-                                                    }`}
-                                            >
-                                                <ChevronLeft size={18} strokeWidth={2.5} color={page === 1 ? "#B3B3B3" : "#D82F5A"} />
-                                                <span className="font-medium">Sebelumnya</span>
-                                            </button>
-
-                                            {/* Render Angka Halaman */}
-                                            <div className="flex items-center gap-1.5">
-                                                {[...Array(totalPages)].map((_, index) => {
-                                                    const pageNum = index + 1;
-                                                    const isActive = page === pageNum;
-
-                                                    return (
-                                                        <button
-                                                            key={pageNum}
-                                                            onClick={() => setPage(pageNum)}
-                                                            className={`w-9 h-9 flex items-center justify-center rounded-xl text-sm transition-all ${isActive
-                                                                ? "bg-[#F6EAEC] text-[#D82F5A] border border-[#DE869D] font-bold shadow-sm"
-                                                                : "text-[#D82F5A] hover:bg-[#F6EAEC]/50 font-medium"
-                                                                }`}
-                                                        >
-                                                            {pageNum}
-                                                        </button>
-                                                    );
-                                                })}
-                                            </div>
-
-                                            {/* Tombol Selanjutnya */}
-                                            <button
-                                                disabled={page === totalPages}
-                                                onClick={() => setPage(page + 1)}
-                                                className={`flex items-center gap-2 px-3 py-1 text-sm transition-colors ${page === totalPages ? "text-[#B3B3B3] cursor-not-allowed" : "text-[#757575] hover:text-[#D82F5A]"
-                                                    }`}
-                                            >
-                                                <span className="font-medium text-[#757575]">Selanjutnya</span>
-                                                <ChevronRight size={18} strokeWidth={2.5} color={page === totalPages ? "#B3B3B3" : "#D82F5A"} />
-                                            </button>
-                                        </div>                                    </>
-                                )
-                            }
-
-                        </div>
+                                        {/* Tombol Selanjutnya */}
+                                        <button
+                                            disabled={page === totalPages}
+                                            onClick={() => setPage(page + 1)}
+                                            className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 text-xs sm:text-sm transition-colors ${page === totalPages ? "text-[#B3B3B3] cursor-not-allowed" : "text-[#757575] hover:text-[#D82F5A]"
+                                                }`}
+                                        >
+                                            <span className="font-medium text-[#757575]">Selanjutnya</span>
+                                            <ChevronRight size={16} strokeWidth={2.5} color={page === totalPages ? "#B3B3B3" : "#D82F5A"} />
+                                        </button>
+                                    </div>
+                                </>
+                            )
+                        }
 
                     </div>
+
+                </div>
                     {showBulkPopup && (
                         <div className="fixed inset-0 bg-[#1A1A1A]/60 backdrop-blur-sm flex justify-center items-center z-50 p-4 font-['Plus_Jakarta_Sans',_sans-serif]">
                             <div className="bg-white rounded-[4px] w-full max-w-[1200px] shadow-xl overflow-hidden border border-gray-100">
@@ -660,7 +561,6 @@ const DashboardUser = () => {
                                                 <tr className="bg-[#F6EAEC] border-b border-[#DE869D]/30">
                                                     <th className="p-3 text-[#D82F5A] font-medium text-xs tracking-normal">Status risiko</th>
                                                     <th className="p-3 text-[#D82F5A] font-medium text-xs tracking-normal">Kelompok pengguna</th>
-                                                    <th className="p-3 text-[#D82F5A] font-medium text-xs tracking-normal">Saran konten</th>
                                                     <th className="p-3 text-[#D82F5A] font-medium text-xs tracking-normal">Nama promo</th>
                                                     <th className="p-3 text-[#D82F5A] font-medium text-xs tracking-normal w-24">Diskon %</th>
                                                     <th className="p-3 text-[#D82F5A] font-medium text-xs tracking-normal">Batas waktu</th>
@@ -678,11 +578,7 @@ const DashboardUser = () => {
 
                                                     <td className="p-3 text-sm">
                                                         Low Engagement Users
-                                                    </td>
-
-                                                    <td className="p-3 text-xs text-[#757575]">
-                                                        Diskon besar + rekomendasi film favorit customer untuk mencegah churn.
-                                                    </td>
+                                                    </td>   
 
                                                     <td className="p-3">
                                                         <input
@@ -738,9 +634,6 @@ const DashboardUser = () => {
                                                         High Engagement Users
                                                     </td>
 
-                                                    <td className="p-3 text-xs text-[#757575]">
-                                                        medium offer + rekomendasi exclusive content premium.
-                                                    </td>
 
                                                     <td className="p-3">
                                                         <input
@@ -796,9 +689,6 @@ const DashboardUser = () => {
                                                         Moderate Engagement Users
                                                     </td>
 
-                                                    <td className="p-3 text-xs text-[#757575]">
-                                                        Promo subscription + rekomendasi content populer & trending.
-                                                    </td>
 
                                                     <td className="p-3">
                                                         <input
@@ -852,10 +742,6 @@ const DashboardUser = () => {
 
                                                     <td className="p-3 text-sm">
                                                         Moderate Engagement Users - High Engagement Users
-                                                    </td>
-
-                                                    <td className="p-3 text-xs text-[#757575]">
-                                                        Reward kecil + rekomendasi film populer untuk menjaga engagement.
                                                     </td>
 
                                                     <td className="p-3">

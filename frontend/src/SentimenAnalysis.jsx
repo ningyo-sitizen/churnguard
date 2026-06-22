@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
     Upload,
     Play,
-    Calendar,
     AlertCircle,
     Download,
     Smile,
@@ -31,8 +30,6 @@ const SentimenAnalysis = () => {
     const [searchApp, setSearchApp] = useState("");
     const [selectedAppId, setSelectedAppId] = useState(null);
     const [selectedFile, setSelectedFile] = useState(null);
-    const [startDate, setStartDate] = useState("");
-    const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
     const [currentPage, setCurrentPage] = useState(1);
     const [popup, setPopup] = useState({ show: false, type: 'success', title: '', message: '' });
 
@@ -75,12 +72,6 @@ const SentimenAnalysis = () => {
             const formData = new FormData();
             formData.append("app_name", searchApp);
             formData.append("limit", 1000);
-            formData.append("start_date", startDate);
-            formData.append("end_date", endDate);
-
-            if (startDate === "" || endDate === "") {
-                return showNotif("error", "Tolong isi semua tanggal");
-            }
 
             if (selectedAppId) {
                 formData.append("app_id", selectedAppId);
@@ -268,7 +259,7 @@ const SentimenAnalysis = () => {
 
     const TEXT_SAMPLES = {
         positif: "Aplikasi ini benar-benar luar biasa! Desainnya sangat bersih dan intuitif, performanya cepat, dan fitur-fiturnya sangat lengkap. Saya sangat puas dan akan terus menggunakannya. Highly recommended!",
-        netral: "Aplikasi ini cukup standar. Fiturnya ada, tidak ada yang spesial, tapi juga tidak ada yang mengecewakan. Penggunaannya lumayan mudah dipahami.",
+        netral: "Fiturnya cukup lengkap untuk kebutuhan dasar, tapi tampilannya agak membosankan. Sejauh ini berfungsi dengan normal.",
         negatif: "Sangat mengecewakan! Aplikasi sering crash dan loading-nya sangat lambat. Banyak fitur tidak berfungsi dengan baik. Support customer service juga tidak responsif."
     };
 
@@ -355,34 +346,6 @@ const SentimenAnalysis = () => {
                                         />
                                     </div>
 
-                                    {/* COLUMN 2: Filter Range Tanggal */}
-                                    <div className="grid-cols-1 lg:col-span-4 flex items-center px-3 gap-2 bg-white border border-slate-200 rounded-[4px] h-11 text-slate-500 w-full min-w-0">
-                                        <Calendar size={15} className="text-slate-400 flex-shrink-0" />
-                                        <div className="flex items-center gap-1 w-full text-xs font-medium justify-between min-w-0">
-                                            {selectedFile ? (
-                                                <span className="text-slate-400 italic text-[11px] truncate">Tanggal dinonaktifkan (mode file)</span>
-                                            ) : (
-                                                <div className="flex items-center gap-2 w-full justify-between min-w-0">
-                                                    <input
-                                                        type="date"
-                                                        className="bg-transparent focus:outline-none cursor-pointer w-full text-slate-500 min-w-0 text-[11px] sm:text-xs"
-                                                        value={startDate}
-                                                        onChange={(e) => setStartDate(e.target.value)}
-                                                        disabled={loading}
-                                                    />
-                                                    <span className="text-slate-300 shrink-0 font-normal">to</span>
-                                                    <input
-                                                        type="date"
-                                                        className="bg-transparent focus:outline-none cursor-pointer w-full text-slate-500 min-w-0 text-[11px] sm:text-xs"
-                                                        value={endDate}
-                                                        onChange={(e) => setEndDate(e.target.value)}
-                                                        disabled={loading}
-                                                    />
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-
                                     {/* COLUMN 3: Area Upload File CSV */}
                                     <div className="grid-cols-1 lg:col-span-2 flex items-center bg-slate-50/60 border border-slate-200 border-dashed rounded-[4px] h-11 px-3 hover:bg-slate-100 transition-colors cursor-pointer w-full min-w-0">
                                         <label className="flex items-center gap-2 cursor-pointer w-full min-w-0">
@@ -417,24 +380,38 @@ const SentimenAnalysis = () => {
                                     </button>
                                 </div>
 
-                                {/* 2. SEKSI BANNER INFO & DOWNLOAD */}
-             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 text-[11px] font-medium text-slate-400 border-t border-slate-100">
+                                {/* Teks Peringatan Batas Demo */}
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 text-[11px] font-medium text-slate-400 border-t border-slate-100">
                                     <div className="flex items-center gap-1.5 min-w-0">
                                         <AlertCircle size={13} className="text-amber-500 shrink-0" />
                                         <p className="truncate text-slate-400">
-                                            Maks. 5MB. Wajib kolom <code className="font-mono bg-slate-50 border border-slate-200 text-[#d82f5a] px-1 py-0.5 rounded-[2px] font-bold text-[10px]">content</code> yang berisi teks ulasan tontonan atau komplain dari penonton streaming yang ingin dianalisis secara otomatis.
+                                            Selama masa demo, maksimal 20 ulasan yang dapat dianalisis per proses.
                                         </p>
                                     </div>
-
-                                    <button
-                                        type="button"
-                                        onClick={handleDownloadTemplate}
-                                        className="shrink-0 flex items-center gap-1 text-slate-400 hover:text-[#d82f5a] transition-colors font-semibold self-start sm:self-auto"
-                                    >
-                                        <Download size={12} className="shrink-0" />
-                                        <span>Unduh Template CSV</span>
-                                    </button>
                                 </div>
+
+                                {/* 2. SEKSI BANNER INFO & DOWNLOAD */}
+                               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 text-[11px] font-medium text-slate-400 border-t border-slate-100">
+                                {/* Teks Peringatan */}
+                                <div className="flex items-center gap-1.5 min-w-0">
+                                    <AlertCircle size={13} className="text-amber-500 shrink-0" />
+                                    <p className="truncate text-slate-400">
+                                        Maks. 5MB. Wajib kolom <code className="font-mono bg-slate-50 border border-slate-200 text-[#d82f5a] px-1 py-0.5 rounded-[2px] font-bold text-[10px]">content</code> yang berisi teks ulasan tontonan atau komplain dari penonton streaming yang ingin dianalisis secara otomatis.
+                                    </p>
+                                </div>
+
+                                {/* Tombol Unduh */}
+                                <div className="shrink-0 self-start sm:self-center">
+                                    <a
+                                        href="/Sentiment_Template.csv.csv"
+                                        download="Sentiment_Template.csv"
+                                        className="inline-flex items-center gap-2 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 text-[11px] font-semibold px-3 py-2 rounded-[4px] shadow-sm transition-all no-underline"
+                                    >
+                                        <i className="ti ti-download text-xs text-[#D82F5A]"></i>
+                                        Unduh Template .CSV
+                                    </a>
+                                </div>
+                            </div>
                             </div>
 
                             {/* POP-UP LOADING OVERLAY SCREEN */}

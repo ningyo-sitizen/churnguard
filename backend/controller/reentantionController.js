@@ -145,6 +145,7 @@ function getRetentionRecommendation(risk, segment) {
     return "Terima kasih telah menjadi customer setia kami ❤️";
 }
 
+
 function generateHTML({
     email,
     movies,
@@ -160,126 +161,163 @@ function generateHTML({
     link_app
 }) {
 
+    const hasPromo =
+        promo_name &&
+        promo_discount &&
+        expired_date;
+
     return `
-    
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-<style>
-    * {
-        font-family: 'Plus Jakarta Sans', sans-serif !important;
-        box-sizing: border-box;
-    }
-    body {
-        margin: 0;
-        background-color: #f8fafc;
-        color: #111827;
-    }
-    .container-custom {
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 40px 60px;
-    }
-</style>
+<p style="color:#64748b; font-size:14px; margin-top:10px;">
+    Rekomendasi dan promo eksklusif yang kami siapkan khusus untuk Anda di ${nama_app}.
+</p>
 
-<div class="container-custom">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-    <div style="text-align:center; margin-bottom:40px;">
-    <h1 style="font-size:32px; font-weight:800; margin:0;">
-        Kami Merindukan Anda 👋
-    </h1>
-
-    <p style="color:#64748b; font-size:14px; margin-top:10px;">
-        Rekomendasi dan promo eksklusif yang kami siapkan khusus untuk Anda di ${nama_app}.
-    </p>
-</div>
-    </div>
-
-    <div style="background: #000000; color: white; padding: 45px 50px; border-radius: 12px; margin-bottom: 40px; position: relative; overflow: hidden; display: flex; align-items: center;">
-        <div style="position: relative; z-index: 2; max-width: 600px;">
-            <div style="font-size: 11px; font-weight: 700; color: #D82F5A; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px;">Rekomendasi Personal</div>
-            <h2 style="font-size: 36px; font-weight: 800; line-height: 1.1; margin: 0 0 16px 0; letter-spacing: -1.5px;">Rekomendasi. <span style="color: #D82F5A;">Pilihan anda.</span></h2>
-            <p style="font-size: 15px; color: #94a3b8; margin-bottom: 25px; line-height: 1.6;">${recommendation}</p>
-            <button style="background: #D82F5A; color: white; border: none; padding: 14px 28px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 14px; box-shadow: 0 4px 14px rgba(216,47,90,0.4);">Lanjutkan Menonton</button>
+<div style="background: #000000; color: white; padding: 45px 50px; border-radius: 12px; margin-bottom: 40px; position: relative; overflow: hidden; display: flex; align-items: center;">
+    <div style="position: relative; z-index: 2; max-width: 600px;">
+        <div style="font-size: 11px; font-weight: 700; color: #D82F5A; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px;">
+            Rekomendasi Personal
         </div>
-        <div style="position: absolute; right: -50px; top: -50px; width: 300px; height: 300px; background: radial-gradient(circle, rgba(216,47,90,0.1) 0%, rgba(216,47,90,0) 70%); border-radius: 50%;"></div>
+
+        <h2 style="font-size: 36px; font-weight: 800; line-height: 1.1; margin: 0 0 16px 0; letter-spacing: -1.5px;">
+            Rekomendasi.
+            <span style="color: #D82F5A;">Pilihan anda.</span>
+        </h2>
+
+        <p style="font-size: 15px; color: #94a3b8; margin-bottom: 25px; line-height: 1.6;">
+            ${recommendation}
+        </p>
+
+        <a href="${link_app}"
+           style="background:#D82F5A;color:white;text-decoration:none;padding:14px 28px;border-radius:6px;font-weight:700;font-size:14px;display:inline-block;">
+            Lanjutkan Menonton
+        </a>
     </div>
 
-    <div style="display: grid; grid-template-columns: 1fr 320px; gap: 40px; align-items: start;">
-        
-        <div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
-                <h3 style="font-size: 18px; font-weight: 800; margin: 0;">Koleksi Terpopuler</h3>
-                <a href="#" style="color: #D82F5A; font-size: 12px; font-weight: 700; text-decoration: none; text-transform: uppercase;">Lihat Semua →</a>
-            </div>
-            
-            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 24px;">
-                ${movies.map((m) => `
-                    <div style="background: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; transition: transform 0.2s;">
-                        <div style="height: 280px; position: relative; background: #f1f5f9;">
-                            <img src="https://image.tmdb.org/t/p/w500${m.poster_path}" style="width: 100%; height: 100%; object-fit: cover;">
-                            <div style="position: absolute; top: 12px; right: 12px; background: rgba(17,24,39,0.85); color: #fbbf24; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800; backdrop-filter: blur(4px); display: flex; align-items: center; gap: 4px;">
-                                <i class="ti ti-star-filled"></i> ${m.vote_average}
-                            </div>
-                        </div>
-                        <div style="padding: 18px; background: white;">
-                            <div style="font-weight: 800; font-size: 15px; margin-bottom: 6px; color: #111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${m.title}</div>
-                            <div style="font-size: 12px; color: #64748b; margin-bottom: 16px;">2024 • Film Pilihan</div>
-                            <a href="https://www.themoviedb.org/movie/${m.id}" style="color: #D82F5A; text-decoration: none; font-size: 12px; font-weight: 800; text-transform: uppercase;">Lihat Detail</a>
+    <div style="position: absolute; right: -50px; top: -50px; width: 300px; height: 300px; background: radial-gradient(circle, rgba(216,47,90,0.1) 0%, rgba(216,47,90,0) 70%); border-radius: 50%;"></div>
+</div>
+
+<div style="
+    display: grid;
+    grid-template-columns: ${hasPromo ? '1fr 320px' : '1fr'};
+    gap: 40px;
+    align-items: start;
+">
+
+    <div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+            <h3 style="font-size: 18px; font-weight: 800; margin: 0;">
+                Koleksi Terpopuler
+            </h3>
+
+            <a href="${link_app}"
+               style="color: #D82F5A; font-size: 12px; font-weight: 700; text-decoration: none; text-transform: uppercase;">
+                Lihat Semua →
+            </a>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 24px;">
+
+            ${movies.map((m) => `
+                <div style="background: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0;">
+                    <div style="height: 280px; position: relative; background: #f1f5f9;">
+                        <img
+                            src="https://image.tmdb.org/t/p/w500${m.poster_path}"
+                            alt="${m.title}"
+                            style="width: 100%; height: 100%; object-fit: cover;"
+                        >
+
+                        <div style="position: absolute; top: 12px; right: 12px; background: rgba(17,24,39,0.85); color: #fbbf24; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800;">
+                            ★ ${m.vote_average}
                         </div>
                     </div>
-                `).join('')}
-            </div>
-        </div>
 
-        <div style="position: sticky; top: 40px;">
-            <div style="background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; padding: 30px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);">
-                <div style="background: #fff1f2; color: #D82F5A; padding: 6px 12px; border-radius: 4px; font-size: 10px; font-weight: 800; display: inline-block; margin-bottom: 20px; text-transform: uppercase;">${promo_name}</div>
-                <h4 style="font-size: 20px; font-weight: 800; margin: 0 0 12px 0; line-height: 1.3;">Upgrade pengalaman anda.</h4>
-                <p style="font-size: 13px; color: #64748b; line-height: 1.6; margin-bottom: 25px;">Nikmati penawaran khusus untuk langganan berikutnya sebelum masa berlaku habis.</p>
-                
-                <div style="text-align: center; border-top: 1px dashed #e2e8f0; padding-top: 25px;">
-                    <div style="font-size: 64px; font-weight: 900; color: #111827; letter-spacing: -3px; line-height: 1;">${promo_discount}<span style="font-size: 24px;">%</span></div>
-                    <div style="font-size: 11px; font-weight: 800; color: #D82F5A; margin-top: 8px; text-transform: uppercase; letter-spacing: 1px;">Voucher Diskon</div>
-                    <div style="margin-top: 20px; font-size: 12px; color: #94a3b8;">Berlaku sampai: <br><b style="color: #111827;">${expired_date}</b></div>
+                    <div style="padding: 18px; background: white;">
+                        <div style="font-weight: 800; font-size: 15px; margin-bottom: 6px; color: #111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            ${m.title}
+                        </div>
+
+                        <div style="font-size: 12px; color: #64748b; margin-bottom: 16px;">
+                            Film Pilihan
+                        </div>
+
+                        <a
+                            href="https://www.themoviedb.org/movie/${m.id}"
+                            style="color: #D82F5A; text-decoration: none; font-size: 12px; font-weight: 800; text-transform: uppercase;"
+                        >
+                            Lihat Detail
+                        </a>
+                    </div>
                 </div>
-                
-                <button style="width: 100%; margin-top: 25px; background: #111827; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer;"><a href = "${link_app}">Klaim Sekarang</a></button>
-            </div>
-        </div>
-    </div>
-</div>
+            `).join('')}
 
-<footer style="background: #ffffff; border-top: 1px solid #f1f5f9; padding: 60px 60px 0 60px; margin-top: 80px;">
-    <div style="max-width: 1400px; mx-auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px; border-bottom: 1px solid #f1f5f9; pb: 40px; margin-bottom: 0;">
-        <div style="margin-bottom: 30px;">
-            <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 16px;">ChurnGuard <span style="color: #D82F5A;">CRM</span></h3>
-            <p style="color: #616161; font-size: 12px; line-height: 1.6; max-width: 250px; margin-bottom: 20px;">Solusi cerdas menjaga loyalitas dan memperkuat hubungan pelanggan Anda secara berkelanjutan.</p>
-            <div style="display: flex; gap: 12px;">
-                <div style="width: 32px; height: 32px; border: 1px solid rgba(216,47,90,0.2); rounded: 4px; display: flex; align-items: center; justify-content: center; color: #D82F5A; border-radius: 4px;"><i class="ti ti-brand-instagram"></i></div>
-                <div style="width: 32px; height: 32px; border: 1px solid rgba(216,47,90,0.2); rounded: 4px; display: flex; align-items: center; justify-content: center; color: #D82F5A; border-radius: 4px;"><i class="ti ti-brand-x"></i></div>
-                <div style="width: 32px; height: 32px; border: 1px solid rgba(216,47,90,0.2); rounded: 4px; display: flex; align-items: center; justify-content: center; color: #D82F5A; border-radius: 4px;"><i class="ti ti-brand-youtube"></i></div>
+        </div>
+    </div>
+
+    ${hasPromo ? `
+    <div style="position: sticky; top: 40px;">
+        <div style="background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; padding: 30px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);">
+
+            <div style="background: #fff1f2; color: #D82F5A; padding: 6px 12px; border-radius: 4px; font-size: 10px; font-weight: 800; display: inline-block; margin-bottom: 20px; text-transform: uppercase;">
+                ${promo_name}
             </div>
-        </div>
-        <div>
-            <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;"><i class="ti ti-map-pin" style="color: #D82F5A;"></i> Alamat</h4>
-            <p style="color: #616161; font-size: 12px; line-height: 1.6;">Gedung Perpustakaan PNJ, Beji, Depok, Jawa Barat 16425.</p>
-        </div>
-        <div>
-            <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;"><i class="ti ti-phone" style="color: #D82F5A;"></i> No. Telepon</h4>
-            <p style="color: #616161; font-size: 12px;">+62 21 727 0036</p>
-        </div>
-        <div>
-            <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;"><i class="ti ti-mail" style="color: #D82F5A;"></i> Email</h4>
-            <p style="color: #616161; font-size: 12px; text-decoration: underline; text-underline-offset: 4px; cursor: pointer;">petisatukan@pnj.ac.id</p>
+
+            <h4 style="font-size: 20px; font-weight: 800; margin: 0 0 12px 0;">
+                Upgrade pengalaman anda.
+            </h4>
+
+            <p style="font-size: 13px; color: #64748b; line-height: 1.6; margin-bottom: 25px;">
+                Nikmati penawaran khusus untuk langganan berikutnya sebelum masa berlaku habis.
+            </p>
+
+            <div style="text-align: center; border-top: 1px dashed #e2e8f0; padding-top: 25px;">
+                <div style="font-size: 64px; font-weight: 900; color: #111827; letter-spacing: -3px; line-height: 1;">
+                    ${promo_discount}
+                    <span style="font-size: 24px;">%</span>
+                </div>
+
+                <div style="font-size: 11px; font-weight: 800; color: #D82F5A; margin-top: 8px; text-transform: uppercase; letter-spacing: 1px;">
+                    Voucher Diskon
+                </div>
+
+                <div style="margin-top: 20px; font-size: 12px; color: #94a3b8;">
+                    Berlaku sampai:
+                    <br>
+                    <b style="color: #111827;">
+                        ${expired_date}
+                    </b>
+                </div>
+            </div>
+
+            <a
+                href="${link_app}"
+                style="
+                    display:block;
+                    width:100%;
+                    margin-top:25px;
+                    background:#111827;
+                    color:white;
+                    text-align:center;
+                    padding:12px;
+                    border-radius:6px;
+                    font-weight:700;
+                    font-size:13px;
+                    text-decoration:none;
+                    box-sizing:border-box;
+                "
+            >
+                Klaim Sekarang
+            </a>
+
         </div>
     </div>
-    <div style="background: #000000; margin: 30px -60px 0 -60px; padding: 20px 0;">
-        <p style="text-align: center; color: white; font-size: 11px; opacity: 0.7; margin: 0;">© 2026 CHURNGUARD CRM. Hak Cipta Dilindungi Undang-Undang.</p>
-    </div>
-</footer>
-    `;
+    ` : ''}
+
+</div>
+`;
 }
+
+
 
 
 exports.getGeneratedEmail = async (req, res) => {
@@ -624,8 +662,6 @@ exports.bulkSend = async (req, res) => {
         const prediction_id = rows[0].prediction_id;
 
         for (const promo of promoList) {
-
-            if (!promo.name) continue;
 
             console.log("Processing promo:", promo.name);
 
